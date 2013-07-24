@@ -1,0 +1,33 @@
+DB size benchmark
+=================
+
+initial sizes:
+db4o: 1.4KB
+neo4j: ~25KB
+orientdb: 15.3MB
+
+5000 entries:
+db4o: ~400KB
+neo4j: ~750KB
+orientdb: 15.3MB
+
+20000 entries:
+db4o: 1.9MB
+neo4j: 2.9MB
+orientdb: 15.3MB
+
+100000 entries:
+db4o: 9.3MB
+neo4j: 14.6MB
+orientdb: 20.0MB
+
+500000 entries:
+db4o: 47.6MB
+neo4j: 76.2MB
+orientdb: 47.7MB
+
+1000000 entries:
+db4o: 95.5MB
+neo4j: 153.2MB
+orientdb: 90.8MB
+

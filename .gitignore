@@ -1,0 +1,8 @@
+target/
+bin/
+.settings
+.classpath
+.project
+*-gen
+*.db
+schema.yaml
