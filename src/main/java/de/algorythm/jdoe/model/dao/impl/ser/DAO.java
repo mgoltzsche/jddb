@@ -12,6 +12,7 @@ import java.util.Collection;
 import javax.inject.Singleton;
 
 import de.algorythm.jdoe.model.dao.IDAO;
+import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Schema;
@@ -74,7 +75,7 @@ public class DAO implements IDAO {
 	}
 
 	@Override
-	public IEntity create(EntityType type) {
+	public IEntity createEntity(EntityType type) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -83,5 +84,17 @@ public class DAO implements IDAO {
 	public Collection<IEntity> list(EntityType type) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void addObserver(IObserver observer) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeObserver(IObserver observer) {
+		// TODO Auto-generated method stub
+		
 	}
 }

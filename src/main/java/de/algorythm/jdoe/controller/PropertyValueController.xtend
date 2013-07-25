@@ -15,17 +15,24 @@ import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
+import javax.inject.Inject
+import de.algorythm.jdoe.model.dao.IDAO
+import de.algorythm.jdoe.model.meta.EntityType
 
-class EntityEditorControllerHelper extends AbstractControllerHelper implements IPropertyValueVisitor {
+class PropertyValueController extends AbstractController implements IPropertyValueVisitor {
 
+	extension IDAO dao
 	var GridPane gridPane
 	var int row
-	var Collection<Procedure0> saveProcs
+	var Collection<Procedure0> saveCallbacks
+	var Collection<Procedure0> updateCallbacks
 	
-	new(GridPane gridPane, int row, Collection<Procedure0> saveProcs) {
+	new(GridPane gridPane, int row, IDAO dao, Collection<Procedure0> saveCallbacks, Collection<Procedure0> updateCallbacks) {
 		this.gridPane = gridPane
 		this.row = row
-		this.saveProcs = saveProcs
+		this.saveCallbacks = saveCallbacks
+		this.updateCallbacks = updateCallbacks
+		this.dao = dao
 	}
 
 	override doWithEntityCollection(IPropertyValue propertyValue,
@@ -53,8 +60,14 @@ class EntityEditorControllerHelper extends AbstractControllerHelper implements I
 		vBoxChildren.add(hBox)
 		gridPane.add(vBox, 1, row)
 		
-		saveProcs += [|
+		saveCallbacks += [|
 			propertyValue.value = selectedEntities.items
+		]
+		
+		updateCallbacks += [|
+			val type = propertyValue.property.type as EntityType
+			
+			availableEntities.items.all = type.list
 		]
 	}
 	
@@ -69,8 +82,13 @@ class EntityEditorControllerHelper extends AbstractControllerHelper implements I
 		
 		gridPane.add(entityComboBox, 1, row)
 		
-		saveProcs += [|
+		saveCallbacks += [|
 			propertyValue.value = entityComboBox.selectionModel.selectedItem
+		]
+		
+		updateCallbacks += [|
+			val type = propertyValue.property.type as EntityType
+			entityComboBox.items.all = type.list
 		]
 	}
 
@@ -85,7 +103,7 @@ class EntityEditorControllerHelper extends AbstractControllerHelper implements I
 		
 		gridPane.add(checkBox, 1, row)
 		
-		saveProcs += [|
+		saveCallbacks += [|
 			propertyValue.value = checkBox.selected
 		]
 	}
@@ -100,7 +118,7 @@ class EntityEditorControllerHelper extends AbstractControllerHelper implements I
 		
 		gridPane.add(textField, 1, row)
 		
-		saveProcs += [|
+		saveCallbacks += [|
 			val txt = textField.text
 			
 			if (txt != null) {
@@ -124,7 +142,7 @@ class EntityEditorControllerHelper extends AbstractControllerHelper implements I
 		
 		gridPane.add(textField, 1, row)
 		
-		saveProcs += [|
+		saveCallbacks += [|
 			val txt = textField.text
 			
 			if (txt != null) {
@@ -148,7 +166,7 @@ class EntityEditorControllerHelper extends AbstractControllerHelper implements I
 		
 		gridPane.add(textField, 1, row)
 		
-		saveProcs += [|
+		saveCallbacks += [|
 			val txt = textField.text
 			
 			propertyValue.value = if (txt == null)
@@ -163,7 +181,7 @@ class EntityEditorControllerHelper extends AbstractControllerHelper implements I
 		
 		gridPane.add(textArea, 1, row)
 		
-		saveProcs += [|
+		saveCallbacks += [|
 			val txt = textArea.text
 			
 			propertyValue.value = if (txt == null)

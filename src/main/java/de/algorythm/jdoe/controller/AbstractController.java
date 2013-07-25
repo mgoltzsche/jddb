@@ -9,7 +9,7 @@ import javafx.scene.control.Button;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
-public abstract class AbstractControllerHelper {
+public abstract class AbstractController {
 
 	protected void actionListener(final Button button, final Procedure0 listener) {
 		button.setOnAction(new EventHandler<ActionEvent>() {

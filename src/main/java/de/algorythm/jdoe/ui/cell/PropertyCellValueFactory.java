@@ -9,7 +9,7 @@ import de.algorythm.jdoe.model.entity.IPropertyValue;
 
 public class PropertyCellValueFactory implements Callback<CellDataFeatures<IEntity, String>, ObservableValue<String>> {
 
-	private int index;
+	private final int index;
 	
 	public PropertyCellValueFactory(final int index) {
 		this.index = index;
@@ -23,5 +23,4 @@ public class PropertyCellValueFactory implements Callback<CellDataFeatures<IEnti
 		
 		return new SimpleStringProperty(value.toString());
 	}
-
 }

@@ -11,10 +11,12 @@ public interface IDAO {
 	
 	void open() throws IOException;
 	void close() throws IOException;
+	void addObserver(IObserver observer);
+	void removeObserver(IObserver observer);
 	Schema getSchema();
 	void setSchema(Schema schema) throws IOException;
 	Collection<IEntity> list(EntityType type);
-	IEntity create(EntityType type);
+	IEntity createEntity(EntityType type);
 	void save(IEntity entity);
 	void delete(IEntity entity);
 }

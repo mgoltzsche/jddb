@@ -7,8 +7,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.UUID;
 
 import javax.inject.Singleton;
 
@@ -22,6 +22,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import de.algorythm.jdoe.model.dao.IDAO;
+import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
@@ -37,6 +38,7 @@ public class DAO implements IDAO {
 	private final Yaml yaml = new Yaml();
 	private Schema schema;
 	private OrientGraph graph;
+	private final HashSet<IObserver> observers = new HashSet<>();
 	
 	private final class SaveVisitor implements IPropertyValueVisitor {
 		
@@ -51,12 +53,14 @@ public class DAO implements IDAO {
 				Collection<IEntity> values) {
 			final String propertyName = propertyValue.getProperty().getName();
 			
-			removeOutgoingEdges(propertyName);
+			//removeOutgoingEdges(propertyName);
+			// TODO: remove containments
 			
-			for (IEntity entity : values) {
-				final Vertex referencedVertex = ((Entity) entity).getVertex();
+			for (IEntity refEntity : values) {
+				if (refEntity.getId() == null)
+					saveInternal(refEntity);
 				
-				vertex.addEdge(propertyName, referencedVertex);
+				vertex.addEdge(propertyName, ((Entity) refEntity).getVertex());
 			}
 		}
 		
@@ -64,13 +68,26 @@ public class DAO implements IDAO {
 		public void doWithEntity(IPropertyValue propertyValue, IEntity value) {
 			final String propertyName = propertyValue.getProperty().getName();
 			
-			removeOutgoingEdges(propertyName);
+			if (value != null && value.getId() == null)
+				saveInternal(value);
 			
-			if (value != null) {
-				final Vertex referencedVertex = ((Entity) value).getVertex();
-				
-				vertex.addEdge(propertyName, referencedVertex);
+			boolean edgeAlreadyExists = false;
+			
+			// remove outgoing edges
+			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName)) {
+				if (value == null) {
+					edge.remove();
+					// TODO: remove containments
+				} else {
+					if (edge.getVertex(Direction.OUT).getId().equals(value.getId()))
+						edgeAlreadyExists = true;
+					else
+						edge.remove();
+				}
 			}
+			
+			if (value != null && !edgeAlreadyExists) // add edge if not exists
+				vertex.addEdge(propertyName, ((Entity) value).getVertex());
 		}
 		
 		@Override
@@ -126,13 +143,13 @@ public class DAO implements IDAO {
 				Collection<IEntity> values) {
 			if (propertyValue.getProperty().isContainment())
 				for (IEntity entity : values)
-					delete(entity);
+					deleteInternal(entity);
 		}
 		
 		@Override
 		public void doWithEntity(IPropertyValue propertyValue, IEntity value) {
 			if (propertyValue.getProperty().isContainment())
-				delete(value);
+				deleteInternal(value);
 		}
 
 		@Override
@@ -187,7 +204,7 @@ public class DAO implements IDAO {
 	}
 
 	@Override
-	public void setSchema(Schema schema) throws IOException {
+	public void setSchema(final Schema schema) throws IOException {
 		// update property indices
 		for (EntityType type : schema.getTypes()) {
 			int i = 0;
@@ -204,16 +221,27 @@ public class DAO implements IDAO {
 	}
 
 	@Override
-	public IEntity create(final EntityType type) {
-		final Vertex vertex = graph.addVertex(UUID.randomUUID().toString());
-		vertex.setProperty(Entity.TYPE_FIELD, type.getName());
-		
-		return new Entity(schema, vertex);
+	public IEntity createEntity(final EntityType type) {
+		return new Entity(schema, type);
 	}
 	
 	@Override
-	public void save(IEntity entity) {
-		final Vertex vertex = ((Entity) entity).getVertex();
+	public void save(final IEntity entity) {
+		saveInternal(entity);
+		notifyObservers();
+	}
+	
+	private void saveInternal(final IEntity entity) {
+		final Entity entityImpl = (Entity) entity;
+		Vertex vertex = entityImpl.getVertex();
+		
+		if (vertex == null) {
+			vertex = graph.addVertex(null);
+			vertex.setProperty(Entity.TYPE_FIELD, entity.getType().getName());
+			entityImpl.setVertex(vertex);
+			entityImpl.setId(vertex.getId().toString());
+		}
+		
 		final IPropertyValueVisitor visitor = new SaveVisitor(vertex);
 		
 		for (IPropertyValue propertyValue : entity.getValues())
@@ -221,7 +249,12 @@ public class DAO implements IDAO {
 	}
 
 	@Override
-	public void delete(IEntity entity) {
+	public void delete(final IEntity entity) {
+		deleteInternal(entity);
+		notifyObservers();
+	}
+	
+	private void deleteInternal(final IEntity entity) {
 		final Entity entityImpl = (Entity) entity;
 		
 		for (IPropertyValue value : entity.getValues())
@@ -230,6 +263,11 @@ public class DAO implements IDAO {
 		entityImpl.getVertex().remove();
 	}
 
+	private void notifyObservers() {
+		for (IObserver observer : observers)
+			observer.update();
+	}
+	
 	@Override
 	public Collection<IEntity> list(final EntityType type) {
 		final LinkedList<IEntity> result = new LinkedList<>();
@@ -237,8 +275,16 @@ public class DAO implements IDAO {
 		for (Vertex vertex : graph.getVertices(Entity.TYPE_FIELD, type.getName()))
 			result.add(new Entity(schema, vertex));
 		
-		System.out.println("listing vertices: " + result.size());
-		
 		return result;
+	}
+
+	@Override
+	public void addObserver(final IObserver observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void removeObserver(final IObserver observer) {
+		observers.remove(observer);
 	}
 }

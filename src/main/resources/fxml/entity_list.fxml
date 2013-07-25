@@ -27,7 +27,7 @@
 	
 	<TabPane fx:id="tabs">
 		<tabs>
-			<Tab text="Results" closable="false">
+			<Tab fx:id="listTab" id="list" text="Results" closable="false">
 				<TableView fx:id="entityList"/>
 			</Tab>
 		</tabs>

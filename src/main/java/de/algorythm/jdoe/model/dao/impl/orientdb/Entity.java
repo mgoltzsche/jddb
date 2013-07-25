@@ -24,6 +24,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	private EntityType type;
 	private Vertex vertex;
 	private ArrayList<IPropertyValue> values;
+	private String id;
 	
 	public Entity(final Schema schema, final EntityType type) {
 		this.schema = schema;
@@ -31,14 +32,32 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	}
 	
 	public Entity(final Schema schema, final Vertex vertex) {
-		this(schema, (EntityType) null);
-		
+		this.schema = schema;
 		this.vertex = vertex;
+		id = vertex.getId().toString();
 		type = getTypeByVertex(vertex);
+	}
+	
+	@Override
+	public String getId() {
+		return id;
+	}
+	
+	public void setId(final String id) {
+		this.id = id;
+	}
+	
+	@Override
+	public boolean isPersisted() {
+		return vertex != null;
 	}
 	
 	public Vertex getVertex() {
 		return vertex;
+	}
+	
+	public void setVertex(final Vertex vertex) {
+		this.vertex = vertex;
 	}
 	
 	@Override
@@ -56,15 +75,15 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 		if (values == null) {
 			values = new ArrayList<>(type.getProperties().size());
 			
-			if (vertex != null) {
-				for (Property property : type.getProperties()) {
-					final PropertyValue value = new PropertyValue(property);
-					
+			for (Property property : type.getProperties()) {
+				final PropertyValue value = new PropertyValue(property);
+				
+				if (vertex != null) {
 					property.doWithPropertyValue(value, this);
 					value.setChanged(false);
-					
-					values.add(value);
 				}
+				
+				values.add(value);
 			}
 		}
 	}
@@ -151,7 +170,43 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	
 	@Override
 	public String toString() {
-		final String csv = values.toString();
-		return csv.substring(1, csv.length() - 1);
+		final StringBuilder sb = new StringBuilder();
+		
+		for (IPropertyValue value : getValues()) {
+			final String valueStr = value.toString();
+			
+			if (valueStr != null) {
+				if (sb.length() > 0)
+					sb.append(", ");
+				
+				sb.append(valueStr);
+			}
+		}
+		
+		return sb.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * 1 + id.hashCode();
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		final Entity other = (Entity) obj;
+		
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		
+		return true;
 	}
 }

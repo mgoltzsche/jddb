@@ -6,7 +6,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
 
 import javax.inject.Inject;
@@ -41,13 +40,10 @@ public class JavaDbObjectEditorFacade {
 		showWindow("/fxml/type_editor.fxml", "jDOE - Data type definition", 500, 400);
 	}
 	
-	public void showEntityEditor(final IEntity entity, final TabPane tabs) throws IOException {
+	public void showEntityEditor(final IEntity entity, final Tab tab) throws IOException {
 		final FxmlLoaderResult<Node, EntityEditorController> loaderResult = fxmlLoader.load("/fxml/entity_editor.fxml");
-		final Tab tab = new Tab(entity.toString());
 		
-		tabs.getTabs().add(tab);
-		
-		loaderResult.getController().setEntity(entity);
+		loaderResult.getController().init(entity, tab);
 		tab.setContent(loaderResult.getNode());
 	}
 	
