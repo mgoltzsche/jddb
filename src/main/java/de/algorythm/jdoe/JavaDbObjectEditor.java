@@ -19,8 +19,6 @@ public class JavaDbObjectEditor extends Application {
 
 	@Override
 	public void start(final Stage stage) throws Exception {
-		new InMemoryCompiler().compile();
-		
 		Guice.createInjector(new JavaDbObjectEditorModule())
 				.injectMembers(this);
 

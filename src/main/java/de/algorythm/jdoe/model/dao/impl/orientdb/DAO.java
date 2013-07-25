@@ -63,11 +63,14 @@ public class DAO implements IDAO {
 		@Override
 		public void doWithEntity(IPropertyValue propertyValue, IEntity value) {
 			final String propertyName = propertyValue.getProperty().getName();
-			final Vertex referencedVertex = ((Entity) value).getVertex();
 			
 			removeOutgoingEdges(propertyName);
 			
-			vertex.addEdge(propertyName, referencedVertex);
+			if (value != null) {
+				final Vertex referencedVertex = ((Entity) value).getVertex();
+				
+				vertex.addEdge(propertyName, referencedVertex);
+			}
 		}
 		
 		@Override
@@ -101,7 +104,13 @@ public class DAO implements IDAO {
 		}
 		
 		private void writeAttributeValue(final IPropertyValue propertyValue) {
-			vertex.setProperty(propertyValue.getProperty().getName(), propertyValue.getValue());
+			final String propertyName = propertyValue.getProperty().getName();
+			final Object value = propertyValue.getValue();
+			
+			if (value == null)
+				vertex.removeProperty(propertyName);
+			else
+				vertex.setProperty(propertyName, value);
 		}
 		
 		private void removeOutgoingEdges(String propertyName) {

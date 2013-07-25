@@ -68,6 +68,7 @@ public class MainController implements IController {
 	private void setSelectedType(final EntityType type) {
 		selectedType = type == null ? EntityType.DEFAULT : type;
 		updateTableColumns();
+		tabs.getSelectionModel().select(0);
 	}
 	
 	private void setupTypeSelection() {

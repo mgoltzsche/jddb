@@ -49,7 +49,6 @@
 				<version>2.0</version>
 				<configuration>
 					<mainClass>de.algorythm.jdoe.JavaDbObjectEditor</mainClass>
-
 					<!-- only required if signing the jar file -->
 					<keyStoreAlias>example-user</keyStoreAlias>
 					<keyStorePassword>example-password</keyStorePassword>
