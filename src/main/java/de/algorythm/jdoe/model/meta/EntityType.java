@@ -1,9 +1,10 @@
 package de.algorythm.jdoe.model.meta;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
 
-public class EntityType extends AbstractLabeledElement implements IPropertyType {
+public class EntityType extends AbstractLabeledElement implements IPropertyType, Serializable {
 
 	static private final long serialVersionUID = 2546803693147036351L;
 	static public final EntityType DEFAULT = new EntityType();
@@ -14,8 +15,8 @@ public class EntityType extends AbstractLabeledElement implements IPropertyType 
 		setLabel("New type");
 	}
 	
-	public EntityType(final String title) {
-		setLabel(title);
+	public EntityType(final String label) {
+		setLabel(label);
 	}
 	
 	public Collection<Property> getProperties() {

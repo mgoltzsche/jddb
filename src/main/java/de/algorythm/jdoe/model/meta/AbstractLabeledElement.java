@@ -2,7 +2,7 @@ package de.algorythm.jdoe.model.meta;
 
 import java.io.Serializable;
 
-public abstract class AbstractLabeledElement implements Serializable {
+public abstract class AbstractLabeledElement implements Serializable, ILabeledElement {
 
 	private static final long serialVersionUID = 4039667635852880444L;
 	
@@ -17,10 +17,12 @@ public abstract class AbstractLabeledElement implements Serializable {
 		this.name = name;
 	}
 	
+	@Override
 	public String getLabel() {
 		return label;
 	}
 	
+	@Override
 	public void setLabel(final String label) {
 		this.label = label.trim();
 		name = this.label.replaceAll("[^A-Za-z0-9_]", "");

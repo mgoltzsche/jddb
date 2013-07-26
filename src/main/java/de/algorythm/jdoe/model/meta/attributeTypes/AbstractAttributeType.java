@@ -1,5 +1,6 @@
 package de.algorythm.jdoe.model.meta.attributeTypes;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -7,7 +8,7 @@ import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.visitor.PropertyVisitorContext;
 
-public abstract class AbstractAttributeType extends PropertyVisitorContext implements IPropertyType {
+public abstract class AbstractAttributeType extends PropertyVisitorContext implements IPropertyType, Serializable {
 
 	static private final long serialVersionUID = 4590467257394701843L;
 	
@@ -22,15 +23,15 @@ public abstract class AbstractAttributeType extends PropertyVisitorContext imple
 		ATTRIBUTE_TYPES.add(new TText());
 	}
 	
-	private final String name;
+	private final String label;
 	
-	public AbstractAttributeType(final String name) {
-		this.name = name;
+	public AbstractAttributeType(final String label) {
+		this.label = label;
 	}
 	
 	@Override
-	public String getName() {
-		return name;
+	public String getLabel() {
+		return label;
 	}
 
 	@Override
@@ -47,6 +48,6 @@ public abstract class AbstractAttributeType extends PropertyVisitorContext imple
 	
 	@Override
 	public String toString() {
-		return name;
+		return label;
 	}
 }

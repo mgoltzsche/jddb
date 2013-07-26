@@ -12,24 +12,28 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
+<BorderPane xmlns:fx="http://javafx.com/fxml"
 		fx:controller="de.algorythm.jdoe.controller.MainController">
-	<ToolBar>
-		<Label fx:id="currentDatabaseLabel"/>
-		<Button text="open" onAction="#openDatabase"/>
-		<Button text="configure" onAction="#showTypeEditor"/>
-		<Region prefWidth="50"/>
-		<TextField fx:id="searchField" promptText="Search ..." prefWidth="200"/>
-		<ComboBox fx:id="typeComboBox"/>
-		<Button text="new" onAction="#createEntity"/>
-	</ToolBar>
-	
-	<TabPane fx:id="tabs">
-		<tabs>
-			<Tab fx:id="listTab" id="list" text="Results" closable="false">
-				<TableView fx:id="entityList"/>
-			</Tab>
-		</tabs>
-	</TabPane>
-</VBox>
+	<top>
+		<ToolBar>
+			<Label fx:id="currentDatabaseLabel"/>
+			<Button text="open" onAction="#openDatabase"/>
+			<Button text="configure" onAction="#showTypeEditor"/>
+			<Region prefWidth="50"/>
+			<TextField fx:id="searchField" promptText="Search ..." prefWidth="200"/>
+			<ComboBox fx:id="typeComboBox"/>
+			<Button text="new" onAction="#createEntity"/>
+		</ToolBar>
+	</top>
+	<center>
+		<TabPane fx:id="tabs">
+			<tabs>
+				<Tab fx:id="listTab" id="list" text="Results" closable="false">
+					<TableView fx:id="entityList"/>
+				</Tab>
+			</tabs>
+		</TabPane>
+	</center>
+</BorderPane>

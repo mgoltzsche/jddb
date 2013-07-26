@@ -7,8 +7,8 @@ import de.algorythm.jdoe.model.entity.IEntity
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.model.meta.Schema
-import de.algorythm.jdoe.ui.cell.EntityRow
-import de.algorythm.jdoe.ui.cell.PropertyCellValueFactory
+import de.algorythm.jdoe.ui.jfx.cell.EntityRow
+import de.algorythm.jdoe.ui.jfx.cell.PropertyCellValueFactory
 import java.io.IOException
 import java.util.LinkedList
 import javafx.fxml.FXML

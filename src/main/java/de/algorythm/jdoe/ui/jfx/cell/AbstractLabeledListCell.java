@@ -1,12 +1,12 @@
-package de.algorythm.jdoe.ui.cell;
+package de.algorythm.jdoe.ui.jfx.cell;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
-import de.algorythm.jdoe.model.meta.AbstractLabeledElement;
+import de.algorythm.jdoe.model.meta.ILabeledElement;
 
-public abstract class AbstractLabeledListCell<T extends AbstractLabeledElement> extends ListCell<T> {
+public abstract class AbstractLabeledListCell<T extends ILabeledElement> extends ListCell<T> {
 
 	protected TextField labelInput = new TextField();
 	protected T object;
@@ -16,9 +16,13 @@ public abstract class AbstractLabeledListCell<T extends AbstractLabeledElement> 
 			@Override
 			public void changed(ObservableValue<? extends String> valueContainer,
 					String oldLabel, String newLabel) {
-				object.setLabel(newLabel);
+				updateObjectLabel(newLabel);
 			}
 		});
+	}
+	
+	protected void updateObjectLabel(final String label) {
+		object.setLabel(label);
 	}
 	
 	@Override

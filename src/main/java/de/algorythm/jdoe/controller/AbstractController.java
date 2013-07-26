@@ -2,6 +2,8 @@ package de.algorythm.jdoe.controller;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
@@ -27,6 +29,15 @@ public abstract class AbstractController {
 					V oldValue, V newValue) {
 				if (oldValue != newValue)
 					listener.apply(newValue);
+			}
+		});
+	}
+	
+	protected <V> void changeListener(final ObservableList<V> values, final Procedure0 listener) {
+		values.addListener(new ListChangeListener<V>() {
+			@Override
+			public void onChanged(Change<? extends V> change) {
+				listener.apply();
 			}
 		});
 	}

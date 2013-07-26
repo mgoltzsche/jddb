@@ -17,8 +17,8 @@ import de.algorythm.jdoe.controller.EntityEditorController;
 import de.algorythm.jdoe.controller.IController;
 import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.entity.IEntity;
-import de.algorythm.jdoe.ui.util.FxmlLoaderResult;
-import de.algorythm.jdoe.ui.util.GuiceFxmlLoader;
+import de.algorythm.jdoe.ui.jfx.util.FxmlLoaderResult;
+import de.algorythm.jdoe.ui.jfx.util.GuiceFxmlLoader;
 
 public class JavaDbObjectEditorFacade {
 

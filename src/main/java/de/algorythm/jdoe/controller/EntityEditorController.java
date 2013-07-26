@@ -8,6 +8,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
@@ -43,7 +44,6 @@ public class EntityEditorController implements IController, IObserver {
 		final GridPane gridPane = new GridPane();
 		int i = 0;
 		
-		gridPane.setAlignment(Pos.TOP_LEFT);
 		gridPane.setPadding(new Insets(20));
 		gridPane.setVgap(20);
 		gridPane.setHgap(10);
@@ -51,6 +51,8 @@ public class EntityEditorController implements IController, IObserver {
 		for (IPropertyValue value : entity.getValues()) {
 			final Property property = value.getProperty();
 			final Label label = new Label(property.getLabel() + ": ");
+			
+			GridPane.setValignment(label, VPos.TOP);
 			
 			gridPane.add(label, 0, i);
 			

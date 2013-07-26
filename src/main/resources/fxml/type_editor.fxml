@@ -14,26 +14,37 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.Region?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-		fx:controller="de.algorythm.jdoe.controller.TypeEditorController"
-		spacing="10">
-	<SplitPane dividerPositions="0.4,0.6">
-		<VBox>
-			<ToolBar>
-				<Label text="Types"/>
-				<Region prefWidth="30"/>
-				<Button text="add" onAction="#addType" styleClass="toolbar-button"/>
-			</ToolBar>
-			<ListView fx:id="typeList"/>
-		</VBox>
-		<VBox>
-			<ToolBar>
-				<Label text="Properties"/>
-				<Region prefWidth="30"/>
-				<Button fx:id="btnAddProperty" text="add" onAction="#addProperty" styleClass="toolbar-button" disable="true"/>
-			</ToolBar>
-			<ListView fx:id="propertyList"/>
-		</VBox>
-	</SplitPane>
-	<Button text="Save" onAction="#save"/>
-</VBox>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+		fx:controller="de.algorythm.jdoe.controller.TypeEditorController">
+	<center>
+		<SplitPane dividerPositions="0.4,0.6">
+			<BorderPane>
+				<top>
+					<ToolBar>
+						<Label text="Types"/>
+						<Region prefWidth="30"/>
+						<Button text="add" onAction="#addType" styleClass="toolbar-button"/>
+					</ToolBar>
+				</top>
+				<center>
+					<ListView fx:id="typeList"/>
+				</center>
+			</BorderPane>
+			<BorderPane>
+				<top>
+					<ToolBar>
+						<Label text="Properties"/>
+						<Region prefWidth="30"/>
+						<Button fx:id="btnAddProperty" text="add" onAction="#addProperty" styleClass="toolbar-button" disable="true"/>
+					</ToolBar>
+				</top>
+				<center>
+					<ListView fx:id="propertyList"/>
+				</center>
+			</BorderPane>
+		</SplitPane>
+	</center>
+	<bottom>
+		<Button text="Save" onAction="#save"/>
+	</bottom>
+</BorderPane>

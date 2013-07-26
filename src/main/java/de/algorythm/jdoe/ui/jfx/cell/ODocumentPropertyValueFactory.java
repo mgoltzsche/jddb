@@ -1,4 +1,4 @@
-package de.algorythm.jdoe.ui.cell;
+package de.algorythm.jdoe.ui.jfx.cell;
 
 import com.orientechnologies.orient.core.record.impl.ODocument;
 

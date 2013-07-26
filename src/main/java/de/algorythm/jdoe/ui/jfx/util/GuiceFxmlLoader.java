@@ -1,4 +1,4 @@
-package de.algorythm.jdoe.ui.util;
+package de.algorythm.jdoe.ui.jfx.util;
 
 import java.io.IOException;
 

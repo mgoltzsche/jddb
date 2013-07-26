@@ -14,13 +14,18 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
+<BorderPane xmlns:fx="http://javafx.com/fxml"
 		fx:controller="de.algorythm.jdoe.controller.EntityEditorController">
-	<ToolBar>
-		<Button text="cancel" onAction="#cancel"/>
+	<top>
+		<ToolBar>
+			<Button text="cancel" onAction="#cancel"/>
+			<Button text="save" onAction="#save"/>
+		</ToolBar>
+	</top>
+	<center>
+		<ScrollPane fx:id="scrollPane"/>
+	</center>
+	<bottom>
 		<Button text="save" onAction="#save"/>
-	</ToolBar>
-	
-	<ScrollPane fx:id="scrollPane"/>
-	<Button text="save" onAction="#save"/>
-</VBox>
+	</bottom>
+</BorderPane>
