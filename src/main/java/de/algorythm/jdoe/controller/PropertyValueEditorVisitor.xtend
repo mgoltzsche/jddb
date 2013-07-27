@@ -93,6 +93,11 @@ class PropertyValueEditorVisitor extends AbstractController implements IProperty
 	
 	override doWithAssociation(Association propertyValue) {
 		val entityComboBox = new ComboBox<IEntity>
+		val removeButton = new Button('remove')
+		val HBox hBox = new HBox
+		
+		hBox.children += entityComboBox
+		hBox.children += removeButton
 		
 		entityComboBox.value = propertyValue.value
 		
@@ -100,7 +105,11 @@ class PropertyValueEditorVisitor extends AbstractController implements IProperty
 			propertyValue.value = it
 		]
 		
-		gridPane.add(entityComboBox, 1, row)
+		removeButton.actionListener[|
+			entityComboBox.value = null
+		]
+		
+		gridPane.add(hBox, 1, row)
 		
 		saveCallbacks += [|
 			propertyValue.value = entityComboBox.selectionModel.selectedItem
