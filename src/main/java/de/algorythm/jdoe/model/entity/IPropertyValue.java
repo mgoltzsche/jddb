@@ -7,7 +7,6 @@ import de.algorythm.jdoe.model.meta.Property;
 public interface IPropertyValue extends Serializable {
 	
 	Property getProperty();
-	Object getValue();
-	void setValue(Object value);
 	boolean isChanged();
+	void doWithValue(IPropertyValueVisitor visitor);
 }

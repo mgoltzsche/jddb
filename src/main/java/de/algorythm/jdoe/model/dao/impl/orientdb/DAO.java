@@ -6,8 +6,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import javax.inject.Singleton;
@@ -25,10 +25,18 @@ import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
+import de.algorythm.jdoe.model.entity.impl.Association;
+import de.algorythm.jdoe.model.entity.impl.Associations;
+import de.algorythm.jdoe.model.entity.impl.BooleanValue;
+import de.algorythm.jdoe.model.entity.impl.DateValue;
+import de.algorythm.jdoe.model.entity.impl.DecimalValue;
+import de.algorythm.jdoe.model.entity.impl.RealValue;
+import de.algorythm.jdoe.model.entity.impl.StringValue;
+import de.algorythm.jdoe.model.entity.impl.TextValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.Schema;
-import de.algorythm.jdoe.model.meta.visitor.IPropertyValueVisitor;
 
 @Singleton
 public class DAO implements IDAO {
@@ -49,40 +57,62 @@ public class DAO implements IDAO {
 		}
 		
 		@Override
-		public void doWithEntityCollection(IPropertyValue propertyValue,
-				Collection<IEntity> values) {
-			final String propertyName = propertyValue.getProperty().getName();
+		public void doWithAssociations(Associations propertyValue) {
+			final Property property = propertyValue.getProperty();
+			final String propertyName = property.getName();
+			final LinkedList<Edge> existingEdges = new LinkedList<Edge>();
 			
-			//removeOutgoingEdges(propertyName);
-			// TODO: remove containments
+			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName))
+				existingEdges.add(edge);
 			
-			for (IEntity refEntity : values) {
-				if (refEntity.getId() == null)
-					saveInternal(refEntity);
+			for (IEntity refEntity : propertyValue.getValue()) {
+				if (refEntity.getId() == null) // save new entity
+					saveInTransaction(refEntity);
 				
-				vertex.addEdge(propertyName, ((Entity) refEntity).getVertex());
+				// check existing edge
+				boolean edgeAlreadyExists = false;
+				
+				final Iterator<Edge> existingEdgeIter = existingEdges.iterator();
+				
+				while (existingEdgeIter.hasNext()) {
+					final Edge edge = existingEdgeIter.next();
+					
+					if (edge.getVertex(Direction.OUT).getId().equals(refEntity)) {
+						edgeAlreadyExists = true;
+						existingEdgeIter.remove();
+						break;
+					}
+				}
+				
+				if (!edgeAlreadyExists) // save new edge
+					vertex.addEdge(propertyName, ((Entity) refEntity).getVertex());
 			}
+			
+			// remove invalid edges
+			for (Edge edge : existingEdges)
+				deleteEdge(property, edge);
 		}
 		
 		@Override
-		public void doWithEntity(IPropertyValue propertyValue, IEntity value) {
-			final String propertyName = propertyValue.getProperty().getName();
+		public void doWithAssociation(Association propertyValue) {
+			final Property property = propertyValue.getProperty();
+			final String propertyName = property.getName();
+			final IEntity value = propertyValue.getValue();
 			
 			if (value != null && value.getId() == null)
-				saveInternal(value);
+				saveInTransaction(value);
 			
 			boolean edgeAlreadyExists = false;
 			
 			// remove outgoing edges
 			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName)) {
 				if (value == null) {
-					edge.remove();
-					// TODO: remove containments
+					deleteEdge(property, edge);
 				} else {
 					if (edge.getVertex(Direction.OUT).getId().equals(value.getId()))
 						edgeAlreadyExists = true;
 					else
-						edge.remove();
+						deleteEdge(property, edge);
 				}
 			}
 			
@@ -91,38 +121,37 @@ public class DAO implements IDAO {
 		}
 		
 		@Override
-		public void doWithBoolean(IPropertyValue propertyValue, boolean value) {
-			writeAttributeValue(propertyValue);
+		public void doWithBoolean(BooleanValue propertyValue) {
+			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
 		}
 
 		@Override
-		public void doWithDecimal(IPropertyValue propertyValue, Long value) {
-			writeAttributeValue(propertyValue);
+		public void doWithDecimal(DecimalValue propertyValue) {
+			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
 		}
 
 		@Override
-		public void doWithReal(IPropertyValue propertyValue, Double value) {
-			writeAttributeValue(propertyValue);
+		public void doWithReal(RealValue propertyValue) {
+			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
 		}
 
 		@Override
-		public void doWithDate(IPropertyValue propertyValue, Date value) {
-			writeAttributeValue(propertyValue);
+		public void doWithDate(DateValue propertyValue) {
+			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
 		}
 
 		@Override
-		public void doWithString(IPropertyValue propertyValue, String value) {
-			writeAttributeValue(propertyValue);
+		public void doWithString(StringValue propertyValue) {
+			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
 		}
 
 		@Override
-		public void doWithText(IPropertyValue propertyValue, String value) {
-			writeAttributeValue(propertyValue);
+		public void doWithText(TextValue propertyValue) {
+			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
 		}
 		
-		private void writeAttributeValue(final IPropertyValue propertyValue) {
-			final String propertyName = propertyValue.getProperty().getName();
-			final Object value = propertyValue.getValue();
+		private void writeAttributeValue(final Property property, final Object value) {
+			final String propertyName = property.getName();
 			
 			if (value == null)
 				vertex.removeProperty(propertyName);
@@ -130,51 +159,50 @@ public class DAO implements IDAO {
 				vertex.setProperty(propertyName, value);
 		}
 		
-		private void removeOutgoingEdges(String propertyName) {
-			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName))
-				edge.remove();
+		private void deleteEdge(final Property property, final Edge edge) {
+			if (property.isContainment()) {
+				final Vertex referredVertex = edge.getVertex(Direction.OUT);
+				final Entity referredEntity = new Entity(schema, referredVertex);
+				
+				deleteInTransaction(referredEntity);
+			}
+			
+			edge.remove();
 		}
 	};
 	
 	private final IPropertyValueVisitor deleteVisitor = new IPropertyValueVisitor() {
 		
 		@Override
-		public void doWithEntityCollection(IPropertyValue propertyValue,
-				Collection<IEntity> values) {
+		public void doWithAssociations(Associations propertyValue) {
 			if (propertyValue.getProperty().isContainment())
-				for (IEntity entity : values)
-					deleteInternal(entity);
+				for (IEntity entity : propertyValue.getValue())
+					deleteInTransaction(entity);
 		}
 		
 		@Override
-		public void doWithEntity(IPropertyValue propertyValue, IEntity value) {
+		public void doWithAssociation(Association propertyValue) {
 			if (propertyValue.getProperty().isContainment())
-				deleteInternal(value);
+				deleteInTransaction(propertyValue.getValue());
 		}
 
 		@Override
-		public void doWithBoolean(IPropertyValue propertyValue, boolean value) {
-		}
+		public void doWithBoolean(BooleanValue propertyValue) {}
 
 		@Override
-		public void doWithDecimal(IPropertyValue propertyValue, Long value) {
-		}
+		public void doWithDecimal(DecimalValue propertyValue) {}
 
 		@Override
-		public void doWithReal(IPropertyValue propertyValue, Double value) {
-		}
+		public void doWithReal(RealValue propertyValue) {}
 
 		@Override
-		public void doWithDate(IPropertyValue propertyValue, Date value) {
-		}
+		public void doWithDate(DateValue propertyValue) {}
 
 		@Override
-		public void doWithString(IPropertyValue propertyValue, String value) {
-		}
+		public void doWithString(StringValue propertyValue) {}
 
 		@Override
-		public void doWithText(IPropertyValue propertyValue, String value) {
-		}
+		public void doWithText(TextValue propertyValue) {}
 	};
 	
 	public void open() throws IOException {
@@ -227,11 +255,11 @@ public class DAO implements IDAO {
 	
 	@Override
 	public void save(final IEntity entity) {
-		saveInternal(entity);
+		saveInTransaction(entity);
 		notifyObservers();
 	}
 	
-	private void saveInternal(final IEntity entity) {
+	private void saveInTransaction(final IEntity entity) {
 		final Entity entityImpl = (Entity) entity;
 		Vertex vertex = entityImpl.getVertex();
 		
@@ -245,20 +273,20 @@ public class DAO implements IDAO {
 		final IPropertyValueVisitor visitor = new SaveVisitor(vertex);
 		
 		for (IPropertyValue propertyValue : entity.getValues())
-			propertyValue.getProperty().doWithPropertyValue(propertyValue, visitor);
+			propertyValue.doWithValue(visitor);
 	}
 
 	@Override
 	public void delete(final IEntity entity) {
-		deleteInternal(entity);
+		deleteInTransaction(entity);
 		notifyObservers();
 	}
 	
-	private void deleteInternal(final IEntity entity) {
+	private void deleteInTransaction(final IEntity entity) {
 		final Entity entityImpl = (Entity) entity;
 		
 		for (IPropertyValue value : entity.getValues())
-			value.getProperty().doWithPropertyValue(value, deleteVisitor);
+			value.doWithValue(deleteVisitor);
 		
 		entityImpl.getVertex().remove();
 	}

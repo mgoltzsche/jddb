@@ -1,8 +1,8 @@
 package de.algorythm.jdoe.model.dao.impl.orientdb;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import com.tinkerpop.blueprints.Direction;
@@ -10,10 +10,19 @@ import com.tinkerpop.blueprints.Vertex;
 
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
+import de.algorythm.jdoe.model.entity.impl.AbstractPropertyValue;
+import de.algorythm.jdoe.model.entity.impl.Association;
+import de.algorythm.jdoe.model.entity.impl.Associations;
+import de.algorythm.jdoe.model.entity.impl.BooleanValue;
+import de.algorythm.jdoe.model.entity.impl.DateValue;
+import de.algorythm.jdoe.model.entity.impl.DecimalValue;
+import de.algorythm.jdoe.model.entity.impl.RealValue;
+import de.algorythm.jdoe.model.entity.impl.StringValue;
+import de.algorythm.jdoe.model.entity.impl.TextValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.Schema;
-import de.algorythm.jdoe.model.meta.visitor.IPropertyValueVisitor;
 
 public class Entity implements IEntity, IPropertyValueVisitor {
 
@@ -76,14 +85,14 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 			values = new ArrayList<>(type.getProperties().size());
 			
 			for (Property property : type.getProperties()) {
-				final PropertyValue value = new PropertyValue(property);
+				final IPropertyValue propertyValue = property.createPropertyValue();
 				
 				if (vertex != null) {
-					property.doWithPropertyValue(value, this);
-					value.setChanged(false);
+					propertyValue.doWithValue(this);
+					((AbstractPropertyValue) propertyValue).setChanged(false);
 				}
 				
-				values.add(value);
+				values.add(propertyValue);
 			}
 		}
 	}
@@ -113,41 +122,64 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	}
 
 	@Override
-	public void doWithBoolean(IPropertyValue propertyValue, boolean value) {
-		readAttributeValue(propertyValue);
-	}
-
-	@Override
-	public void doWithDecimal(IPropertyValue propertyValue, Long value) {
-		readAttributeValue(propertyValue);
-	}
-
-	@Override
-	public void doWithReal(IPropertyValue propertyValue, Double value) {
-		readAttributeValue(propertyValue);
-	}
-
-	@Override
-	public void doWithDate(IPropertyValue propertyValue, Date value) {
-		readAttributeValue(propertyValue);
-	}
-
-	@Override
-	public void doWithString(IPropertyValue propertyValue, String value) {
-		readAttributeValue(propertyValue);
-	}
-
-	@Override
-	public void doWithText(IPropertyValue propertyValue, String value) {
-		readAttributeValue(propertyValue);
-	}
-	
-	private void readAttributeValue(IPropertyValue propertyValue) {
-		propertyValue.setValue(vertex.getProperty(propertyValue.getProperty().getName()));
+	public void doWithBoolean(final BooleanValue propertyValue) {
+		final String valueAsString = attributeValueAsString(propertyValue);
+		
+		if (valueAsString != null)
+			propertyValue.setValue(Boolean.valueOf(valueAsString));
 	}
 	
 	@Override
-	public void doWithEntity(IPropertyValue propertyValue, IEntity value) {
+	public void doWithDecimal(final DecimalValue propertyValue) {
+		final String valueAsString = attributeValueAsString(propertyValue);
+		
+		if (valueAsString != null)
+			propertyValue.setValue(Long.valueOf(valueAsString));
+	}
+
+	@Override
+	public void doWithReal(final RealValue propertyValue) {
+		final String valueAsString = attributeValueAsString(propertyValue);
+		
+		if (valueAsString != null)
+			propertyValue.setValue(Double.valueOf(valueAsString));
+	}
+
+	@Override
+	public void doWithDate(final DateValue propertyValue) {
+		final String valueAsString = attributeValueAsString(propertyValue);
+		
+		if (valueAsString != null) {
+			final long timestamp = Long.valueOf(valueAsString);
+			final Date value = new Date(timestamp);
+			propertyValue.setValue(value);
+		}
+	}
+
+	@Override
+	public void doWithString(StringValue propertyValue) {
+		propertyValue.setValue(attributeValueAsString(propertyValue));
+	}
+
+	@Override
+	public void doWithText(TextValue propertyValue) {
+		propertyValue.setValue(attributeValueAsString(propertyValue));
+	}
+	
+	private String attributeValueAsString(final IPropertyValue propertyValue) {
+		final Object value = vertex.getProperty(propertyValue.getProperty().getName());
+		
+		if (value == null)
+			return null;
+		else {
+			final String valueStr = value.toString();
+			
+			return valueStr.isEmpty() ? null : valueStr;
+		}
+	}
+	
+	@Override
+	public void doWithAssociation(Association propertyValue) {
 		final String propertyName = propertyValue.getProperty().getName();
 		
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {
@@ -157,9 +189,8 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	}
 
 	@Override
-	public void doWithEntityCollection(IPropertyValue propertyValue,
-			Collection<IEntity> values) {
-		final LinkedList<IEntity> associations = new LinkedList<>();
+	public void doWithAssociations(Associations propertyValue) {
+		final HashSet<IEntity> associations = new HashSet<>();
 		final String propertyName = propertyValue.getProperty().getName();
 		
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName))

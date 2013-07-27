@@ -1,14 +1,12 @@
-package de.algorythm.jdoe.model.meta.attributeTypes;
+package de.algorythm.jdoe.model.meta.propertyTypes;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.IPropertyType;
-import de.algorythm.jdoe.model.meta.visitor.PropertyVisitorContext;
 
-public abstract class AbstractAttributeType extends PropertyVisitorContext implements IPropertyType, Serializable {
+public abstract class AbstractAttributeType implements IPropertyType, Serializable {
 
 	static private final long serialVersionUID = 4590467257394701843L;
 	
@@ -37,13 +35,6 @@ public abstract class AbstractAttributeType extends PropertyVisitorContext imple
 	@Override
 	public boolean isUserDefined() {
 		return false;
-	}
-	
-	@Override
-	public String toString(IPropertyValue propertyValue) {
-		final Object value = propertyValue.getValue();
-		
-		return value == null ? null : value.toString();
 	}
 	
 	@Override

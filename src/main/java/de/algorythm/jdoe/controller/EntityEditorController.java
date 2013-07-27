@@ -49,14 +49,13 @@ public class EntityEditorController implements IController, IObserver {
 		gridPane.setHgap(10);
 		
 		for (IPropertyValue value : entity.getValues()) {
-			final Property property = value.getProperty();
-			final Label label = new Label(property.getLabel() + ": ");
+			final Label label = new Label(value.getProperty().getLabel() + ": ");
 			
 			GridPane.setValignment(label, VPos.TOP);
 			
 			gridPane.add(label, 0, i);
 			
-			property.doWithPropertyValue(value, new PropertyValueController(gridPane, i, dao, saveCallbacks, updateCallbacks));
+			value.doWithValue(new PropertyValueEditorVisitor(gridPane, i, dao, saveCallbacks, updateCallbacks));
 			
 			i++;
 		}

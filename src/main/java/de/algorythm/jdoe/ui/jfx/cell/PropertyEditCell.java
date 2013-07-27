@@ -21,7 +21,9 @@ import javafx.util.Callback;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
-import de.algorythm.jdoe.model.meta.attributeTypes.AbstractAttributeType;
+import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
+import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType;
+import de.algorythm.jdoe.ui.jfx.model.FXCollectionType;
 import de.algorythm.jdoe.ui.jfx.model.FXPropertyType;
 import de.algorythm.jdoe.ui.jfx.model.FXType;
 
@@ -132,7 +134,12 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 		final ArrayList<FXPropertyType<? extends IPropertyType>> availablePropertyTypes = new ArrayList<>(size);
 		
 		availablePropertyTypes.addAll(FX_ATTRIBUTE_TYPES);
-		availablePropertyTypes.addAll(types);
+		
+		for (FXType fxType : types) {
+			availablePropertyTypes.add(fxType);
+			availablePropertyTypes.add(new FXCollectionType(fxType, new CollectionType(fxType.getBusinessModel())));
+		}
+		
 		typeComboBox.getItems().setAll(availablePropertyTypes);
 	}
 	

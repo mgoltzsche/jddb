@@ -1,9 +1,7 @@
 package de.algorythm.jdoe.model.meta;
 
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.meta.attributeTypes.TString;
-import de.algorythm.jdoe.model.meta.visitor.IPropertyValueVisitor;
-import de.algorythm.jdoe.model.meta.visitor.PropertyVisitorContext;
+import de.algorythm.jdoe.model.meta.propertyTypes.TString;
 
 public class Property extends AbstractLabeledElement {
 	
@@ -14,7 +12,6 @@ public class Property extends AbstractLabeledElement {
 	private IPropertyType type = DEFAULT_TYPE;
 	private int index;
 	private boolean containment, collection, searchable = true;
-	private transient PropertyVisitorContext visitorContext;
 	
 	public Property() {
 		setLabel("New property");
@@ -60,16 +57,8 @@ public class Property extends AbstractLabeledElement {
 		this.searchable = searchable;
 	}
 	
-	public <T> void doWithPropertyValue(final IPropertyValue propertyValue,
-			final IPropertyValueVisitor visitor) {
-		if (visitorContext == null)
-			visitorContext = PropertyVisitorContext.createFor(propertyValue.getProperty());
-		
-		visitorContext.doWithPropertyValue(propertyValue, visitor);
-	}
-	
-	public String toString(final IPropertyValue propertyValue) {
-		return visitorContext.toString(propertyValue);
+	public IPropertyValue createPropertyValue() {
+		return type.createPropertyValue(this); 
 	}
 	
 	@Override

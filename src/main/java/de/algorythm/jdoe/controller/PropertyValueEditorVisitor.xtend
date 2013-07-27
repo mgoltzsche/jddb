@@ -1,10 +1,20 @@
 package de.algorythm.jdoe.controller
 
+import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.entity.IEntity
-import de.algorythm.jdoe.model.entity.IPropertyValue
-import de.algorythm.jdoe.model.meta.visitor.IPropertyValueVisitor
+import de.algorythm.jdoe.model.entity.IPropertyValueVisitor
+import de.algorythm.jdoe.model.entity.impl.Association
+import de.algorythm.jdoe.model.entity.impl.Associations
+import de.algorythm.jdoe.model.entity.impl.BooleanValue
+import de.algorythm.jdoe.model.entity.impl.DateValue
+import de.algorythm.jdoe.model.entity.impl.DecimalValue
+import de.algorythm.jdoe.model.entity.impl.RealValue
+import de.algorythm.jdoe.model.entity.impl.StringValue
+import de.algorythm.jdoe.model.entity.impl.TextValue
+import de.algorythm.jdoe.model.meta.EntityType
+import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
+import de.algorythm.jdoe.ui.jfx.cell.AssociationCell
 import java.util.Collection
-import java.util.Date
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
 import javafx.scene.control.ComboBox
@@ -15,11 +25,8 @@ import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
-import javax.inject.Inject
-import de.algorythm.jdoe.model.dao.IDAO
-import de.algorythm.jdoe.model.meta.EntityType
 
-class PropertyValueController extends AbstractController implements IPropertyValueVisitor {
+class PropertyValueEditorVisitor extends AbstractController implements IPropertyValueVisitor {
 
 	extension IDAO dao
 	var GridPane gridPane
@@ -35,8 +42,7 @@ class PropertyValueController extends AbstractController implements IPropertyVal
 		this.dao = dao
 	}
 
-	override doWithEntityCollection(IPropertyValue propertyValue,
-			Collection<IEntity> values) {
+	override doWithAssociations(Associations propertyValue) {
 		val vBox = new VBox
 		val hBox = new HBox
 		val selectedEntities = new ListView<IEntity>
@@ -45,14 +51,25 @@ class PropertyValueController extends AbstractController implements IPropertyVal
 		val vBoxChildren = vBox.children
 		val hBoxChildren = hBox.children
 		
+		selectedEntities.cellFactory = AssociationCell.FACTORY
+		selectedEntities.items.all = propertyValue.value
+		
+		selectedEntities.items.changeListener [
+			while (next) {
+				for (entity : removed)
+					availableEntities.items += entity
+				
+				for (entity : addedSubList)
+					availableEntities.items -= entity
+			}
+		]
+		
 		addButton.actionListener [|
 			val selectedEntity = availableEntities.selectionModel.selectedItem
 			
 			if (selectedEntity != null)
-				selectedEntities.items.add(selectedEntity)
+				selectedEntities.items += selectedEntity
 		]
-		
-		selectedEntities.items.all = values
 		
 		hBoxChildren.add(availableEntities)
 		hBoxChildren.add(addButton)
@@ -65,16 +82,19 @@ class PropertyValueController extends AbstractController implements IPropertyVal
 		]
 		
 		updateCallbacks += [|
-			val type = propertyValue.property.type as EntityType
+			val collectionType = propertyValue.property.type as CollectionType
+			val entities = collectionType.itemType.list
 			
-			availableEntities.items.all = type.list
+			entities -= selectedEntities.items
+			
+			availableEntities.items.all = entities
 		]
 	}
 	
-	override doWithEntity(IPropertyValue propertyValue, IEntity value) {
+	override doWithAssociation(Association propertyValue) {
 		val entityComboBox = new ComboBox<IEntity>
 		
-		entityComboBox.setValue(value);
+		entityComboBox.value = propertyValue.value
 		
 		entityComboBox.selectionModel.selectedItemProperty.changeListener [
 			propertyValue.value = it
@@ -92,10 +112,10 @@ class PropertyValueController extends AbstractController implements IPropertyVal
 		]
 	}
 
-	override doWithBoolean(IPropertyValue propertyValue, boolean value) {
+	override doWithBoolean(BooleanValue propertyValue) {
 		val checkBox = new CheckBox
 		
-		checkBox.selected = value
+		checkBox.selected = propertyValue.value
 		
 		checkBox.selectedProperty.changeListener [
 			propertyValue.value = it
@@ -108,8 +128,9 @@ class PropertyValueController extends AbstractController implements IPropertyVal
 		]
 	}
 
-	override doWithDecimal(IPropertyValue propertyValue, Long value) {
+	override doWithDecimal(DecimalValue propertyValue) {
 		// TODO: check format
+		val value = propertyValue.value
 		val valueStr = if (value == null)
 				null
 			else
@@ -132,8 +153,9 @@ class PropertyValueController extends AbstractController implements IPropertyVal
 		]
 	}
 
-	override doWithReal(IPropertyValue propertyValue, Double value) {
+	override doWithReal(RealValue propertyValue) {
 		// TODO: check format
+		val value = propertyValue.value
 		val valueStr = if (value == null)
 				null
 			else
@@ -156,13 +178,13 @@ class PropertyValueController extends AbstractController implements IPropertyVal
 		]
 	}
 
-	override doWithDate(IPropertyValue propertyValue, Date value) {
+	override doWithDate(DateValue propertyValue) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	override doWithString(IPropertyValue propertyValue, String value) {
-		val textField = new TextField(value)
+	override doWithString(StringValue propertyValue) {
+		val textField = new TextField(propertyValue.value)
 		
 		gridPane.add(textField, 1, row)
 		
@@ -176,8 +198,8 @@ class PropertyValueController extends AbstractController implements IPropertyVal
 		]
 	}
 
-	override doWithText(IPropertyValue propertyValue, String value) {
-		val textArea = new TextArea(value)
+	override doWithText(TextValue propertyValue) {
+		val textArea = new TextArea(propertyValue.value)
 		
 		gridPane.add(textArea, 1, row)
 		

@@ -42,7 +42,7 @@ class TypeEditorController extends AbstractController implements IController {
 		
 		types.all = fxTypes
 		
-		types.changeListener [|
+		types.changeListener [
 			val schemaTypes = schema.types
 			
 			schemaTypes.clear
@@ -62,7 +62,7 @@ class TypeEditorController extends AbstractController implements IController {
 		propertyList.editable = true
 		properties = propertyList.items
 		
-		properties.changeListener [|
+		properties.changeListener [
 			val typeProperties = selectedType.properties
 			
 			typeProperties.clear
