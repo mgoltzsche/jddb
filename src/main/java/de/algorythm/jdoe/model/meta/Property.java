@@ -11,7 +11,7 @@ public class Property extends AbstractLabeledElement {
 	
 	private IPropertyType type = DEFAULT_TYPE;
 	private int index;
-	private boolean containment, collection, searchable = true;
+	private boolean containment, searchable = true;
 	
 	public Property() {
 		setLabel("New property");
@@ -39,14 +39,6 @@ public class Property extends AbstractLabeledElement {
 	
 	public void setContainment(boolean containment) {
 		this.containment = containment;
-	}
-	
-	public boolean isCollection() {
-		return collection;
-	}
-	
-	public void setCollection(boolean collection) {
-		this.collection = collection;
 	}
 	
 	public boolean isSearchable() {

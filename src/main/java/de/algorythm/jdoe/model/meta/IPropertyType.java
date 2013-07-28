@@ -7,4 +7,5 @@ public interface IPropertyType {
 	String getLabel();
 	boolean isUserDefined();
 	IPropertyValue createPropertyValue(Property property);
+	boolean isConform(IPropertyType type);
 }

@@ -6,13 +6,15 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
+import javafx.scene.control.Tab;
 
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
-public abstract class AbstractController {
+public abstract class AbstractXtendController {
 
 	protected void actionListener(final Button button, final Procedure0 listener) {
 		button.setOnAction(new EventHandler<ActionEvent>() {
@@ -39,6 +41,15 @@ public abstract class AbstractController {
 			@Override
 			public void onChanged(Change<? extends V> change) {
 				listener.apply(change);
+			}
+		});
+	}
+	
+	protected void onClosedListener(final Tab tab, final Procedure0 listener) {
+		tab.setOnClosed(new EventHandler<Event>() {
+			@Override
+			public void handle(Event evt) {
+				listener.apply();
 			}
 		});
 	}

@@ -9,42 +9,40 @@ import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.model.meta.Schema
 import de.algorythm.jdoe.ui.jfx.cell.EntityRow
 import de.algorythm.jdoe.ui.jfx.cell.PropertyCellValueFactory
+import de.algorythm.jdoe.ui.jfx.util.GuiceFxmlLoader
 import java.io.IOException
 import java.util.LinkedList
 import javafx.fxml.FXML
+import javafx.scene.Node
 import javafx.scene.control.ComboBox
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javax.inject.Inject
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.slf4j.LoggerFactory
 
-public class MainController extends AbstractController implements IController, IObserver {
+public class MainController extends AbstractXtendController implements IController, IObserver, IEntityEditorManager {
 
 	static val log = LoggerFactory.getLogger(typeof(MainController))
 	
 	@Inject extension IDAO dao
 	@Inject extension JavaDbObjectEditorFacade facade
+	@Inject extension GuiceFxmlLoader
 	@FXML var ComboBox<EntityType> typeComboBox
 	@FXML var TabPane tabs
 	@FXML var Tab listTab
 	@FXML var TableView<IEntity> entityList
 	var Schema schema
 	var EntityType selectedType
+	val tabData = new LinkedList<TabData>
 	
 	override init() {
 		schema = dao.schema
 		
 		entityList.setRowFactory(new EntityRow.Factory [
-			try {
-				val entityLabel = toString
-				val tabLabel = '''«type.label»«IF entityLabel != null»: «entityLabel»«ENDIF»'''
-				
-				showEntityEditorTab(tabLabel)
-			} catch (IOException e) {
-				log.error('Cannot open entity editor', e)
-			}
+			showEntityEditor
 		])
 		
 		typeComboBox.valueProperty.changeListener [
@@ -86,10 +84,15 @@ public class MainController extends AbstractController implements IController, I
 	}
 	
 	override update() {
+		// update table data
 		val entities = dao.list(selectedType)
 		
 		entityList.items.all = entities
 		listTab.text = '''Results («entities.size»)'''
+		
+		// update tabs
+		for (item : tabData)
+			item.tab.text = item.entity.type.label + ': ' + item.entity
 	}
 	
 	def openDatabase() {
@@ -102,39 +105,57 @@ public class MainController extends AbstractController implements IController, I
 	
 	def createEntity() {
 		if (selectedType != EntityType.DEFAULT)
-			selectedType.createEntity.showEntityEditorTab(selectedType.label + ' (neu)')
+			selectedType.createEntity.showEntityEditor
 	}
 	
-	def private showEntityEditorTab(IEntity entity, String tabLabel) {
-		val existingTab = entity.existingTab
+	def private showEntityEditor(IEntity entity) {
+		showEntityEditor(entity, null)
+	}
+	
+	override showEntityEditor(IEntity entity, Procedure1<IEntity> saveCallback) {
+		val entityId = entity.id
+		val existingTabData = if (entity.id == null)
+				null
+			else
+				tabData.findFirst[it.entity.id == entityId]
 		
-		if (existingTab == null) { // create tab
+		if (existingTabData == null) { // create tab
+			val entityLabel = entity.toString
+			val tabLabel = if (entity.id == null)
+					entity.type.label + ' (neu)'
+				else
+					'''«entity.type.label»«IF entityLabel != null»: «entityLabel»«ENDIF»'''
 			val tab = new Tab(tabLabel)
-			tab.id = entity.tabId
-			
-			entity.showEntityEditor(tab)
+			val loaderResult = <Node, EntityEditorController>load("/fxml/entity_editor.fxml");
+		
+			loaderResult.controller.init(entity, this, saveCallback)
+			tab.content = loaderResult.node
 			
 			tabs.tabs += tab
 			
+			val tabDataItem = new TabData(tab, entity)
+			
+			tabData += tabDataItem
+			
+			tab.onClosedListener[|
+				tabData -= tabDataItem
+				
+				loaderResult.controller.close
+			]
+			
 			tabs.selectionModel.select(tab)
 		} else // focus existing tab
-			tabs.selectionModel.select(existingTab)
+			tabs.selectionModel.select(existingTabData.tab)
 	}
 	
-	def private Tab getExistingTab(IEntity entity) {
-		val tabId = entity.tabId
+	override closeEntityEditor(IEntity entity) {
+		val existingTab = tabData.findFirst[it.entity == entity]
 		
-		for (tab : tabs.tabs)
-			if (tab.id == tabId)
-				return tab
-	}
-	
-	def private tabId(IEntity entity) {
-		val entityId = entity.id
-		
-		if (entityId == null)
-			entity.type.name
-		else
-			entityId
+		if (existingTab != null) {
+			val tab = existingTab.tab
+			
+			tab.onClosed.handle(null)
+			tabs.tabs -= tab
+		}
 	}
 }

@@ -77,7 +77,7 @@ public class DAO implements IDAO {
 				while (existingEdgeIter.hasNext()) {
 					final Edge edge = existingEdgeIter.next();
 					
-					if (edge.getVertex(Direction.OUT).getId().equals(refEntity)) {
+					if (edge.getVertex(Direction.IN).getId().equals(refEntity.getId())) {
 						edgeAlreadyExists = true;
 						existingEdgeIter.remove();
 						break;
@@ -106,14 +106,12 @@ public class DAO implements IDAO {
 			
 			// remove outgoing edges
 			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName)) {
-				if (value == null) {
+				if (value == null)
 					deleteEdge(property, edge);
-				} else {
-					if (edge.getVertex(Direction.OUT).getId().equals(value.getId()))
-						edgeAlreadyExists = true;
-					else
-						deleteEdge(property, edge);
-				}
+				else if (edge.getVertex(Direction.IN).getId().equals(value.getId()))
+					edgeAlreadyExists = true;
+				else
+					deleteEdge(property, edge);
 			}
 			
 			if (value != null && !edgeAlreadyExists) // add edge if not exists
@@ -160,14 +158,16 @@ public class DAO implements IDAO {
 		}
 		
 		private void deleteEdge(final Property property, final Edge edge) {
-			if (property.isContainment()) {
-				final Vertex referredVertex = edge.getVertex(Direction.OUT);
-				final Entity referredEntity = new Entity(schema, referredVertex);
-				
-				deleteInTransaction(referredEntity);
-			}
+			final Vertex referredVertex = edge.getVertex(Direction.IN);
 			
 			edge.remove();
+			
+			if (property.isContainment()) {
+				final Entity referredEntity = new Entity(schema, referredVertex);
+				
+				if (property.getType().isConform(referredEntity.getType()))
+					deleteInTransaction(referredEntity);
+			}
 		}
 	};
 	
@@ -182,8 +182,12 @@ public class DAO implements IDAO {
 		
 		@Override
 		public void doWithAssociation(Association propertyValue) {
-			if (propertyValue.getProperty().isContainment())
-				deleteInTransaction(propertyValue.getValue());
+			if (propertyValue.getProperty().isContainment()) {
+				final IEntity entity = propertyValue.getValue();
+				
+				if (entity != null)
+					deleteInTransaction(entity);
+			}
 		}
 
 		@Override
@@ -254,8 +258,15 @@ public class DAO implements IDAO {
 	}
 	
 	@Override
-	public void save(final IEntity entity) {
-		saveInTransaction(entity);
+	public synchronized void save(final IEntity entity) {
+		try {
+			saveInTransaction(entity);
+			graph.commit();
+		} catch(Throwable e) {
+			graph.rollback();
+			throw e;
+		}
+		
 		notifyObservers();
 	}
 	
@@ -267,7 +278,6 @@ public class DAO implements IDAO {
 			vertex = graph.addVertex(null);
 			vertex.setProperty(Entity.TYPE_FIELD, entity.getType().getName());
 			entityImpl.setVertex(vertex);
-			entityImpl.setId(vertex.getId().toString());
 		}
 		
 		final IPropertyValueVisitor visitor = new SaveVisitor(vertex);
@@ -277,8 +287,14 @@ public class DAO implements IDAO {
 	}
 
 	@Override
-	public void delete(final IEntity entity) {
-		deleteInTransaction(entity);
+	public synchronized void delete(final IEntity entity) {
+		try {
+			deleteInTransaction(entity);
+			graph.commit();
+		} catch(Throwable e) {
+			graph.rollback();
+		}
+		
 		notifyObservers();
 	}
 	

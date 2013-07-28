@@ -40,13 +40,6 @@ public class JavaDbObjectEditorFacade {
 		showWindow("/fxml/type_editor.fxml", "jDOE - Data type definition", 500, 400);
 	}
 	
-	public void showEntityEditor(final IEntity entity, final Tab tab) throws IOException {
-		final FxmlLoaderResult<Node, EntityEditorController> loaderResult = fxmlLoader.load("/fxml/entity_editor.fxml");
-		
-		loaderResult.getController().init(entity, tab);
-		tab.setContent(loaderResult.getNode());
-	}
-	
 	private void showWindow(final String fxmlFileName, final String title, final int width, final int height) throws IOException {
 		FxmlLoaderResult<Parent, IController> loaderResult = fxmlLoader.load(fxmlFileName);
 		Parent rootNode = loaderResult.getNode();

@@ -6,7 +6,7 @@ import de.algorythm.jdoe.model.meta.EntityType;
 
 public interface IEntity extends Serializable {
 
-	String getId();
+	Object getId();
 	boolean isPersisted();
 	EntityType getType();
 	Iterable<IPropertyValue> getValues();

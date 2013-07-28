@@ -18,7 +18,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
@@ -56,9 +55,8 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 	private ComboBox<FXPropertyType<? extends IPropertyType>> typeComboBox = new ComboBox<>();
 	private CheckBox searchableCheckBox = new CheckBox("searchable");
 	private CheckBox containmentCheckBox = new CheckBox("contained");
-	private CheckBox collectionCheckBox = new CheckBox("collection");
 	private Collection<Node> attributeEditElements = new ArrayList<>(4);
-	private Collection<Node> referenceEditElements = new ArrayList<>(5);
+	private Collection<Node> referenceEditElements = new ArrayList<>(4);
 	
 	public PropertyEditCell(final ObservableList<FXType> types) {
 		super();
@@ -84,13 +82,6 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 				object.setContainment(newValue);
 			}
 		});
-		collectionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
-			@Override
-			public void changed(ObservableValue<? extends Boolean> valueContainer,
-					Boolean oldValue, Boolean newValue) {
-				object.setCollection(newValue);
-			}
-		});
 		searchableCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> valueContainer,
@@ -113,7 +104,6 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 		referenceEditElements.add(labelInput);
 		referenceEditElements.add(typeComboBox);
 		referenceEditElements.add(containmentCheckBox);
-		referenceEditElements.add(collectionCheckBox);
 		referenceEditElements.add(deleteButton);
 	}
 	
@@ -151,7 +141,6 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 			typeComboBox.setValue(getFxPropertyType(property.getType()));
 			searchableCheckBox.setSelected(property.isSearchable());
 			containmentCheckBox.setSelected(property.isContainment());
-			collectionCheckBox.setSelected(property.isCollection());
 		}
 	}
 	
@@ -180,7 +169,7 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 	
 	@Override
 	protected void showEditor() {
-		Collection<Node> editElements = object.getType() instanceof EntityType
+		Collection<Node> editElements = object.getType().isUserDefined()
 				? referenceEditElements : attributeEditElements;
 		editor.getChildren().setAll(editElements);
 		setGraphic(editor);

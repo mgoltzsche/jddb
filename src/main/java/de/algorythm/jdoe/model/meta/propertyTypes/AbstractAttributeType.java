@@ -41,4 +41,9 @@ public abstract class AbstractAttributeType implements IPropertyType, Serializab
 	public String toString() {
 		return label;
 	}
+	
+	@Override
+	public boolean isConform(final IPropertyType type) {
+		return this == type;
+	}
 }

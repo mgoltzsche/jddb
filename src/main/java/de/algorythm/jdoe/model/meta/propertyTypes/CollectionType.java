@@ -43,4 +43,9 @@ public class CollectionType implements IPropertyType, Serializable {
 	public IPropertyValue createPropertyValue(final Property property) {
 		return new Associations(property);
 	}
+	
+	@Override
+	public boolean isConform(final IPropertyType type) {
+		return itemType.isConform(type);
+	}
 }

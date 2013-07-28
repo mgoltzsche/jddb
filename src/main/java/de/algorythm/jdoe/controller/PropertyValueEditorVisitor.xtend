@@ -26,83 +26,131 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 
-class PropertyValueEditorVisitor extends AbstractController implements IPropertyValueVisitor {
+class PropertyValueEditorVisitor extends AbstractXtendController implements IPropertyValueVisitor {
 
 	extension IDAO dao
+	extension IEntityEditorManager editorManager
 	var GridPane gridPane
 	var int row
 	var Collection<Procedure0> saveCallbacks
 	var Collection<Procedure0> updateCallbacks
+	var Collection<IEntity> createdContainedEntities
 	
-	new(GridPane gridPane, int row, IDAO dao, Collection<Procedure0> saveCallbacks, Collection<Procedure0> updateCallbacks) {
+	new(GridPane gridPane, int row, IDAO dao, IEntityEditorManager editorManager, Collection<IEntity> createdContainedEntities, Collection<Procedure0> saveCallbacks, Collection<Procedure0> updateCallbacks) {
 		this.gridPane = gridPane
 		this.row = row
 		this.saveCallbacks = saveCallbacks
 		this.updateCallbacks = updateCallbacks
 		this.dao = dao
+		this.editorManager = editorManager
+		this.createdContainedEntities = createdContainedEntities
 	}
 
 	override doWithAssociations(Associations propertyValue) {
+		val property = propertyValue.property
+		val collectionType = property.type as CollectionType
 		val vBox = new VBox
-		val hBox = new HBox
 		val selectedEntities = new ListView<IEntity>
-		val availableEntities = new ComboBox<IEntity>
 		val addButton = new Button("add")
 		val vBoxChildren = vBox.children
-		val hBoxChildren = hBox.children
 		
 		selectedEntities.cellFactory = AssociationCell.FACTORY
 		selectedEntities.items.all = propertyValue.value
 		
-		selectedEntities.items.changeListener [
-			while (next) {
-				for (entity : removed)
-					availableEntities.items += entity
-				
-				for (entity : addedSubList)
-					availableEntities.items -= entity
-			}
-		]
-		
-		addButton.actionListener [|
-			val selectedEntity = availableEntities.selectionModel.selectedItem
+		if (property.containment) {
+			vBoxChildren += selectedEntities
+			vBoxChildren += addButton
 			
-			if (selectedEntity != null)
-				selectedEntities.items += selectedEntity
-		]
+			addButton.actionListener [|
+				val newEntity = collectionType.itemType.createEntity
+				
+				createdContainedEntities += newEntity
+				
+				newEntity.showEntityEditor [
+					if (id == null) {
+						if (!selectedEntities.items.contains(it))
+							selectedEntities.items += it
+					} else
+						save
+				]
+			]
+		} else {
+			val hBox = new HBox
+			val hBoxChildren = hBox.children
+			val availableEntities = new ComboBox<IEntity>
+			val createButton = new Button('create')
+			
+			selectedEntities.items.changeListener [
+				while (next) {
+					for (entity : removed)
+						availableEntities.items += entity
+					
+					for (entity : addedSubList)
+						availableEntities.items -= entity
+				}
+			]
+			
+			addButton.actionListener [|
+				val selectedEntity = availableEntities.selectionModel.selectedItem
+				
+				if (selectedEntity != null) {
+					selectedEntities.items += selectedEntity
+					availableEntities.value = null
+				}
+			]
+			
+			createButton.actionListener[|
+				collectionType.itemType.createEntity.showEntityEditor [
+					save
+					selectedEntities.items += it
+				]
+			]
+			
+			hBoxChildren += availableEntities
+			hBoxChildren += addButton
+			hBoxChildren += createButton
+			vBoxChildren += selectedEntities
+			vBoxChildren += hBox
+			
+			updateCallbacks += [|
+				val entities = collectionType.itemType.list
+				
+				entities -= selectedEntities.items
+				
+				availableEntities.items.all = entities
+			]
+		}
 		
-		hBoxChildren.add(availableEntities)
-		hBoxChildren.add(addButton)
-		vBoxChildren.add(selectedEntities)
-		vBoxChildren.add(hBox)
 		gridPane.add(vBox, 1, row)
 		
 		saveCallbacks += [|
 			propertyValue.value = selectedEntities.items
 		]
-		
-		updateCallbacks += [|
-			val collectionType = propertyValue.property.type as CollectionType
-			val entities = collectionType.itemType.list
-			
-			entities -= selectedEntities.items
-			
-			availableEntities.items.all = entities
-		]
 	}
 	
 	override doWithAssociation(Association propertyValue) {
+		val entityType = propertyValue.property.type as EntityType
 		val entityComboBox = new ComboBox<IEntity>
-		val removeButton = new Button('remove')
 		val HBox hBox = new HBox
+		val hBoxChildren = hBox.children
+		val createButton = new Button('create')
+		val removeButton = new Button('remove')
 		
-		hBox.children += entityComboBox
-		hBox.children += removeButton
+		hBoxChildren += entityComboBox
+		hBoxChildren += createButton
+		hBoxChildren += removeButton
 		
 		entityComboBox.value = propertyValue.value
 		
 		entityComboBox.selectionModel.selectedItemProperty.changeListener [
 			propertyValue.value = it
+		]
+		
+		createButton.actionListener[|
+			entityType.createEntity.showEntityEditor [
+				save
+				entityComboBox.value = it
+			]
 		]
 		
 		removeButton.actionListener[|

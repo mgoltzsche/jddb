@@ -44,4 +44,9 @@ public class EntityType extends AbstractLabeledElement implements IPropertyType,
 	public IPropertyValue createPropertyValue(final Property property) {
 		return new Association(property);
 	}
+	
+	@Override
+	public boolean isConform(final IPropertyType type) {
+		return type == null ? false : label.equals(type.getLabel());
+	}
 }

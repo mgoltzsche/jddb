@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 import java.util.ArrayList
 import de.algorythm.jdoe.ui.jfx.model.FXType
 
-class TypeEditorController extends AbstractController implements IController {
+class TypeEditorController extends AbstractXtendController implements IController {
 
 	static val log = LoggerFactory.getLogger(typeof(TypeEditorController))
 	
