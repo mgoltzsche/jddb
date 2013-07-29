@@ -12,8 +12,6 @@ import java.util.LinkedList;
 
 import javax.inject.Singleton;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import com.tinkerpop.blueprints.Direction;
@@ -40,8 +38,6 @@ import de.algorythm.jdoe.model.meta.Schema;
 
 @Singleton
 public class DAO implements IDAO {
-	
-	static private final Logger log = LoggerFactory.getLogger(DAO.class);
 	
 	private final Yaml yaml = new Yaml();
 	private Schema schema;
@@ -105,6 +101,7 @@ public class DAO implements IDAO {
 			boolean edgeAlreadyExists = false;
 			
 			// remove outgoing edges
+			System.out.println("value: " + (value != null));
 			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName)) {
 				if (value == null)
 					deleteEdge(property, edge);
@@ -158,6 +155,7 @@ public class DAO implements IDAO {
 		}
 		
 		private void deleteEdge(final Property property, final Edge edge) {
+			System.out.println("delete edge " + property.getLabel());
 			final Vertex referredVertex = edge.getVertex(Direction.IN);
 			
 			edge.remove();

@@ -142,10 +142,6 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 		
 		entityComboBox.value = propertyValue.value
 		
-		entityComboBox.selectionModel.selectedItemProperty.changeListener [
-			propertyValue.value = it
-		]
-		
 		createButton.actionListener[|
 			entityType.createEntity.showEntityEditor [
 				save
@@ -160,7 +156,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 		gridPane.add(hBox, 1, row)
 		
 		saveCallbacks += [|
-			propertyValue.value = entityComboBox.selectionModel.selectedItem
+			propertyValue.value = entityComboBox.value
 		]
 		
 		updateCallbacks += [|

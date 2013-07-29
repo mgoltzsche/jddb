@@ -29,9 +29,9 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	static private final long serialVersionUID = -4116231309999192319L;
 	static final String TYPE_FIELD = "_type";
 	
-	private Schema schema;
+	private transient Schema schema;
 	private EntityType type;
-	private Vertex vertex;
+	private transient Vertex vertex;
 	private ArrayList<IPropertyValue> values;
 	
 	public Entity(final Schema schema, final EntityType type) {

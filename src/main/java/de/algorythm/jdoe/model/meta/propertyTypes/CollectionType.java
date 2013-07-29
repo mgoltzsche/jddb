@@ -48,4 +48,28 @@ public class CollectionType implements IPropertyType, Serializable {
 	public boolean isConform(final IPropertyType type) {
 		return itemType.isConform(type);
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((itemType == null) ? 0 : itemType.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		CollectionType other = (CollectionType) obj;
+		if (itemType == null) {
+			if (other.itemType != null)
+				return false;
+		} else if (!itemType.equals(other.itemType))
+			return false;
+		return true;
+	}
 }

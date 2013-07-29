@@ -67,6 +67,12 @@ public class EntityEditorController implements IController, IObserver {
 		dao.addObserver(this);
 	}
 	
+	public String getLabel() {
+		return entity.getId() == null
+				? entity.getType().getLabel() + " (neu)"
+				: entity.getType().getLabel() + ": " + entity;
+	}
+	
 	public void save() {
 		for (Procedure0 callback : propertySaveCallbacks)
 			callback.apply();

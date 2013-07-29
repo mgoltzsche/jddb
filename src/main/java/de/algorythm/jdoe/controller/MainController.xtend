@@ -22,6 +22,7 @@ import javafx.scene.control.TableView
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.slf4j.LoggerFactory
+import java.util.HashMap
 
 public class MainController extends AbstractXtendController implements IController, IObserver, IEntityEditorManager {
 
@@ -36,7 +37,8 @@ public class MainController extends AbstractXtendController implements IControll
 	@FXML var TableView<IEntity> entityList
 	var Schema schema
 	var EntityType selectedType
-	val tabData = new LinkedList<TabData>
+	val tabMap = new HashMap<Object, TabData>
+	var tabSequence = 0
 	
 	override init() {
 		schema = dao.schema
@@ -91,8 +93,8 @@ public class MainController extends AbstractXtendController implements IControll
 		listTab.text = '''Results («entities.size»)'''
 		
 		// update tabs
-		for (item : tabData)
-			item.tab.text = item.entity.type.label + ': ' + item.entity
+		for (item : tabMap.values)
+			item.tab.text = item.controller.label
 	}
 	
 	def openDatabase() {
@@ -114,31 +116,33 @@ public class MainController extends AbstractXtendController implements IControll
 	
 	override showEntityEditor(IEntity entity, Procedure1<IEntity> saveCallback) {
 		val entityId = entity.id
-		val existingTabData = if (entity.id == null)
+		val existingTabData = if (entityId == null)
 				null
 			else
-				tabData.findFirst[it.entity.id == entityId]
+				tabMap.get(entityId)
 		
 		if (existingTabData == null) { // create tab
-			val entityLabel = entity.toString
-			val tabLabel = if (entity.id == null)
-					entity.type.label + ' (neu)'
-				else
-					'''«entity.type.label»«IF entityLabel != null»: «entityLabel»«ENDIF»'''
-			val tab = new Tab(tabLabel)
 			val loaderResult = <Node, EntityEditorController>load("/fxml/entity_editor.fxml");
 		
 			loaderResult.controller.init(entity, this, saveCallback)
+			
+			val tab = new Tab(loaderResult.controller.label)
+			
 			tab.content = loaderResult.node
 			
 			tabs.tabs += tab
 			
-			val tabDataItem = new TabData(tab, entity)
+			val tabData = new TabData(tab, loaderResult.controller)
 			
-			tabData += tabDataItem
+			val tabId = if (entityId == null)
+					'tab' + (tabSequence = tabSequence + 1)
+				else
+					entityId
+			
+			tabMap.put(tabId, tabData)
 			
 			tab.onClosedListener[|
-				tabData -= tabDataItem
+				tabMap.remove(tabId)
 				
 				loaderResult.controller.close
 			]
@@ -149,7 +153,7 @@ public class MainController extends AbstractXtendController implements IControll
 	}
 	
 	override closeEntityEditor(IEntity entity) {
-		val existingTab = tabData.findFirst[it.entity == entity]
+		val existingTab = tabMap.get(entity.id)
 		
 		if (existingTab != null) {
 			val tab = existingTab.tab

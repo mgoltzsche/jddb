@@ -146,7 +146,7 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 	
 	private FXPropertyType<? extends IPropertyType> getFxPropertyType(final IPropertyType propertyType) {
 		for (FXPropertyType<? extends IPropertyType> fxType : typeComboBox.getItems())
-			if (fxType.getBusinessModel() == propertyType)
+			if (fxType.getBusinessModel().equals(propertyType))
 				return fxType;
 		return null;
 	}

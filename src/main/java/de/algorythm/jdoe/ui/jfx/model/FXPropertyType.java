@@ -21,4 +21,30 @@ public class FXPropertyType<V extends IPropertyType> {
 	public StringProperty labelProperty() {
 		return labelProperty;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((businessModel == null) ? 0 : businessModel.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		FXPropertyType<?> other = (FXPropertyType<?>) obj;
+		if (businessModel == null) {
+			if (other.businessModel != null)
+				return false;
+		} else if (!businessModel.equals(other.businessModel))
+			return false;
+		return true;
+	}
 }
