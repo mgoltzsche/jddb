@@ -7,7 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Collection;
+import java.util.Set;
 
 import javax.inject.Singleton;
 
@@ -81,7 +81,7 @@ public class DAO implements IDAO {
 	}
 
 	@Override
-	public Collection<IEntity> list(EntityType type) {
+	public Set<IEntity> list(EntityType type) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -96,5 +96,11 @@ public class DAO implements IDAO {
 	public void removeObserver(IObserver observer) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public boolean update(IEntity entity) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

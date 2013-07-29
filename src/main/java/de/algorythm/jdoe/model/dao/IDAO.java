@@ -1,7 +1,7 @@
 package de.algorythm.jdoe.model.dao;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Set;
 
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.meta.EntityType;
@@ -15,8 +15,9 @@ public interface IDAO {
 	void removeObserver(IObserver observer);
 	Schema getSchema();
 	void setSchema(Schema schema) throws IOException;
-	Collection<IEntity> list(EntityType type);
+	Set<IEntity> list(EntityType type);
 	IEntity createEntity(EntityType type);
 	void save(IEntity entity);
 	void delete(IEntity entity);
+	boolean update(IEntity entity);
 }

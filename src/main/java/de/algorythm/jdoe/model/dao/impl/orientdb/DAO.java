@@ -5,10 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import javax.inject.Singleton;
 
@@ -101,7 +102,6 @@ public class DAO implements IDAO {
 			boolean edgeAlreadyExists = false;
 			
 			// remove outgoing edges
-			System.out.println("value: " + (value != null));
 			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName)) {
 				if (value == null)
 					deleteEdge(property, edge);
@@ -311,13 +311,26 @@ public class DAO implements IDAO {
 	}
 	
 	@Override
-	public Collection<IEntity> list(final EntityType type) {
-		final LinkedList<IEntity> result = new LinkedList<>();
+	public Set<IEntity> list(final EntityType type) {
+		final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
 		
 		for (Vertex vertex : graph.getVertices(Entity.TYPE_FIELD, type.getName()))
 			result.add(new Entity(schema, vertex));
 		
 		return result;
+	}
+	
+	@Override
+	public boolean update(final IEntity entity) {
+		final Entity entityImpl = (Entity) entity;
+		final Vertex vertex = graph.getVertex(entityImpl.getVertex().getId());
+		
+		if (vertex == null)
+			return false;
+		
+		entityImpl.setVertex(vertex);
+		
+		return true;
 	}
 
 	@Override

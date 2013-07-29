@@ -61,6 +61,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	
 	public void setVertex(final Vertex vertex) {
 		this.vertex = vertex;
+		values = null; // force lazy value loading
 	}
 	
 	@Override

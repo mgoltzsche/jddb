@@ -14,10 +14,12 @@ import de.algorythm.jdoe.model.entity.impl.TextValue
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
 import de.algorythm.jdoe.ui.jfx.cell.AssociationCell
+import de.algorythm.jdoe.ui.jfx.model.ValueContainer
 import java.util.Collection
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
 import javafx.scene.control.ComboBox
+import javafx.scene.control.Label
 import javafx.scene.control.ListView
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
@@ -51,7 +53,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 		val collectionType = property.type as CollectionType
 		val vBox = new VBox
 		val selectedEntities = new ListView<IEntity>
-		val addButton = new Button("add")
+		val addButton = new Button('add')
 		val vBoxChildren = vBox.children
 		
 		selectedEntities.cellFactory = AssociationCell.FACTORY
@@ -73,6 +75,14 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 					} else
 						save
 				]
+			]
+			
+			updateCallbacks += [| // update selected entities
+				val iter = selectedEntities.items.iterator
+				
+				while (iter.hasNext)
+					if (!iter.next.update)
+						iter.remove
 			]
 		} else {
 			val hBox = new HBox
@@ -114,6 +124,11 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			
 			updateCallbacks += [|
 				val entities = collectionType.itemType.list
+				val iter = selectedEntities.items.iterator
+				
+				while (iter.hasNext)
+					if (!iter.next.update)
+						iter.remove
 				
 				entities -= selectedEntities.items
 				
@@ -129,40 +144,107 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 	}
 	
 	override doWithAssociation(Association propertyValue) {
-		val entityType = propertyValue.property.type as EntityType
-		val entityComboBox = new ComboBox<IEntity>
+		val property = propertyValue.property
+		val entityType = property.type as EntityType
+		val entity = propertyValue.value
 		val HBox hBox = new HBox
 		val hBoxChildren = hBox.children
-		val createButton = new Button('create')
 		val removeButton = new Button('remove')
 		
-		hBoxChildren += entityComboBox
-		hBoxChildren += createButton
-		hBoxChildren += removeButton
-		
-		entityComboBox.value = propertyValue.value
-		
-		createButton.actionListener[|
-			entityType.createEntity.showEntityEditor [
-				save
-				entityComboBox.value = it
+		if (property.containment) {
+			val valueContainer = new ValueContainer<IEntity>
+			val label = new Label(entity?.toString)
+			val editButtonLabel = if (entity == null)
+					'create'
+				else
+					'edit'
+			val editButton = new Button(editButtonLabel)
+			
+			valueContainer.value = entity
+			
+			hBoxChildren += label
+			hBoxChildren += editButton
+			hBoxChildren += removeButton
+			
+			editButton.actionListener[|
+				val value = valueContainer.value
+				
+				if (value == null) {
+					val newEntity = entityType.createEntity
+					
+					createdContainedEntities += newEntity
+					
+					newEntity.showEntityEditor [
+						valueContainer.value = it
+						label.text = toString
+						editButton.text = 'edit'
+					]
+				} else {
+					value.showEntityEditor [
+						if (id == null) {
+							label.text = toString
+						} else
+							save
+					]
+				}
 			]
-		]
-		
-		removeButton.actionListener[|
-			entityComboBox.value = null
-		]
+			
+			removeButton.actionListener[|
+				val containedEntity = valueContainer.value
+				valueContainer.value = null
+				label.text = null
+				editButton.text = 'create'
+				containedEntity.closeEntityEditor
+			]
+			
+			saveCallbacks += [|
+				propertyValue.value = valueContainer.value
+			]
+			
+			updateCallbacks += [|
+				val containerValue = valueContainer.value
+				
+				if (containerValue != null) {
+					if (containerValue.update) {
+						label.text = containerValue.toString
+					} else {
+						valueContainer.value = null
+						label.text = null
+						editButton.text = 'create'
+					}
+				}
+			]
+		} else {
+			val entityComboBox = new ComboBox<IEntity>
+			val createButton = new Button('create')
+			
+			hBoxChildren += entityComboBox
+			hBoxChildren += createButton
+			hBoxChildren += removeButton
+			
+			entityComboBox.value = propertyValue.value
+			
+			createButton.actionListener[|
+				entityType.createEntity.showEntityEditor [
+					save
+					entityComboBox.value = it
+				]
+			]
+			
+			removeButton.actionListener[|
+				entityComboBox.value = null
+			]
+			
+			saveCallbacks += [|
+				propertyValue.value = entityComboBox.value
+			]
+			
+			updateCallbacks += [|
+				entityComboBox.items.all = entityType.list
+			]
+		}
 		
 		gridPane.add(hBox, 1, row)
-		
-		saveCallbacks += [|
-			propertyValue.value = entityComboBox.value
-		]
-		
-		updateCallbacks += [|
-			val type = propertyValue.property.type as EntityType
-			entityComboBox.items.all = type.list
-		]
 	}
 
 	override doWithBoolean(BooleanValue propertyValue) {

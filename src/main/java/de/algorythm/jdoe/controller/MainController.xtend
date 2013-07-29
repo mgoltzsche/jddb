@@ -11,6 +11,7 @@ import de.algorythm.jdoe.ui.jfx.cell.EntityRow
 import de.algorythm.jdoe.ui.jfx.cell.PropertyCellValueFactory
 import de.algorythm.jdoe.ui.jfx.util.GuiceFxmlLoader
 import java.io.IOException
+import java.util.HashMap
 import java.util.LinkedList
 import javafx.fxml.FXML
 import javafx.scene.Node
@@ -22,7 +23,6 @@ import javafx.scene.control.TableView
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.slf4j.LoggerFactory
-import java.util.HashMap
 
 public class MainController extends AbstractXtendController implements IController, IObserver, IEntityEditorManager {
 
@@ -120,6 +120,10 @@ public class MainController extends AbstractXtendController implements IControll
 				null
 			else
 				tabMap.get(entityId)
+		val tabId = if (entityId == null)
+				'tab' + (tabSequence = tabSequence + 1)
+			else
+				entityId
 		
 		if (existingTabData == null) { // create tab
 			val loaderResult = <Node, EntityEditorController>load("/fxml/entity_editor.fxml");
@@ -134,11 +138,6 @@ public class MainController extends AbstractXtendController implements IControll
 			
 			val tabData = new TabData(tab, loaderResult.controller)
 			
-			val tabId = if (entityId == null)
-					'tab' + (tabSequence = tabSequence + 1)
-				else
-					entityId
-			
 			tabMap.put(tabId, tabData)
 			
 			tab.onClosedListener[|
@@ -150,10 +149,16 @@ public class MainController extends AbstractXtendController implements IControll
 			tabs.selectionModel.select(tab)
 		} else // focus existing tab
 			tabs.selectionModel.select(existingTabData.tab)
+		
+		tabId
 	}
 	
 	override closeEntityEditor(IEntity entity) {
-		val existingTab = tabMap.get(entity.id)
+		closeEntityEditor(entity.id)
+	}
+	
+	override closeEntityEditor(Object viewId) {
+		val existingTab = tabMap.get(viewId)
 		
 		if (existingTab != null) {
 			val tab = existingTab.tab
