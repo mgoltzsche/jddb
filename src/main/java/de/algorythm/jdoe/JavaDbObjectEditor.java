@@ -27,7 +27,6 @@ public class JavaDbObjectEditor extends Application {
 	
 	@Override
 	public void stop() throws Exception {
-		System.out.println("db closed");
 		facade.stopApplication();
 	}
 }

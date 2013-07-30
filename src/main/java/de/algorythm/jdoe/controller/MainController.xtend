@@ -37,8 +37,7 @@ public class MainController extends AbstractXtendController implements IControll
 	@FXML var TableView<IEntity> entityList
 	var Schema schema
 	var EntityType selectedType
-	val tabMap = new HashMap<Object, TabData>
-	var tabSequence = 0
+	val tabMap = new HashMap<String, TabData>
 	
 	override init() {
 		schema = dao.schema
@@ -116,14 +115,7 @@ public class MainController extends AbstractXtendController implements IControll
 	
 	override showEntityEditor(IEntity entity, Procedure1<IEntity> saveCallback) {
 		val entityId = entity.id
-		val existingTabData = if (entityId == null)
-				null
-			else
-				tabMap.get(entityId)
-		val tabId = if (entityId == null)
-				'tab' + (tabSequence = tabSequence + 1)
-			else
-				entityId
+		val existingTabData = tabMap.get(entityId)
 		
 		if (existingTabData == null) { // create tab
 			val loaderResult = <Node, EntityEditorController>load("/fxml/entity_editor.fxml");
@@ -138,10 +130,10 @@ public class MainController extends AbstractXtendController implements IControll
 			
 			val tabData = new TabData(tab, loaderResult.controller)
 			
-			tabMap.put(tabId, tabData)
+			tabMap.put(entityId, tabData)
 			
 			tab.onClosedListener[|
-				tabMap.remove(tabId)
+				tabMap.remove(entityId)
 				
 				loaderResult.controller.close
 			]
@@ -149,16 +141,10 @@ public class MainController extends AbstractXtendController implements IControll
 			tabs.selectionModel.select(tab)
 		} else // focus existing tab
 			tabs.selectionModel.select(existingTabData.tab)
-		
-		tabId
 	}
 	
 	override closeEntityEditor(IEntity entity) {
-		closeEntityEditor(entity.id)
-	}
-	
-	override closeEntityEditor(Object viewId) {
-		val existingTab = tabMap.get(viewId)
+		val existingTab = tabMap.get(entity.id)
 		
 		if (existingTab != null) {
 			val tab = existingTab.tab

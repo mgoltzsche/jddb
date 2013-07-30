@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.UUID;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
@@ -28,26 +29,30 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 
 	static private final long serialVersionUID = -4116231309999192319L;
 	static final String TYPE_FIELD = "_type";
+	static final String ID = "_id";
 	
 	private transient Schema schema;
 	private EntityType type;
 	private transient Vertex vertex;
 	private ArrayList<IPropertyValue> values;
+	private String id;
 	
 	public Entity(final Schema schema, final EntityType type) {
 		this.schema = schema;
 		this.type = type;
+		id = UUID.randomUUID().toString();
 	}
 	
 	public Entity(final Schema schema, final Vertex vertex) {
 		this.schema = schema;
 		setVertex(vertex);
+		id = vertex.getProperty(ID);
 		type = getTypeByVertex(vertex);
 	}
 	
 	@Override
-	public Object getId() {
-		return vertex == null ? null : vertex.getId();
+	public String getId() {
+		return id;
 	}
 	
 	@Override
@@ -61,7 +66,10 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	
 	public void setVertex(final Vertex vertex) {
 		this.vertex = vertex;
-		values = null; // force lazy value loading
+	}
+	
+	public void forceLazyReload() {
+		values = null;
 	}
 	
 	@Override
@@ -214,8 +222,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 
 	@Override
 	public int hashCode() {
-		final Object id = getId();
-		return id == null ? super.hashCode() : id.hashCode();
+		return id.hashCode();
 	}
 
 	@Override
@@ -227,14 +234,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 			return false;
 		
 		final Entity other = (Entity) obj;
-		final Object id = getId();
 		
-		if (id == null) {
-			if (other.getId() != null)
-				return false;
-		} else if (!id.equals(other.getId()))
-			return false;
-		
-		return true;
+		return id.equals(other.id);
 	}
 }

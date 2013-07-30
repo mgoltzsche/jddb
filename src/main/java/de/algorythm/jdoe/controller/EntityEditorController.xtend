@@ -42,7 +42,7 @@ public class EntityEditorController implements IController, IObserver {
 		gridPane.hgap = 10
 		
 		for (IPropertyValue value : entity.getValues()) {
-			val label = new Label(value.getProperty().getLabel() + ': ')
+			val label = new Label(value.property.label + ': ')
 			
 			GridPane.setValignment(label, VPos.TOP)
 			
@@ -62,17 +62,17 @@ public class EntityEditorController implements IController, IObserver {
 	}
 	
 	def getLabel() {
-		if (entity.id == null)
-			entity.type.label + ' (neu)'
+		if (entity.persisted)
+			entity.type.label + ': ' + entity
 		else
-			entity.type.label + ": " + entity
+			entity.type.label + ' (neu)'
 	}
 	
 	def save() {
 		for (callback : propertySaveCallbacks)
 			callback.apply
 		
-		if (entity.id != null || saveCallback == null)
+		if (entity.persisted || saveCallback == null)
 			entity.save
 		else
 			saveCallback.apply(entity)
@@ -91,7 +91,7 @@ public class EntityEditorController implements IController, IObserver {
 		dao.removeObserver(this)
 		
 		for (entity : createdContainedEntities)
-			if (entity.id == null)
+			if (!entity.persisted)
 				entity.closeEntityEditor
 	}
 }

@@ -63,18 +63,19 @@ public class DAO implements IDAO {
 				existingEdges.add(edge);
 			
 			for (IEntity refEntity : propertyValue.getValue()) {
-				if (refEntity.getId() == null) // save new entity
+				if (!refEntity.isPersisted()) // save new entity
 					saveInTransaction(refEntity);
 				
 				// check existing edge
 				boolean edgeAlreadyExists = false;
 				
+				final Vertex refEntityVertex = ((Entity) refEntity).getVertex();
 				final Iterator<Edge> existingEdgeIter = existingEdges.iterator();
 				
 				while (existingEdgeIter.hasNext()) {
 					final Edge edge = existingEdgeIter.next();
 					
-					if (edge.getVertex(Direction.IN).getId().equals(refEntity.getId())) {
+					if (edge.getVertex(Direction.IN).equals(refEntityVertex)) {
 						edgeAlreadyExists = true;
 						existingEdgeIter.remove();
 						break;
@@ -82,7 +83,7 @@ public class DAO implements IDAO {
 				}
 				
 				if (!edgeAlreadyExists) // save new edge
-					vertex.addEdge(propertyName, ((Entity) refEntity).getVertex());
+					vertex.addEdge(propertyName, refEntityVertex);
 			}
 			
 			// remove invalid edges
@@ -94,25 +95,28 @@ public class DAO implements IDAO {
 		public void doWithAssociation(Association propertyValue) {
 			final Property property = propertyValue.getProperty();
 			final String propertyName = property.getName();
-			final IEntity value = propertyValue.getValue();
+			final Entity refEntity = (Entity) propertyValue.getValue();
+			Vertex refVertex = null;
 			
-			if (value != null && value.getId() == null)
-				saveInTransaction(value);
+			if (refEntity != null && !refEntity.isPersisted()) {
+				saveInTransaction(refEntity);
+				refVertex = refEntity.getVertex();
+			}
 			
 			boolean edgeAlreadyExists = false;
 			
 			// remove outgoing edges
 			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName)) {
-				if (value == null)
+				if (refEntity == null)
 					deleteEdge(property, edge);
-				else if (edge.getVertex(Direction.IN).getId().equals(value.getId()))
+				else if (edge.getVertex(Direction.IN).equals(refVertex))
 					edgeAlreadyExists = true;
 				else
 					deleteEdge(property, edge);
 			}
 			
-			if (value != null && !edgeAlreadyExists) // add edge if not exists
-				vertex.addEdge(propertyName, ((Entity) value).getVertex());
+			if (refVertex != null && !edgeAlreadyExists) // add edge if not exists
+				vertex.addEdge(propertyName, refVertex);
 		}
 		
 		@Override
@@ -217,6 +221,7 @@ public class DAO implements IDAO {
 	
 	public void close() {
 		graph.shutdown();
+		
 		System.out.println("db closed");
 	}
 	
@@ -264,7 +269,7 @@ public class DAO implements IDAO {
 			graph.rollback();
 			throw e;
 		}
-		
+		System.out.println(((Entity) entity).getVertex());
 		notifyObservers();
 	}
 	
@@ -274,6 +279,7 @@ public class DAO implements IDAO {
 		
 		if (vertex == null) {
 			vertex = graph.addVertex(null);
+			vertex.setProperty(Entity.ID, entity.getId());
 			vertex.setProperty(Entity.TYPE_FIELD, entity.getType().getName());
 			entityImpl.setVertex(vertex);
 		}
@@ -323,12 +329,17 @@ public class DAO implements IDAO {
 	@Override
 	public boolean update(final IEntity entity) {
 		final Entity entityImpl = (Entity) entity;
-		final Vertex vertex = graph.getVertex(entityImpl.getVertex().getId());
+		final Vertex vertex = entityImpl.getVertex();
 		
 		if (vertex == null)
+			throw new IllegalArgumentException("entity is not persistent");
+		
+		final boolean notExists = graph.getVertex(vertex.getId()) == null;
+		
+		if (notExists)
 			return false;
 		
-		entityImpl.setVertex(vertex);
+		entityImpl.forceLazyReload();
 		
 		return true;
 	}

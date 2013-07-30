@@ -69,11 +69,11 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				createdContainedEntities += newEntity
 				
 				newEntity.showEntityEditor [
-					if (id == null) {
-						if (!selectedEntities.items.contains(it))
-							selectedEntities.items += it
-					} else
+					if (persisted)
 						save
+					else if (!selectedEntities.items.contains(it))
+						selectedEntities.items += it
+						
 				]
 			]
 			
@@ -151,6 +151,9 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 		val hBoxChildren = hBox.children
 		val removeButton = new Button('remove')
 		
+		if (entity == null)
+			removeButton.disable = true
+		
 		if (property.containment) {
 			val valueContainer = new ValueContainer<IEntity>
 			val label = new Label(entity?.toString)
@@ -178,13 +181,14 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 						valueContainer.value = it
 						label.text = toString
 						editButton.text = 'edit'
+						removeButton.disable = false
 					]
 				} else {
 					value.showEntityEditor [
-						if (id == null) {
-							label.text = toString
-						} else
+						if (persisted)
 							save
+						else
+							label.text = toString
 					]
 				}
 			]
@@ -195,6 +199,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				label.text = null
 				editButton.text = 'create'
 				containedEntity.closeEntityEditor
+				removeButton.disable = true
 			]
 			
 			saveCallbacks += [|
@@ -224,15 +229,22 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			
 			entityComboBox.value = propertyValue.value
 			
+			entityComboBox.selectionModel.selectedItemProperty.changeListener [
+				if (it != null)
+					removeButton.disable = false
+			]
+			
 			createButton.actionListener[|
 				entityType.createEntity.showEntityEditor [
 					save
 					entityComboBox.value = it
+					removeButton.disable = false
 				]
 			]
 			
 			removeButton.actionListener[|
 				entityComboBox.value = null
+				removeButton.disable = true
 			]
 			
 			saveCallbacks += [|
@@ -240,6 +252,13 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			]
 			
 			updateCallbacks += [|
+				val selectedEntity = entityComboBox.value
+				
+				if (selectedEntity != null && !selectedEntity.update) {
+					entityComboBox.value = null
+					removeButton.disable = true
+				}
+				
 				entityComboBox.items.all = entityType.list
 			]
 		}
