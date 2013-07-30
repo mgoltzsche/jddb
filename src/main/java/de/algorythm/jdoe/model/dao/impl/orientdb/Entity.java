@@ -34,7 +34,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	private transient Schema schema;
 	private EntityType type;
 	private transient Vertex vertex;
-	private ArrayList<IPropertyValue> values;
+	private ArrayList<IPropertyValue<?>> values;
 	private String id;
 	
 	public Entity(final Schema schema, final EntityType type) {
@@ -78,7 +78,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	}
 
 	@Override
-	public Iterable<IPropertyValue> getValues() {
+	public Iterable<IPropertyValue<?>> getValues() {
 		lazyLoadValues();
 		return values;
 	}
@@ -88,11 +88,11 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 			values = new ArrayList<>(type.getProperties().size());
 			
 			for (Property property : type.getProperties()) {
-				final IPropertyValue propertyValue = property.createPropertyValue();
+				final IPropertyValue<?> propertyValue = property.createPropertyValue();
 				
 				if (vertex != null) {
 					propertyValue.doWithValue(this);
-					((AbstractPropertyValue) propertyValue).setChanged(false);
+					((AbstractPropertyValue<?>) propertyValue).setChanged(false);
 				}
 				
 				values.add(propertyValue);
@@ -101,7 +101,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	}
 	
 	@Override
-	public IPropertyValue getValue(int index) {
+	public IPropertyValue<?> getValue(int index) {
 		lazyLoadValues();
 		
 		return values.get(index);
@@ -169,7 +169,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 		propertyValue.setValue(attributeValueAsString(propertyValue));
 	}
 	
-	private String attributeValueAsString(final IPropertyValue propertyValue) {
+	private String attributeValueAsString(final IPropertyValue<?> propertyValue) {
 		final Object value = vertex.getProperty(propertyValue.getProperty().getName());
 		
 		if (value == null)
@@ -183,21 +183,29 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	
 	@Override
 	public void doWithAssociation(Association propertyValue) {
-		final String propertyName = propertyValue.getProperty().getName();
+		final Property property = propertyValue.getProperty();
+		final String propertyName = property.getName();
 		
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {
-			propertyValue.setValue(new Entity(schema, referencingVertex));
-			return;
+			final IEntity entity = new Entity(schema, referencingVertex);
+			
+			if (property.getType().isConform(entity.getType()))
+				propertyValue.setValue(entity);
 		}
 	}
 
 	@Override
 	public void doWithAssociations(Associations propertyValue) {
 		final HashSet<IEntity> associations = new HashSet<>();
-		final String propertyName = propertyValue.getProperty().getName();
+		final Property property = propertyValue.getProperty();
+		final String propertyName = property.getName();
 		
-		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName))
-			associations.add(new Entity(schema, referencingVertex));
+		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {
+			final IEntity entity = new Entity(schema, referencingVertex);
+			
+			if (property.getType().isConform(entity.getType()))
+				associations.add(entity);
+		}
 		
 		propertyValue.setValue(associations);
 	}
@@ -206,14 +214,16 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
 		
-		for (IPropertyValue value : getValues()) {
-			final String valueStr = value.toString();
-			
-			if (valueStr != null) {
-				if (sb.length() > 0)
-					sb.append(", ");
+		for (IPropertyValue<?> value : getValues()) {
+			if (!value.getProperty().getType().isUserDefined()) { // attrs only
+				final String valueStr = value.toString();
 				
-				sb.append(valueStr);
+				if (valueStr != null) {
+					if (sb.length() > 0)
+						sb.append(", ");
+					
+					sb.append(valueStr);
+				}
 			}
 		}
 		

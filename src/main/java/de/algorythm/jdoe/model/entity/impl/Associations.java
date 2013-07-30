@@ -7,24 +7,15 @@ import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class Associations extends AbstractPropertyValue {
+public class Associations extends AbstractPropertyValue<Collection<IEntity>> {
 
 	static private final long serialVersionUID = -2756229969621046760L;
 	
-	private Collection<IEntity> value = new LinkedList<>();
-	
 	public Associations(final Property property) {
 		super(property);
+		value = new LinkedList<>();
 	}
-	
-	public Collection<IEntity> getValue() {
-		return value;
-	}
-	
-	public void setValue(final Collection<IEntity> value) {
-		this.value = value;
-	}
-	
+
 	@Override
 	public void doWithValue(final IPropertyValueVisitor visitor) {
 		visitor.doWithAssociations(this);

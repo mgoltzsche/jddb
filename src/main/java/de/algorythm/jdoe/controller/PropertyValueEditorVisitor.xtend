@@ -66,14 +66,11 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			addButton.actionListener [|
 				val newEntity = collectionType.itemType.createEntity
 				
+				selectedEntities.items += newEntity
 				createdContainedEntities += newEntity
 				
 				newEntity.showEntityEditor [
-					if (persisted)
-						save
-					else if (!selectedEntities.items.contains(it))
-						selectedEntities.items += it
-						
+					// TODO: update item label
 				]
 			]
 			
@@ -170,27 +167,19 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			hBoxChildren += removeButton
 			
 			editButton.actionListener[|
-				val value = valueContainer.value
+				var value = valueContainer.value
 				
 				if (value == null) {
-					val newEntity = entityType.createEntity
-					
-					createdContainedEntities += newEntity
-					
-					newEntity.showEntityEditor [
-						valueContainer.value = it
-						label.text = toString
-						editButton.text = 'edit'
-						removeButton.disable = false
-					]
-				} else {
-					value.showEntityEditor [
-						if (persisted)
-							save
-						else
-							label.text = toString
-					]
+					value = entityType.createEntity
+					valueContainer.value = value
+					editButton.text = 'edit'
+					removeButton.disable = false
+					createdContainedEntities += value
 				}
+				
+				value.showEntityEditor [
+					label.text = toString
+				]
 			]
 			
 			removeButton.actionListener[|

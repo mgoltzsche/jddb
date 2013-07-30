@@ -5,22 +5,12 @@ import java.util.Date;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class DateValue extends AbstractPropertyValue {
+public class DateValue extends AbstractPropertyValue<Date> {
 
 	static private final long serialVersionUID = -3672728711917060538L;
 	
-	private Date value;
-
 	public DateValue(final Property property) {
 		super(property);
-	}
-	
-	public Date getValue() {
-		return value;
-	}
-
-	public void setValue(final Date value) {
-		this.value = value;
 	}
 
 	@Override

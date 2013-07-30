@@ -69,13 +69,13 @@ public class DAO implements IDAO {
 				// check existing edge
 				boolean edgeAlreadyExists = false;
 				
-				final Vertex refEntityVertex = ((Entity) refEntity).getVertex();
+				final Vertex refVertex = ((Entity) refEntity).getVertex();
 				final Iterator<Edge> existingEdgeIter = existingEdges.iterator();
 				
 				while (existingEdgeIter.hasNext()) {
 					final Edge edge = existingEdgeIter.next();
 					
-					if (edge.getVertex(Direction.IN).equals(refEntityVertex)) {
+					if (edge.getVertex(Direction.IN).equals(refVertex)) {
 						edgeAlreadyExists = true;
 						existingEdgeIter.remove();
 						break;
@@ -83,7 +83,7 @@ public class DAO implements IDAO {
 				}
 				
 				if (!edgeAlreadyExists) // save new edge
-					vertex.addEdge(propertyName, refEntityVertex);
+					vertex.addEdge(propertyName, refVertex);
 			}
 			
 			// remove invalid edges
@@ -98,8 +98,10 @@ public class DAO implements IDAO {
 			final Entity refEntity = (Entity) propertyValue.getValue();
 			Vertex refVertex = null;
 			
-			if (refEntity != null && !refEntity.isPersisted()) {
-				saveInTransaction(refEntity);
+			if (refEntity != null) {
+				if (!refEntity.isPersisted())
+					saveInTransaction(refEntity);
+				
 				refVertex = refEntity.getVertex();
 			}
 			
@@ -107,7 +109,8 @@ public class DAO implements IDAO {
 			
 			// remove outgoing edges
 			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName)) {
-				if (refEntity == null)
+				System.out.println(refVertex + "       " + edge.getVertex(Direction.IN));
+				if (refVertex == null)
 					deleteEdge(property, edge);
 				else if (edge.getVertex(Direction.IN).equals(refVertex))
 					edgeAlreadyExists = true;
@@ -160,7 +163,7 @@ public class DAO implements IDAO {
 		
 		private void deleteEdge(final Property property, final Edge edge) {
 			System.out.println("delete edge " + property.getLabel());
-			final Vertex referredVertex = edge.getVertex(Direction.IN);
+			final Vertex referredVertex = edge.getVertex(Direction.OUT);
 			
 			edge.remove();
 			
@@ -269,7 +272,7 @@ public class DAO implements IDAO {
 			graph.rollback();
 			throw e;
 		}
-		System.out.println(((Entity) entity).getVertex());
+		
 		notifyObservers();
 	}
 	
@@ -286,7 +289,7 @@ public class DAO implements IDAO {
 		
 		final IPropertyValueVisitor visitor = new SaveVisitor(vertex);
 		
-		for (IPropertyValue propertyValue : entity.getValues())
+		for (IPropertyValue<?> propertyValue : entity.getValues())
 			propertyValue.doWithValue(visitor);
 	}
 
@@ -305,7 +308,7 @@ public class DAO implements IDAO {
 	private void deleteInTransaction(final IEntity entity) {
 		final Entity entityImpl = (Entity) entity;
 		
-		for (IPropertyValue value : entity.getValues())
+		for (IPropertyValue<?> value : entity.getValues())
 			value.doWithValue(deleteVisitor);
 		
 		entityImpl.getVertex().remove();

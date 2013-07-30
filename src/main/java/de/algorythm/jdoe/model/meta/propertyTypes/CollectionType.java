@@ -1,7 +1,9 @@
 package de.algorythm.jdoe.model.meta.propertyTypes;
 
 import java.io.Serializable;
+import java.util.Collection;
 
+import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.impl.Associations;
 import de.algorythm.jdoe.model.meta.EntityType;
@@ -40,7 +42,7 @@ public class CollectionType implements IPropertyType, Serializable {
 	}
 
 	@Override
-	public IPropertyValue createPropertyValue(final Property property) {
+	public IPropertyValue<Collection<IEntity>> createPropertyValue(final Property property) {
 		return new Associations(property);
 	}
 	

@@ -5,6 +5,7 @@ import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.entity.IEntity
 import de.algorythm.jdoe.model.entity.IPropertyValue
 import java.util.LinkedList
+import javafx.beans.property.StringProperty
 import javafx.fxml.FXML
 import javafx.geometry.Insets
 import javafx.geometry.VPos
@@ -41,7 +42,7 @@ public class EntityEditorController implements IController, IObserver {
 		gridPane.vgap = 20
 		gridPane.hgap = 10
 		
-		for (IPropertyValue value : entity.getValues()) {
+		for (IPropertyValue<?> value : entity.getValues()) {
 			val label = new Label(value.property.label + ': ')
 			
 			GridPane.setValignment(label, VPos.TOP)
@@ -59,6 +60,10 @@ public class EntityEditorController implements IController, IObserver {
 		
 		// add/remove observer
 		dao.addObserver(this)
+	}
+	
+	def StringProperty simpleStringProperty() {
+		simpleStringProperty
 	}
 	
 	def getLabel() {
