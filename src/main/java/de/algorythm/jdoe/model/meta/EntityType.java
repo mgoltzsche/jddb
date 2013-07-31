@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.impl.Association;
 
@@ -41,7 +42,7 @@ public class EntityType extends AbstractLabeledElement implements IPropertyType,
 	}
 
 	@Override
-	public IPropertyValue createPropertyValue(final Property property) {
+	public IPropertyValue<IEntity> createPropertyValue(final Property property) {
 		return new Association(property);
 	}
 	

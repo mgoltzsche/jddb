@@ -19,7 +19,7 @@ public class PropertyCellValueFactory implements Callback<CellDataFeatures<IEnti
 	public ObservableValue<String> call(
 			final CellDataFeatures<IEntity, String> features) {
 		final IEntity entity = features.getValue();
-		final IPropertyValue value = entity.getValue(index);
+		final IPropertyValue<?> value = entity.getValue(index);
 		
 		return new SimpleStringProperty(value.toString());
 	}

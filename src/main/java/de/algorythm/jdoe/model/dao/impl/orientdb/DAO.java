@@ -17,6 +17,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Index;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
@@ -162,8 +163,8 @@ public class DAO implements IDAO {
 		}
 		
 		private void deleteEdge(final Property property, final Edge edge) {
-			System.out.println("delete edge " + property.getLabel());
-			final Vertex referredVertex = edge.getVertex(Direction.OUT);
+			System.out.println("delete edge " + property.getLabel() + ", containment: " + property.isContainment());
+			final Vertex referredVertex = edge.getVertex(Direction.IN);
 			
 			edge.remove();
 			
@@ -218,6 +219,9 @@ public class DAO implements IDAO {
 		loadSchema();
 		
 		graph = new OrientGraph("local:graph.db");
+		
+		graph.setUseLightweightEdges(true);
+		graph.createKeyIndex(Entity.TYPE_FIELD, Vertex.class);
 		
 		System.out.println("db opened");
 	}

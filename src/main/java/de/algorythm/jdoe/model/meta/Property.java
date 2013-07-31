@@ -49,7 +49,7 @@ public class Property extends AbstractLabeledElement {
 		this.searchable = searchable;
 	}
 	
-	public IPropertyValue createPropertyValue() {
+	public IPropertyValue<?> createPropertyValue() {
 		return type.createPropertyValue(this); 
 	}
 	

@@ -1,11 +1,10 @@
 package de.algorythm.jdoe.test;
 
-import java.util.UUID;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.tinkerpop.blueprints.Index;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
@@ -25,14 +24,38 @@ public class OrientdbTest {
 	
 	@Test
 	public void saveShouldPersistData() {
-		final Vertex vertex = db.addVertex(UUID.randomUUID().toString());
+		Index<Vertex> index = db.getIndex("asdf", Vertex.class);
 		
-		vertex.setProperty("name", "testvertex");
+		
+		final Vertex vertex;
+		
+		try {
+			vertex = db.addVertex(null);
+		
+			vertex.setProperty("name", "testvertex");
+			
+			db.commit();
+		} catch(Throwable e) {
+			db.rollback();
+			throw e;
+		}
+		
+		System.out.println("vertex id after 1st transaction: " + vertex);
+		
+		try {
+			vertex.setProperty("name", "testvertexwithchangedtitle");
+			
+			db.commit();
+		} catch(Throwable e) {
+			db.rollback();
+			throw e;
+		}
+		
+		System.out.println("vertex id after 2nd transaction: " + vertex);
 	}
 	
 	@Test
 	public void listData() {
-		
 		for (Vertex vertex : db.getVertices())
 			System.out.println(vertex.getProperty("name"));
 	}

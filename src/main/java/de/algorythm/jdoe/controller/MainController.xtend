@@ -23,6 +23,8 @@ import javafx.scene.control.TableView
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.slf4j.LoggerFactory
+import javafx.beans.property.SimpleStringProperty
+import javafx.scene.control.TextField
 
 public class MainController extends AbstractXtendController implements IController, IObserver, IEntityEditorManager {
 
@@ -35,12 +37,17 @@ public class MainController extends AbstractXtendController implements IControll
 	@FXML var TabPane tabs
 	@FXML var Tab listTab
 	@FXML var TableView<IEntity> entityList
+	@FXML var TextField searchField
 	var Schema schema
 	var EntityType selectedType
 	val tabMap = new HashMap<String, TabData>
 	
 	override init() {
 		schema = dao.schema
+		
+		searchField.textProperty.changeListener[
+			println("search")
+		]
 		
 		entityList.setRowFactory(new EntityRow.Factory [
 			showEntityEditor
@@ -53,6 +60,10 @@ public class MainController extends AbstractXtendController implements IControll
 		setupTypeSelection
 		
 		addObserver(this)
+	}
+	
+	def SimpleStringProperty searchValueProperty() {
+		searchValueProperty
 	}
 	
 	def private void setSelectedType(EntityType type) {
