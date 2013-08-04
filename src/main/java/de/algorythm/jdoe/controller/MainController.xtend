@@ -13,6 +13,7 @@ import de.algorythm.jdoe.ui.jfx.util.GuiceFxmlLoader
 import java.io.IOException
 import java.util.HashMap
 import java.util.LinkedList
+import javafx.beans.property.SimpleStringProperty
 import javafx.fxml.FXML
 import javafx.scene.Node
 import javafx.scene.control.ComboBox
@@ -20,11 +21,10 @@ import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
+import javafx.scene.control.TextField
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.slf4j.LoggerFactory
-import javafx.beans.property.SimpleStringProperty
-import javafx.scene.control.TextField
 
 public class MainController extends AbstractXtendController implements IController, IObserver, IEntityEditorManager {
 
@@ -41,12 +41,14 @@ public class MainController extends AbstractXtendController implements IControll
 	var Schema schema
 	var EntityType selectedType
 	val tabMap = new HashMap<String, TabData>
+	var String searchPhrase
 	
 	override init() {
 		schema = dao.schema
 		
 		searchField.textProperty.changeListener[
-			println("search")
+			searchPhrase = it
+			updateTableData();
 		]
 		
 		entityList.setRowFactory(new EntityRow.Factory [
@@ -96,13 +98,18 @@ public class MainController extends AbstractXtendController implements IControll
 	}
 	
 	override update() {
-		// update table data
-		val entities = dao.list(selectedType)
+		updateTableData();
+		updateTabs();
+	}
+	
+	def private updateTableData() {
+		val entities = dao.list(selectedType, searchPhrase)
 		
 		entityList.items.all = entities
 		listTab.text = '''Results («entities.size»)'''
-		
-		// update tabs
+	}
+	
+	def private updateTabs() {
 		for (item : tabMap.values)
 			item.tab.text = item.controller.label
 	}

@@ -5,16 +5,20 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.inject.Singleton;
 
 import org.yaml.snakeyaml.Yaml;
 
+import com.tinkerpop.blueprints.CloseableIterable;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Index;
@@ -41,17 +45,23 @@ import de.algorythm.jdoe.model.meta.Schema;
 @Singleton
 public class DAO implements IDAO {
 	
+	static private final String SEARCH_INDEX = "searchIndex";
+	static private final Pattern WORD_PATTERN = Pattern.compile("[\\w]+");
+	
 	private final Yaml yaml = new Yaml();
 	private Schema schema;
 	private OrientGraph graph;
 	private final HashSet<IObserver> observers = new HashSet<>();
+	private final HashMap<String, Index<Vertex>> searchIndices = new HashMap<>();
 	
 	private final class SaveVisitor implements IPropertyValueVisitor {
 		
 		private final Vertex vertex;
+		private final Index<Vertex> searchIndex;
 		
-		public SaveVisitor(final Vertex vertex) {
-			this.vertex = vertex;
+		public SaveVisitor(final Entity entity) {
+			vertex = entity.getVertex();
+			searchIndex = searchIndices.get(entity.getType().getName());
 		}
 		
 		@Override
@@ -155,11 +165,20 @@ public class DAO implements IDAO {
 		
 		private void writeAttributeValue(final Property property, final Object value) {
 			final String propertyName = property.getName();
+			final Object oldValue = vertex.getProperty(propertyName);
 			
-			if (value == null)
+			if (oldValue != null)
+				for (String oldKeyword : createLeftTruncatedIndexKeywords(oldValue))
+					searchIndex.remove(SEARCH_INDEX, oldKeyword, vertex);
+			
+			if (value == null) {
 				vertex.removeProperty(propertyName);
-			else
+			} else {
 				vertex.setProperty(propertyName, value);
+				
+				for (String keyword : createLeftTruncatedIndexKeywords(value))
+					searchIndex.put(SEARCH_INDEX, keyword, vertex);
+			}
 		}
 		
 		private void deleteEdge(final Property property, final Edge edge) {
@@ -177,7 +196,15 @@ public class DAO implements IDAO {
 		}
 	};
 	
-	private final IPropertyValueVisitor deleteVisitor = new IPropertyValueVisitor() {
+	private final class DeleteVisitor implements IPropertyValueVisitor {
+		
+		private final Vertex vertex;
+		private final Index<Vertex> searchIndex;
+		
+		public DeleteVisitor(final Entity entity) {
+			vertex = entity.getVertex();
+			searchIndex = searchIndices.get(entity.getType().getName());
+		}
 		
 		@Override
 		public void doWithAssociations(Associations propertyValue) {
@@ -197,23 +224,78 @@ public class DAO implements IDAO {
 		}
 
 		@Override
-		public void doWithBoolean(BooleanValue propertyValue) {}
+		public void doWithBoolean(BooleanValue propertyValue) {
+			removeIndex(propertyValue);
+		}
 
 		@Override
-		public void doWithDecimal(DecimalValue propertyValue) {}
+		public void doWithDecimal(DecimalValue propertyValue) {
+			removeIndex(propertyValue);
+		}
 
 		@Override
-		public void doWithReal(RealValue propertyValue) {}
+		public void doWithReal(RealValue propertyValue) {
+			removeIndex(propertyValue);
+		}
 
 		@Override
-		public void doWithDate(DateValue propertyValue) {}
+		public void doWithDate(DateValue propertyValue) {
+			removeIndex(propertyValue);
+		}
 
 		@Override
-		public void doWithString(StringValue propertyValue) {}
+		public void doWithString(StringValue propertyValue) {
+			removeIndex(propertyValue);
+		}
 
 		@Override
-		public void doWithText(TextValue propertyValue) {}
+		public void doWithText(TextValue propertyValue) {
+			removeIndex(propertyValue);
+		}
+		
+		private void removeIndex(final IPropertyValue<?> propertyValue) {
+			final String propertyName = propertyValue.getProperty().getName();
+			final Object value = vertex.getProperty(propertyName);
+			
+			if (value != null)
+				for (String keyword : createLeftTruncatedIndexKeywords(value))
+					searchIndex.remove(SEARCH_INDEX, keyword, vertex);
+		}
 	};
+	
+	private Iterable<String> createLeftTruncatedIndexKeywords(final Object value) {
+		final LinkedList<String> keywords = new LinkedList<>();
+		
+		if (value != null) {
+			final String valueStr = value.toString().toLowerCase();
+			final Matcher matcher = WORD_PATTERN.matcher(valueStr);
+			
+			while (matcher.find()) {
+				final String foundWord = matcher.group();
+				
+				for (int i = 1; i < foundWord.length(); i++) {
+					final String truncatedWord = foundWord.substring(0, i);
+					
+					keywords.add(truncatedWord);
+				}
+			}
+		}
+		
+		return keywords;
+	}
+	
+	private Iterable<String> createIndexKeywords(final String value) {
+		final LinkedList<String> keywords = new LinkedList<>();
+		
+		if (value != null) {
+			final Matcher matcher = WORD_PATTERN.matcher(value.toLowerCase());
+			
+			while (matcher.find())
+				keywords.add(matcher.group());
+		}
+		
+		return keywords;
+	}
 	
 	public void open() throws IOException {
 		loadSchema();
@@ -223,7 +305,21 @@ public class DAO implements IDAO {
 		graph.setUseLightweightEdges(true);
 		graph.createKeyIndex(Entity.TYPE_FIELD, Vertex.class);
 		
+		createIndices();
+		
 		System.out.println("db opened");
+	}
+	
+	private void createIndices() {
+		for (EntityType type : schema.getTypes()) {
+			final String typeName = type.getName();
+			Index<Vertex> typeIndex = graph.getIndex(typeName, Vertex.class);
+			
+			if (typeIndex == null)
+				typeIndex = graph.createIndex(typeName, Vertex.class);
+			
+			searchIndices.put(typeName, typeIndex);
+		}
 	}
 	
 	public void close() {
@@ -291,7 +387,7 @@ public class DAO implements IDAO {
 			entityImpl.setVertex(vertex);
 		}
 		
-		final IPropertyValueVisitor visitor = new SaveVisitor(vertex);
+		final IPropertyValueVisitor visitor = new SaveVisitor(entityImpl);
 		
 		for (IPropertyValue<?> propertyValue : entity.getValues())
 			propertyValue.doWithValue(visitor);
@@ -311,11 +407,13 @@ public class DAO implements IDAO {
 	
 	private void deleteInTransaction(final IEntity entity) {
 		final Entity entityImpl = (Entity) entity;
+		final Vertex vertex = entityImpl.getVertex();
+		final IPropertyValueVisitor visitor = new DeleteVisitor(entityImpl);
 		
 		for (IPropertyValue<?> value : entity.getValues())
-			value.doWithValue(deleteVisitor);
+			value.doWithValue(visitor);
 		
-		entityImpl.getVertex().remove();
+		vertex.remove();
 	}
 
 	private void notifyObservers() {
@@ -329,6 +427,28 @@ public class DAO implements IDAO {
 		
 		for (Vertex vertex : graph.getVertices(Entity.TYPE_FIELD, type.getName()))
 			result.add(new Entity(schema, vertex));
+		
+		return result;
+	}
+	
+	@Override
+	public synchronized Set<IEntity> list(final EntityType type, final String search) {
+		if (search == null || search.isEmpty())
+			return list(type);
+		
+		final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
+		final Index<Vertex> searchIndex = searchIndices.get(type.getName());
+				
+		for (String keyword : createIndexKeywords(search)) {
+			final CloseableIterable<Vertex> hits = searchIndex.get(SEARCH_INDEX, keyword);
+			
+			try {
+				for (Vertex vertex : hits)
+					result.add(new Entity(schema, vertex));
+			} finally {
+				hits.close();
+			}
+		}
 		
 		return result;
 	}

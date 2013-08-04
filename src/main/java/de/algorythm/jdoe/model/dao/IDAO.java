@@ -16,6 +16,7 @@ public interface IDAO {
 	Schema getSchema();
 	void setSchema(Schema schema) throws IOException;
 	Set<IEntity> list(EntityType type);
+	Set<IEntity> list(EntityType type, String search);
 	IEntity createEntity(EntityType type);
 	void save(IEntity entity);
 	void delete(IEntity entity);

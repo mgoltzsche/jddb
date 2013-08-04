@@ -103,4 +103,10 @@ public class DAO implements IDAO {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	@Override
+	public Set<IEntity> list(EntityType type, String search) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
