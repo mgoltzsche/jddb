@@ -273,7 +273,7 @@ public class DAO implements IDAO {
 			while (matcher.find()) {
 				final String foundWord = matcher.group();
 				
-				for (int i = 1; i < foundWord.length(); i++) {
+				for (int i = 1; i <= foundWord.length(); i++) {
 					final String truncatedWord = foundWord.substring(0, i);
 					
 					keywords.add(truncatedWord);
