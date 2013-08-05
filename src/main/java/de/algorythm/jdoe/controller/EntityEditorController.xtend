@@ -16,7 +16,7 @@ import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
-public class EntityEditorController implements IController, IObserver {
+public class EntityEditorController extends AbstractXtendController implements IController, IObserver {
 	
 	@Inject extension IDAO dao
 	@FXML var ScrollPane scrollPane
@@ -77,19 +77,24 @@ public class EntityEditorController implements IController, IObserver {
 		for (callback : propertySaveCallbacks)
 			callback.apply
 		
-		if (entity.persisted || saveCallback == null)
-			entity.save
-		else
+		if (entity.persisted || saveCallback == null) {
+			runLater [|
+				entity.save
+			]
+		} else
 			saveCallback.apply(entity)
 	}
 	
-	def void cancel() {
-		
+	def void delete() {
+		entity.delete
 	}
 
 	override update() {
-		for (callback : propertyUpdateCallbacks)
-			callback.apply
+		if (!entity.persisted || entity.update)
+			for (callback : propertyUpdateCallbacks)
+				callback.apply
+		else
+			entity.closeEntityEditor
 	}
 	
 	def close() {

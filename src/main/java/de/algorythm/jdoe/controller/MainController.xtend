@@ -25,6 +25,8 @@ import javafx.scene.control.TextField
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.slf4j.LoggerFactory
+import javafx.scene.control.MenuButton
+import javafx.scene.control.MenuItem
 
 public class MainController extends AbstractXtendController implements IController, IObserver, IEntityEditorManager {
 
@@ -38,6 +40,7 @@ public class MainController extends AbstractXtendController implements IControll
 	@FXML var Tab listTab
 	@FXML var TableView<IEntity> entityList
 	@FXML var TextField searchField
+	@FXML var MenuButton newEntityButton;
 	var Schema schema
 	var EntityType selectedType
 	val tabMap = new HashMap<String, TabData>
@@ -79,8 +82,27 @@ public class MainController extends AbstractXtendController implements IControll
 	}
 	
 	def private void setupTypeSelection() {
-		typeComboBox.items.all = schema.types
+		val types = schema.types
+		
+		typeComboBox.items.all = types
 		typeComboBox.selectionModel.selectFirst
+		
+		val menuItems = new LinkedList<MenuItem>
+		
+		for (type : types) {
+			val menuItem = new MenuItem
+			
+			menuItem.text = type.label
+			
+			menuItem.actionListener[|
+				type.createEntity.showEntityEditor
+			]
+			
+			menuItems += menuItem
+		}
+			
+		
+		newEntityButton.items.all = menuItems
 	}
 	
 	def private void updateTableColumns() {
@@ -120,11 +142,6 @@ public class MainController extends AbstractXtendController implements IControll
 	
 	def showTypeEditor() throws IOException {
 		facade.showTypeEditor
-	}
-	
-	def createEntity() {
-		if (selectedType != EntityType.DEFAULT)
-			selectedType.createEntity.showEntityEditor
 	}
 	
 	def private showEntityEditor(IEntity entity) {

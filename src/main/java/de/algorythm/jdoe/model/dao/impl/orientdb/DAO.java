@@ -135,49 +135,58 @@ public class DAO implements IDAO {
 		
 		@Override
 		public void doWithBoolean(BooleanValue propertyValue) {
-			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
+			writeAttributeValue(propertyValue);
 		}
 
 		@Override
 		public void doWithDecimal(DecimalValue propertyValue) {
-			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
+			writeAttributeValue(propertyValue);
 		}
 
 		@Override
 		public void doWithReal(RealValue propertyValue) {
-			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
+			writeAttributeValue(propertyValue);
 		}
 
 		@Override
 		public void doWithDate(DateValue propertyValue) {
-			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
+			writeAttributeValue(propertyValue);
 		}
 
 		@Override
 		public void doWithString(StringValue propertyValue) {
-			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
+			writeAttributeValue(propertyValue);
 		}
 
 		@Override
 		public void doWithText(TextValue propertyValue) {
-			writeAttributeValue(propertyValue.getProperty(), propertyValue.getValue());
+			writeAttributeValue(propertyValue);
 		}
 		
-		private void writeAttributeValue(final Property property, final Object value) {
+		private void writeAttributeValue(IPropertyValue<?> propertyValue) {
+			final Property property = propertyValue.getProperty();
 			final String propertyName = property.getName();
+			final Object newValue = propertyValue.getValue();
 			final Object oldValue = vertex.getProperty(propertyName);
 			
-			if (oldValue != null)
+			if (newValue == null && oldValue == null ||
+					newValue != null && newValue.equals(oldValue))
+				return; // do nothing if value hasn't changed
+			
+			// remove existing indices for value
+			if (oldValue != null && property.isSearchable())
 				for (String oldKeyword : createLeftTruncatedIndexKeywords(oldValue))
 					searchIndex.remove(SEARCH_INDEX, oldKeyword, vertex);
 			
-			if (value == null) {
+			// persist new value
+			if (newValue == null) {
 				vertex.removeProperty(propertyName);
 			} else {
-				vertex.setProperty(propertyName, value);
+				vertex.setProperty(propertyName, newValue);
 				
-				for (String keyword : createLeftTruncatedIndexKeywords(value))
-					searchIndex.put(SEARCH_INDEX, keyword, vertex);
+				if (property.isSearchable())
+					for (String keyword : createLeftTruncatedIndexKeywords(newValue))
+						searchIndex.put(SEARCH_INDEX, keyword, vertex);
 			}
 		}
 		
@@ -417,7 +426,7 @@ public class DAO implements IDAO {
 	}
 
 	private void notifyObservers() {
-		for (IObserver observer : observers)
+		for (IObserver observer : new LinkedList<IObserver>(observers))
 			observer.update();
 	}
 	

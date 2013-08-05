@@ -1,5 +1,6 @@
 package de.algorythm.jdoe.controller;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -9,6 +10,7 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0;
@@ -18,6 +20,15 @@ public abstract class AbstractXtendController {
 
 	protected void actionListener(final Button button, final Procedure0 listener) {
 		button.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent evt) {
+				listener.apply();
+			}
+		});
+	}
+	
+	protected void actionListener(final MenuItem item, final Procedure0 listener) {
+		item.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent evt) {
 				listener.apply();
@@ -50,6 +61,15 @@ public abstract class AbstractXtendController {
 			@Override
 			public void handle(Event evt) {
 				listener.apply();
+			}
+		});
+	}
+	
+	protected void runLater(final Procedure0 procedure) {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				procedure.apply();
 			}
 		});
 	}

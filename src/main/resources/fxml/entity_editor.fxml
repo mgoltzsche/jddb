@@ -18,7 +18,7 @@
 		fx:controller="de.algorythm.jdoe.controller.EntityEditorController">
 	<top>
 		<ToolBar>
-			<Button text="cancel" onAction="#cancel"/>
+			<Button text="delete" onAction="#delete"/>
 			<Button text="save" onAction="#save"/>
 		</ToolBar>
 	</top>
