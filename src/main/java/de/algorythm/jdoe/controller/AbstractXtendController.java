@@ -6,6 +6,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -72,5 +73,17 @@ public abstract class AbstractXtendController {
 				procedure.apply();
 			}
 		});
+	}
+	
+	protected void runTask(final Procedure0 procedure) {
+		final Task<Void> task = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
+				procedure.apply();
+				return null;
+			}
+		};
+		
+		new Thread(task).start();
 	}
 }

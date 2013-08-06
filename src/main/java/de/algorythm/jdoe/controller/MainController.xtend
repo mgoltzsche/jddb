@@ -27,6 +27,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.slf4j.LoggerFactory
 import javafx.scene.control.MenuButton
 import javafx.scene.control.MenuItem
+import de.algorythm.jdoe.ui.jfx.cell.EntityCellValueFactory
 
 public class MainController extends AbstractXtendController implements IController, IObserver, IEntityEditorManager {
 
@@ -40,9 +41,9 @@ public class MainController extends AbstractXtendController implements IControll
 	@FXML var Tab listTab
 	@FXML var TableView<IEntity> entityList
 	@FXML var TextField searchField
-	@FXML var MenuButton newEntityButton;
+	@FXML var MenuButton newEntityButton
 	var Schema schema
-	var EntityType selectedType
+	var EntityType selectedType = EntityType.ALL
 	val tabMap = new HashMap<String, TabData>
 	var String searchPhrase
 	
@@ -51,7 +52,11 @@ public class MainController extends AbstractXtendController implements IControll
 		
 		searchField.textProperty.changeListener[
 			searchPhrase = it
-			updateTableData();
+			
+			runLater [|
+				updateTableData
+				showListTab
+			]
 		]
 		
 		entityList.setRowFactory(new EntityRow.Factory [
@@ -63,8 +68,13 @@ public class MainController extends AbstractXtendController implements IControll
 		]
 		
 		setupTypeSelection
+		setupNewEntityButton
 		
 		addObserver(this)
+		
+		runLater [|
+			searchField.requestFocus
+		]
 	}
 	
 	def SimpleStringProperty searchValueProperty() {
@@ -73,23 +83,31 @@ public class MainController extends AbstractXtendController implements IControll
 	
 	def private void setSelectedType(EntityType type) {
 		selectedType = if (type == null)
-				EntityType.DEFAULT
+				EntityType.ALL
 			else
 				type
 		
 		updateTableColumns
+		showListTab
+	}
+	
+	def private void showListTab() {
 		tabs.selectionModel.select(listTab)
 	}
 	
 	def private void setupTypeSelection() {
-		val types = schema.types
+		val types = new LinkedList<EntityType>(schema.types)
+		
+		types.addFirst(EntityType.ALL)
 		
 		typeComboBox.items.all = types
 		typeComboBox.selectionModel.selectFirst
-		
+	}
+	
+	def private void setupNewEntityButton() {
 		val menuItems = new LinkedList<MenuItem>
 		
-		for (type : types) {
+		for (type : schema.types) {
 			val menuItem = new MenuItem
 			
 			menuItem.text = type.label
@@ -100,7 +118,6 @@ public class MainController extends AbstractXtendController implements IControll
 			
 			menuItems += menuItem
 		}
-			
 		
 		newEntityButton.items.all = menuItems
 	}
@@ -108,11 +125,18 @@ public class MainController extends AbstractXtendController implements IControll
 	def private void updateTableColumns() {
 		val columns = new LinkedList<TableColumn<IEntity, ?>>
 		
-		for (Property property : selectedType.getProperties()) {
-			val column = new TableColumn<IEntity, String>(property.label)
+		if (selectedType == EntityType.ALL) {
+			val column = new TableColumn<IEntity, String>('Entity')
 			
-			column.cellValueFactory = new PropertyCellValueFactory(property.index)
+			column.cellValueFactory = new EntityCellValueFactory
 			columns += column
+		} else {	
+			for (Property property : selectedType.properties) {
+				val column = new TableColumn<IEntity, String>(property.label)
+				
+				column.cellValueFactory = new PropertyCellValueFactory(property.index)
+				columns += column
+			}
 		}
 		
 		update
@@ -120,8 +144,8 @@ public class MainController extends AbstractXtendController implements IControll
 	}
 	
 	override update() {
-		updateTableData();
-		updateTabs();
+		updateTableData
+		updateTabs
 	}
 	
 	def private updateTableData() {
@@ -153,7 +177,7 @@ public class MainController extends AbstractXtendController implements IControll
 		val existingTabData = tabMap.get(entityId)
 		
 		if (existingTabData == null) { // create tab
-			val loaderResult = <Node, EntityEditorController>load("/fxml/entity_editor.fxml");
+			val loaderResult = <Node, EntityEditorController>load("/fxml/entity_editor.fxml")
 		
 			loaderResult.controller.init(entity, this, saveCallback)
 			

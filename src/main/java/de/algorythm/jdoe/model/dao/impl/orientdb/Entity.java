@@ -68,8 +68,10 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 		this.vertex = vertex;
 	}
 	
-	public void forceLazyReload() {
-		values = null;
+	public void update() {
+		if (values != null)
+			for (IPropertyValue<?> propertyValue : values)
+				updatePropertyValue(propertyValue);
 	}
 	
 	@Override
@@ -90,14 +92,20 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 			for (Property property : type.getProperties()) {
 				final IPropertyValue<?> propertyValue = property.createPropertyValue();
 				
-				if (vertex != null) {
-					propertyValue.doWithValue(this);
-					((AbstractPropertyValue<?>) propertyValue).setChanged(false);
-				}
+				if (vertex != null)
+					updatePropertyValue(propertyValue);
 				
 				values.add(propertyValue);
 			}
 		}
+	}
+	
+	private void updatePropertyValue(IPropertyValue<?> propertyValue) {
+		final boolean changed = propertyValue.isChanged();
+		
+		propertyValue.doWithValue(this);
+		
+		((AbstractPropertyValue<?>) propertyValue).setChanged(changed);
 	}
 	
 	@Override

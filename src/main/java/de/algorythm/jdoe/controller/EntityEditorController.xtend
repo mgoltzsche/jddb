@@ -78,7 +78,7 @@ public class EntityEditorController extends AbstractXtendController implements I
 			callback.apply
 		
 		if (entity.persisted || saveCallback == null) {
-			runLater [|
+			runTask [|
 				entity.save
 			]
 		} else
@@ -86,7 +86,9 @@ public class EntityEditorController extends AbstractXtendController implements I
 	}
 	
 	def void delete() {
-		entity.delete
+		runTask [|
+			entity.delete
+		]
 	}
 
 	override update() {

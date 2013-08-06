@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -178,6 +180,7 @@ public class DAO implements IDAO {
 				for (String oldKeyword : createLeftTruncatedIndexKeywords(oldValue))
 					searchIndex.remove(SEARCH_INDEX, oldKeyword, vertex);
 			
+			System.out.println("new value: " + newValue);
 			// persist new value
 			if (newValue == null) {
 				vertex.removeProperty(propertyName);
@@ -307,16 +310,18 @@ public class DAO implements IDAO {
 	}
 	
 	public void open() throws IOException {
-		loadSchema();
-		
-		graph = new OrientGraph("local:graph.db");
-		
-		graph.setUseLightweightEdges(true);
-		graph.createKeyIndex(Entity.TYPE_FIELD, Vertex.class);
-		
-		createIndices();
-		
-		System.out.println("db opened");
+		synchronized(this) {
+			loadSchema();
+			
+			graph = new OrientGraph("local:graph.db");
+			
+			graph.setUseLightweightEdges(true);
+			graph.createKeyIndex(Entity.TYPE_FIELD, Vertex.class);
+			
+			createIndices();
+			
+			System.out.println("db opened");
+		}
 	}
 	
 	private void createIndices() {
@@ -332,16 +337,20 @@ public class DAO implements IDAO {
 	}
 	
 	public void close() {
-		graph.shutdown();
-		
-		System.out.println("db closed");
+		synchronized(this) {
+			graph.shutdown();
+			
+			System.out.println("db closed");
+		}
 	}
 	
 	private void loadSchema() throws IOException {
-		try {
-			schema = yaml.loadAs(new FileReader(new File("schema.yaml")), Schema.class);
-		} catch(FileNotFoundException e) {
-			schema = new Schema();
+		synchronized(this) {
+			try {
+				schema = yaml.loadAs(new FileReader(new File("schema.yaml")), Schema.class);
+			} catch(FileNotFoundException e) {
+				schema = new Schema();
+			}
 		}
 	}
 	
@@ -352,19 +361,21 @@ public class DAO implements IDAO {
 
 	@Override
 	public void setSchema(final Schema schema) throws IOException {
-		// update property indices
-		for (EntityType type : schema.getTypes()) {
-			int i = 0;
-			
-			for (Property property : type.getProperties()) {
-				((Property) property).setIndex(i);
-				i++;
+		synchronized(this) {
+			// update property indices
+			for (EntityType type : schema.getTypes()) {
+				int i = 0;
+				
+				for (Property property : type.getProperties()) {
+					((Property) property).setIndex(i);
+					i++;
+				}
 			}
+			
+			// save schema
+			yaml.dump(schema, new FileWriter(new File("schema.yaml")));
+			this.schema = schema;
 		}
-		
-		// save schema
-		yaml.dump(schema, new FileWriter(new File("schema.yaml")));
-		this.schema = schema;
 	}
 
 	@Override
@@ -373,16 +384,18 @@ public class DAO implements IDAO {
 	}
 	
 	@Override
-	public synchronized void save(final IEntity entity) {
-		try {
-			saveInTransaction(entity);
-			graph.commit();
-		} catch(Throwable e) {
-			graph.rollback();
-			throw e;
+	public void save(final IEntity entity) {
+		synchronized(this) {
+			try {
+				saveInTransaction(entity);
+				graph.commit();
+			} catch(Throwable e) {
+				graph.rollback();
+				throw e;
+			}
+			
+			notifyObservers();
 		}
-		
-		notifyObservers();
 	}
 	
 	private void saveInTransaction(final IEntity entity) {
@@ -403,15 +416,17 @@ public class DAO implements IDAO {
 	}
 
 	@Override
-	public synchronized void delete(final IEntity entity) {
-		try {
-			deleteInTransaction(entity);
-			graph.commit();
-		} catch(Throwable e) {
-			graph.rollback();
+	public void delete(final IEntity entity) {
+		synchronized(this) {
+			try {
+				deleteInTransaction(entity);
+				graph.commit();
+			} catch(Throwable e) {
+				graph.rollback();
+			}
+			
+			notifyObservers();
 		}
-		
-		notifyObservers();
 	}
 	
 	private void deleteInTransaction(final IEntity entity) {
@@ -432,52 +447,71 @@ public class DAO implements IDAO {
 	
 	@Override
 	public Set<IEntity> list(final EntityType type) {
-		final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
-		
-		for (Vertex vertex : graph.getVertices(Entity.TYPE_FIELD, type.getName()))
-			result.add(new Entity(schema, vertex));
-		
-		return result;
+		synchronized(this) {
+			final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
+			final Iterable<Vertex> vertices = type == EntityType.ALL
+					? graph.getVertices()
+					: graph.getVertices(Entity.TYPE_FIELD, type.getName());
+			
+			for (Vertex vertex : vertices)
+				result.add(new Entity(schema, vertex));
+			
+			return result;
+		}
 	}
 	
 	@Override
-	public synchronized Set<IEntity> list(final EntityType type, final String search) {
+	public Set<IEntity> list(final EntityType type, final String search) {
 		if (search == null || search.isEmpty())
 			return list(type);
 		
-		final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
-		final Index<Vertex> searchIndex = searchIndices.get(type.getName());
-				
-		for (String keyword : createIndexKeywords(search)) {
-			final CloseableIterable<Vertex> hits = searchIndex.get(SEARCH_INDEX, keyword);
+		synchronized(this) {
+			final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
+			final Collection<Index<Vertex>> useIndices;
+			final Iterable<String> searchKeywords = createIndexKeywords(search);
 			
-			try {
-				for (Vertex vertex : hits)
-					result.add(new Entity(schema, vertex));
-			} finally {
-				hits.close();
+			if (type == EntityType.ALL) {
+				useIndices = searchIndices.values();
+			} else {
+				useIndices = new LinkedList<>();
+				useIndices.add(searchIndices.get(type.getName()));
 			}
+			
+			for (Index<Vertex> searchIndex : useIndices) {
+				for (String keyword : searchKeywords) {
+					final CloseableIterable<Vertex> hits = searchIndex.get(SEARCH_INDEX, keyword);
+					
+					try {
+						for (Vertex vertex : hits)
+							result.add(new Entity(schema, vertex));
+					} finally {
+						hits.close();
+					}
+				}
+			}
+			
+			return result;
 		}
-		
-		return result;
 	}
 	
 	@Override
 	public boolean update(final IEntity entity) {
-		final Entity entityImpl = (Entity) entity;
-		final Vertex vertex = entityImpl.getVertex();
-		
-		if (vertex == null)
-			throw new IllegalArgumentException("entity is not persistent");
-		
-		final boolean notExists = graph.getVertex(vertex.getId()) == null;
-		
-		if (notExists)
-			return false;
-		
-		entityImpl.forceLazyReload();
-		
-		return true;
+		synchronized(this) {
+			final Entity entityImpl = (Entity) entity;
+			final Vertex vertex = entityImpl.getVertex();
+			
+			if (vertex == null)
+				throw new IllegalArgumentException("entity is not persistent");
+			
+			final boolean notExists = graph.getVertex(vertex.getId()) == null;
+			
+			if (notExists)
+				return false;
+			
+			entityImpl.update();
+			
+			return true;
+		}
 	}
 
 	@Override
