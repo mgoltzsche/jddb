@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -477,18 +476,31 @@ public class DAO implements IDAO {
 				useIndices.add(searchIndices.get(type.getName()));
 			}
 			
-			for (Index<Vertex> searchIndex : useIndices) {
-				for (String keyword : searchKeywords) {
+			LinkedHashSet<Vertex> foundVertices = null;
+			
+			for (String keyword : searchKeywords) {
+				final LinkedHashSet<Vertex> keywordVertices = new LinkedHashSet<>();
+				
+				for (Index<Vertex> searchIndex : useIndices) {
 					final CloseableIterable<Vertex> hits = searchIndex.get(SEARCH_INDEX, keyword);
 					
 					try {
 						for (Vertex vertex : hits)
-							result.add(new Entity(schema, vertex));
+							keywordVertices.add(vertex);
 					} finally {
 						hits.close();
 					}
 				}
+				
+				if (foundVertices == null)
+					foundVertices = keywordVertices;
+				else
+					foundVertices.retainAll(keywordVertices);
 			}
+			
+			if (foundVertices != null)
+				for (Vertex vertex : foundVertices)
+					result.add(new Entity(schema, vertex));
 			
 			return result;
 		}
