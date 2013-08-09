@@ -41,6 +41,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 		this.schema = schema;
 		this.type = type;
 		id = UUID.randomUUID().toString();
+		loadProperties();
 	}
 	
 	public Entity(final Schema schema, final Vertex vertex) {
@@ -48,6 +49,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 		setVertex(vertex);
 		id = vertex.getProperty(ID);
 		type = getTypeByVertex(vertex);
+		loadProperties();
 	}
 	
 	@Override
@@ -69,34 +71,30 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	}
 	
 	public void update() {
-		if (values != null)
-			for (IPropertyValue<?> propertyValue : values)
-				updatePropertyValue(propertyValue);
+		for (IPropertyValue<?> propertyValue : values)
+			updatePropertyValue(propertyValue);
 	}
 	
 	@Override
 	public EntityType getType() {
 		return type;
 	}
-
+	
 	@Override
 	public Iterable<IPropertyValue<?>> getValues() {
-		lazyLoadValues();
 		return values;
 	}
 	
-	protected void lazyLoadValues() {
-		if (values == null) {
-			values = new ArrayList<>(type.getProperties().size());
+	private void loadProperties() {
+		values = new ArrayList<>(type.getProperties().size());
+		
+		for (Property property : type.getProperties()) {
+			final IPropertyValue<?> propertyValue = property.createPropertyValue();
 			
-			for (Property property : type.getProperties()) {
-				final IPropertyValue<?> propertyValue = property.createPropertyValue();
-				
-				if (vertex != null)
-					updatePropertyValue(propertyValue);
-				
-				values.add(propertyValue);
-			}
+			if (vertex != null)
+				updatePropertyValue(propertyValue);
+			
+			values.add(propertyValue);
 		}
 	}
 	
@@ -110,8 +108,6 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	
 	@Override
 	public IPropertyValue<?> getValue(int index) {
-		lazyLoadValues();
-		
 		return values.get(index);
 	}
 	

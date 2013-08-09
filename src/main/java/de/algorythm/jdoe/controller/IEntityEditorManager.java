@@ -12,6 +12,7 @@ public interface IEntityEditorManager {
 	 * @param saveCallback is called instead of saving the entity if not null 
 	 * @return the view ID
 	 */
-	void showEntityEditor(final IEntity entity, final Procedure1<IEntity> saveCallback);
-	void closeEntityEditor(final IEntity entity);
+	void showEntityEditor(IEntity entity, Procedure1<IEntity> saveCallback);
+	void showEntityEditor(IEntity entity);
+	void closeEntityEditor(IEntity entity);
 }

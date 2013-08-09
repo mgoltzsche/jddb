@@ -1,13 +1,14 @@
-package de.algorythm.jdoe.controller;
+package de.algorythm.jdoe.ui.jfx.model;
 
+import de.algorythm.jdoe.controller.EntityEditorController;
 import javafx.scene.control.Tab;
 
-public class TabData {
+public class ViewData {
 
 	private final Tab tab;
 	private final EntityEditorController controller;
 	
-	public TabData(final Tab tab, final EntityEditorController controller) {
+	public ViewData(final Tab tab, final EntityEditorController controller) {
 		this.tab = tab;
 		this.controller = controller;
 	}
