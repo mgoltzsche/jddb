@@ -16,9 +16,13 @@ import javafx.scene.control.Tab;
 
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractXtendController {
 
+	static private final Logger log = LoggerFactory.getLogger(AbstractXtendController.class);
+	
 	protected void actionListener(final Button button, final Procedure0 listener) {
 		button.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -79,7 +83,12 @@ public abstract class AbstractXtendController {
 		final Task<Void> task = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
-				procedure.apply();
+				try {
+					procedure.apply();
+				} catch(Throwable e) {
+					log.error("Task failed", e);
+				}
+				
 				return null;
 			}
 		};

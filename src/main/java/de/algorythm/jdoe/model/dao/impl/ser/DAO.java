@@ -109,4 +109,10 @@ public class DAO implements IDAO {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public boolean exists(IEntity entity) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

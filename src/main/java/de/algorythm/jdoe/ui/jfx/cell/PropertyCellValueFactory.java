@@ -1,13 +1,12 @@
 package de.algorythm.jdoe.ui.jfx.cell;
 
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.util.Callback;
-import de.algorythm.jdoe.model.entity.IEntity;
-import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.ui.jfx.model.FXEntity;
+import de.algorythm.jdoe.ui.jfx.model.FXPropertyValue;
 
-public class PropertyCellValueFactory implements Callback<CellDataFeatures<IEntity, String>, ObservableValue<String>> {
+public class PropertyCellValueFactory implements Callback<CellDataFeatures<FXEntity, String>, ObservableValue<String>> {
 
 	private final int index;
 	
@@ -17,10 +16,10 @@ public class PropertyCellValueFactory implements Callback<CellDataFeatures<IEnti
 	
 	@Override
 	public ObservableValue<String> call(
-			final CellDataFeatures<IEntity, String> features) {
-		final IEntity entity = features.getValue();
-		final IPropertyValue<?> value = entity.getValue(index);
+			final CellDataFeatures<FXEntity, String> features) {
+		final FXEntity entity = features.getValue();
+		final FXPropertyValue value = entity.getValue(index);
 		
-		return new SimpleStringProperty(value.toString());
+		return value.getValue();
 	}
 }

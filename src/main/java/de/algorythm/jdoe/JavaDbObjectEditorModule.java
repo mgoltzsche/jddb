@@ -10,6 +10,5 @@ public class JavaDbObjectEditorModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		bind(IDAO.class).to(DAO.class);
-		//bind(ISchemaDAO.class).to(SchemaDAO.class);
 	}
 }

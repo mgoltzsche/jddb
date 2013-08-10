@@ -1,7 +1,6 @@
 package de.algorythm.jdoe.controller
 
 import de.algorythm.jdoe.model.dao.IDAO
-import de.algorythm.jdoe.model.entity.IEntity
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor
 import de.algorythm.jdoe.model.entity.impl.Association
 import de.algorythm.jdoe.model.entity.impl.Associations
@@ -14,6 +13,8 @@ import de.algorythm.jdoe.model.entity.impl.TextValue
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
 import de.algorythm.jdoe.ui.jfx.cell.AssociationCell
+import de.algorythm.jdoe.ui.jfx.cell.AssociationContainmentCell
+import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.ValueContainer
 import java.util.Collection
 import javafx.scene.control.Button
@@ -27,6 +28,7 @@ import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
+import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 
 class PropertyValueEditorVisitor extends AbstractXtendController implements IPropertyValueVisitor {
 
@@ -36,9 +38,9 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 	var int row
 	var Collection<Procedure0> saveCallbacks
 	var Collection<Procedure0> updateCallbacks
-	var Collection<IEntity> createdContainedEntities
+	var Collection<FXEntity> createdContainedEntities
 	
-	new(GridPane gridPane, int row, IDAO dao, IEntityEditorManager editorManager, Collection<IEntity> createdContainedEntities, Collection<Procedure0> saveCallbacks, Collection<Procedure0> updateCallbacks) {
+	new(GridPane gridPane, int row, IDAO dao, IEntityEditorManager editorManager, Collection<FXEntity> createdContainedEntities, Collection<Procedure0> saveCallbacks, Collection<Procedure0> updateCallbacks) {
 		this.gridPane = gridPane
 		this.row = row
 		this.saveCallbacks = saveCallbacks
@@ -52,40 +54,40 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 		val property = propertyValue.property
 		val collectionType = property.type as CollectionType
 		val vBox = new VBox
-		val selectedEntities = new ListView<IEntity>
+		val selectedEntities = new ListView<FXEntity>
 		val addButton = new Button('add')
 		val vBoxChildren = vBox.children
 		
-		selectedEntities.cellFactory = AssociationCell.FACTORY
-		selectedEntities.items.all = propertyValue.value
+		selectedEntities.cellFactory = AssociationContainmentCell.FACTORY
+		selectedEntities.items.all = propertyValue.value.wrap
 		
 		if (property.containment) {
 			vBoxChildren += selectedEntities
 			vBoxChildren += addButton
 			
 			addButton.actionListener [|
-				val newEntity = collectionType.itemType.createEntity
+				val newEntity = new FXEntity(collectionType.itemType.createEntity)
 				
 				selectedEntities.items += newEntity
 				createdContainedEntities += newEntity
 				
-				newEntity.showEntityEditor [
-					// TODO: update item label
-				]
+				newEntity.showEntityEditor []
 			]
 			
 			updateCallbacks += [| // update selected entities
 				val iter = selectedEntities.items.iterator
 				
 				while (iter.hasNext)
-					if (!iter.next.update)
+					if (!iter.next.model.exists)
 						iter.remove
 			]
 		} else {
 			val hBox = new HBox
 			val hBoxChildren = hBox.children
-			val availableEntities = new ComboBox<IEntity>
+			val availableEntities = new ComboBox<FXEntity>
 			val createButton = new Button('create')
+			
+			availableEntities.cellFactory = AssociationCell.FACTORY
 			
 			selectedEntities.items.changeListener [
 				while (next) {
@@ -107,8 +109,8 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			]
 			
 			createButton.actionListener[|
-				collectionType.itemType.createEntity.showEntityEditor [
-					save
+				collectionType.itemType.createEntity.wrap.showEntityEditor [
+					model.save
 					selectedEntities.items += it
 				]
 			]
@@ -120,23 +122,25 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			vBoxChildren += hBox
 			
 			updateCallbacks += [|
-				val entities = collectionType.itemType.list
+				val entities = collectionType.itemType.list.wrap
 				val iter = selectedEntities.items.iterator
 				
 				while (iter.hasNext)
-					if (!iter.next.update)
+					if (!iter.next.model.update)
 						iter.remove
 				
 				entities -= selectedEntities.items
 				
-				availableEntities.items.all = entities
+				runLater [|
+					availableEntities.items.all = entities
+				]
 			]
 		}
 		
 		gridPane.add(vBox, 1, row)
 		
 		saveCallbacks += [|
-			propertyValue.value = selectedEntities.items
+			propertyValue.value = selectedEntities.items.map(e|e.model)
 		]
 	}
 	
@@ -152,80 +156,81 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			removeButton.disable = true
 		
 		if (property.containment) {
-			val valueContainer = new ValueContainer<IEntity>
-			val label = new Label(entity?.toString)
+			val valueContainer = new ValueContainer<FXEntity>
+			val label = new Label
 			val editButtonLabel = if (entity == null)
 					'create'
 				else
 					'edit'
 			val editButton = new Button(editButtonLabel)
 			
-			valueContainer.value = entity
+			if (entity != null) {
+				valueContainer.value = entity.wrap
+				label.textProperty.bind(valueContainer.value.label)
+			}
 			
 			hBoxChildren += label
 			hBoxChildren += editButton
 			hBoxChildren += removeButton
 			
-			editButton.actionListener[|
+			editButton.actionListener [|
 				var value = valueContainer.value
 				
 				if (value == null) {
-					value = entityType.createEntity
+					value = new FXEntity(entityType.createEntity)
 					valueContainer.value = value
 					editButton.text = 'edit'
 					removeButton.disable = false
 					createdContainedEntities += value
 				}
 				
-				value.showEntityEditor [
-					label.text = toString
-				]
+				label.textProperty.bind(value.label)
+				
+				value.showEntityEditor []
 			]
 			
-			removeButton.actionListener[|
+			removeButton.actionListener [|
 				val containedEntity = valueContainer.value
 				valueContainer.value = null
-				label.text = null
+				label.textProperty.unbind
 				editButton.text = 'create'
 				containedEntity.closeEntityEditor
 				removeButton.disable = true
 			]
 			
 			saveCallbacks += [|
-				propertyValue.value = valueContainer.value
+				propertyValue.value = valueContainer.value.model
 			]
 			
 			updateCallbacks += [|
 				val containerValue = valueContainer.value
 				
-				if (containerValue != null) {
-					if (containerValue.update) {
-						label.text = containerValue.toString
-					} else {
+				if (containerValue != null && !containerValue.model.exists) {
+					runLater [|
+						label.textProperty.unbind
 						valueContainer.value = null
-						label.text = null
 						editButton.text = 'create'
-					}
+					]
 				}
 			]
 		} else {
-			val entityComboBox = new ComboBox<IEntity>
+			val entityComboBox = new ComboBox<FXEntity>
 			val createButton = new Button('create')
 			
 			hBoxChildren += entityComboBox
 			hBoxChildren += createButton
 			hBoxChildren += removeButton
 			
-			entityComboBox.value = propertyValue.value
+			entityComboBox.value = propertyValue.value.wrap
 			
 			entityComboBox.selectionModel.selectedItemProperty.changeListener [
 				if (it != null)
 					removeButton.disable = false
 			]
 			
-			createButton.actionListener[|
-				entityType.createEntity.showEntityEditor [
-					save
+			createButton.actionListener [|
+				entityType.createEntity.wrap.showEntityEditor [
+					model.save
 					entityComboBox.value = it
 					removeButton.disable = false
 				]
@@ -237,18 +242,20 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			]
 			
 			saveCallbacks += [|
-				propertyValue.value = entityComboBox.value
+				propertyValue.value = entityComboBox.value.model
 			]
 			
 			updateCallbacks += [|
 				val selectedEntity = entityComboBox.value
 				
-				if (selectedEntity != null && !selectedEntity.update) {
-					entityComboBox.value = null
-					removeButton.disable = true
+				if (selectedEntity != null && !selectedEntity.model.update) {
+					runLater [|
+						entityComboBox.value = null
+						removeButton.disable = true
+					]
 				}
 				
-				entityComboBox.items.all = entityType.list
+				entityComboBox.items.all = entityType.list.wrap
 			]
 		}
 		

@@ -3,13 +3,14 @@ package de.algorythm.jdoe.controller
 import de.algorythm.jdoe.JavaDbObjectEditorFacade
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
-import de.algorythm.jdoe.model.entity.IEntity
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.model.meta.Schema
 import de.algorythm.jdoe.ui.jfx.cell.EntityCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.EntityRow
 import de.algorythm.jdoe.ui.jfx.cell.PropertyCellValueFactory
+import de.algorythm.jdoe.ui.jfx.model.FXEntity
+import de.algorythm.jdoe.ui.jfx.util.ViewRegistry
 import java.io.IOException
 import java.util.LinkedList
 import javafx.beans.property.SimpleStringProperty
@@ -24,7 +25,6 @@ import javafx.scene.control.TableView
 import javafx.scene.control.TextField
 import javax.inject.Inject
 import org.slf4j.LoggerFactory
-import de.algorythm.jdoe.ui.jfx.util.ViewRegistry
 
 public class MainController extends AbstractXtendController implements IController, IObserver {
 	
@@ -36,7 +36,7 @@ public class MainController extends AbstractXtendController implements IControll
 	@FXML var ComboBox<EntityType> typeComboBox
 	@FXML var TabPane tabs
 	@FXML var Tab listTab
-	@FXML var TableView<IEntity> entityList
+	@FXML var TableView<FXEntity> entityList
 	@FXML var TextField searchField
 	@FXML var MenuButton newEntityButton
 	var Schema schema
@@ -52,8 +52,8 @@ public class MainController extends AbstractXtendController implements IControll
 			searchPhrase = it
 			
 			runLater [|
-				updateTableData
 				showListTab
+				update
 			]
 		]
 		
@@ -111,7 +111,7 @@ public class MainController extends AbstractXtendController implements IControll
 			menuItem.text = type.label
 			
 			menuItem.actionListener [|
-				type.createEntity.showEntityEditor
+				new FXEntity(type.createEntity).showEntityEditor
 			]
 			
 			menuItems += menuItem
@@ -121,16 +121,16 @@ public class MainController extends AbstractXtendController implements IControll
 	}
 	
 	def private void updateTableColumns() {
-		val columns = new LinkedList<TableColumn<IEntity, ?>>
+		val columns = new LinkedList<TableColumn<FXEntity, String>>
 		
 		if (selectedType == EntityType.ALL) {
-			val column = new TableColumn<IEntity, String>('Entity')
+			val column = new TableColumn<FXEntity, String>('Entity')
 			
 			column.cellValueFactory = new EntityCellValueFactory
 			columns += column
 		} else {	
 			for (Property property : selectedType.properties) {
-				val column = new TableColumn<IEntity, String>(property.label)
+				val column = new TableColumn<FXEntity, String>(property.label)
 				
 				column.cellValueFactory = new PropertyCellValueFactory(property.index)
 				columns += column
@@ -142,20 +142,12 @@ public class MainController extends AbstractXtendController implements IControll
 	}
 	
 	override update() {
-		updateTableData
-		updateTabs
-	}
-	
-	def private updateTableData() {
 		val entities = dao.list(selectedType, searchPhrase)
 		
-		entityList.items.all = entities
-		listTab.text = '''Results («entities.size»)'''
-	}
-	
-	def private updateTabs() {
-		for (view : views)
-			view.tab.text = view.controller.label
+		runLater [|
+			entityList.items.all = entities.wrap
+			listTab.text = '''Results («entities.size»)'''
+		]
 	}
 	
 	def openDatabase() {

@@ -1,6 +1,7 @@
 package de.algorythm.jdoe.model.dao.impl.orientdb;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -81,7 +82,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	}
 	
 	@Override
-	public Iterable<IPropertyValue<?>> getValues() {
+	public Collection<IPropertyValue<?>> getValues() {
 		return values;
 	}
 	
@@ -104,11 +105,6 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 		propertyValue.doWithValue(this);
 		
 		((AbstractPropertyValue<?>) propertyValue).setChanged(changed);
-	}
-	
-	@Override
-	public IPropertyValue<?> getValue(int index) {
-		return values.get(index);
 	}
 	
 	@Override

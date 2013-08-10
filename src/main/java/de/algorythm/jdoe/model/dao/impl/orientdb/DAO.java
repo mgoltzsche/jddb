@@ -121,7 +121,6 @@ public class DAO implements IDAO {
 			
 			// remove outgoing edges
 			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName)) {
-				System.out.println(refVertex + "       " + edge.getVertex(Direction.IN));
 				if (refVertex == null)
 					deleteEdge(property, edge);
 				else if (edge.getVertex(Direction.IN).equals(refVertex))
@@ -508,13 +507,13 @@ public class DAO implements IDAO {
 	
 	@Override
 	public boolean update(final IEntity entity) {
+		final Entity entityImpl = (Entity) entity;
+		final Vertex vertex = entityImpl.getVertex();
+		
+		if (vertex == null)
+			throw new IllegalArgumentException("entity is not persistent");
+		
 		synchronized(this) {
-			final Entity entityImpl = (Entity) entity;
-			final Vertex vertex = entityImpl.getVertex();
-			
-			if (vertex == null)
-				throw new IllegalArgumentException("entity is not persistent");
-			
 			final boolean notExists = graph.getVertex(vertex.getId()) == null;
 			
 			if (notExists)
@@ -523,6 +522,19 @@ public class DAO implements IDAO {
 			entityImpl.update();
 			
 			return true;
+		}
+	}
+	
+	@Override
+	public boolean exists(final IEntity entity) {
+		final Entity entityImpl = (Entity) entity;
+		final Vertex vertex = entityImpl.getVertex();
+		
+		if (vertex == null)
+			throw new IllegalArgumentException("entity is not persistent");
+		
+		synchronized(this) {
+			return graph.getVertex(vertex.getId()) != null;
 		}
 	}
 

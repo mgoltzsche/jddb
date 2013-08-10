@@ -6,15 +6,21 @@ import javafx.scene.control.Tab;
 public class ViewData {
 
 	private final Tab tab;
+	private final FXEntity entity;
 	private final EntityEditorController controller;
 	
-	public ViewData(final Tab tab, final EntityEditorController controller) {
+	public ViewData(final Tab tab, final FXEntity entity, final EntityEditorController controller) {
 		this.tab = tab;
+		this.entity = entity;
 		this.controller = controller;
 	}
 	
 	public Tab getTab() {
 		return tab;
+	}
+	
+	public FXEntity getEntity() {
+		return entity;
 	}
 	
 	public EntityEditorController getController() {

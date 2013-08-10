@@ -9,29 +9,29 @@ import javafx.util.Callback;
 
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
-import de.algorythm.jdoe.model.entity.IEntity;
+import de.algorythm.jdoe.ui.jfx.model.FXEntity;
 
-public class EntityRow extends TableRow<IEntity> implements EventHandler<MouseEvent> {
+public class EntityRow extends TableRow<FXEntity> implements EventHandler<MouseEvent> {
 
 	static public class Factory implements
-			Callback<TableView<IEntity>, TableRow<IEntity>> {
+			Callback<TableView<FXEntity>, TableRow<FXEntity>> {
 		
-		private final Procedure1<IEntity> actionHandler;
+		private final Procedure1<FXEntity> actionHandler;
 		
-		public Factory(final Procedure1<IEntity> actionHandler) {
+		public Factory(final Procedure1<FXEntity> actionHandler) {
 			this.actionHandler = actionHandler;
 		}
 		
 		@Override
-		public TableRow<IEntity> call(TableView<IEntity> view) {
+		public TableRow<FXEntity> call(TableView<FXEntity> view) {
 			return new EntityRow(actionHandler);
 		}
 	}
 	
 	
-	private final Procedure1<IEntity> actionHandler;
+	private final Procedure1<FXEntity> actionHandler;
 	
-	public EntityRow(final Procedure1<IEntity> actionHandler) {
+	public EntityRow(final Procedure1<FXEntity> actionHandler) {
 		super();
 		this.actionHandler = actionHandler;
 		addEventHandler(MouseEvent.MOUSE_CLICKED, this);
@@ -40,7 +40,7 @@ public class EntityRow extends TableRow<IEntity> implements EventHandler<MouseEv
 	@Override
 	public void handle(MouseEvent evt) {
 		if (evt.getButton() == MouseButton.PRIMARY && evt.getClickCount() == 2) {
-			final IEntity entity = getItem();
+			final FXEntity entity = getItem();
 			
 			if (entity != null)
 				actionHandler.apply(entity);

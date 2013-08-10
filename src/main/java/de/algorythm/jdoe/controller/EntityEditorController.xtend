@@ -2,10 +2,9 @@ package de.algorythm.jdoe.controller
 
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
-import de.algorythm.jdoe.model.entity.IEntity
 import de.algorythm.jdoe.model.entity.IPropertyValue
+import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import java.util.LinkedList
-import javafx.beans.property.StringProperty
 import javafx.fxml.FXML
 import javafx.geometry.Insets
 import javafx.geometry.VPos
@@ -15,22 +14,22 @@ import javafx.scene.layout.GridPane
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 
 public class EntityEditorController extends AbstractXtendController implements IController, IObserver {
 	
 	@Inject extension IDAO dao
 	@FXML var ScrollPane scrollPane
-	var IEntity entity
+	var FXEntity entity
 	val propertySaveCallbacks = new LinkedList<Procedure0>
 	val propertyUpdateCallbacks = new LinkedList<Procedure0>
-	var Procedure1<IEntity> saveCallback
-	val createdContainedEntities = new LinkedList<IEntity>
+	var Procedure1<FXEntity> saveCallback
+	val createdContainedEntities = new LinkedList<FXEntity>
 	extension IEntityEditorManager editorManager
 	
-	override init() {
-	}
+	override init() {}
 	
-	def init(IEntity entity, IEntityEditorManager editorManager, Procedure1<IEntity> saveCallback) {
+	def init(FXEntity entity, IEntityEditorManager editorManager, Procedure1<FXEntity> saveCallback) {
 		this.entity = entity
 		this.saveCallback = saveCallback
 		this.editorManager = editorManager
@@ -42,7 +41,7 @@ public class EntityEditorController extends AbstractXtendController implements I
 		gridPane.vgap = 20
 		gridPane.hgap = 10
 		
-		for (IPropertyValue<?> value : entity.getValues()) {
+		for (IPropertyValue<?> value : entity.model.values) {
 			val label = new Label(value.property.label + ': ')
 			
 			GridPane.setValignment(label, VPos.TOP)
@@ -62,37 +61,27 @@ public class EntityEditorController extends AbstractXtendController implements I
 		dao.addObserver(this)
 	}
 	
-	def StringProperty simpleStringProperty() {
-		simpleStringProperty
-	}
-	
-	def getLabel() {
-		if (entity.persisted)
-			entity.type.label + ': ' + entity
-		else
-			entity.type.label + ' (neu)'
-	}
-	
 	def save() {
 		for (callback : propertySaveCallbacks)
 			callback.apply
 		
 		if (entity.persisted || saveCallback == null) {
 			runTask [|
-				entity.save
+				entity.model.save
+				entity.applyPropertyValues
 			]
 		} else
 			saveCallback.apply(entity)
 	}
 	
-	def void delete() {
+	def delete() {
 		runTask [|
-			entity.delete
+			entity.model.delete
 		]
 	}
 
 	override update() {
-		if (!entity.persisted || entity.update)
+		if (!entity.persisted || entity.model.update)
 			for (callback : propertyUpdateCallbacks)
 				callback.apply
 		else

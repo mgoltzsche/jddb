@@ -21,4 +21,5 @@ public interface IDAO {
 	void save(IEntity entity);
 	void delete(IEntity entity);
 	boolean update(IEntity entity);
+	boolean exists(IEntity entity);
 }

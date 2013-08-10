@@ -2,10 +2,8 @@ package de.algorythm.jdoe;
 
 import java.io.IOException;
 
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Tab;
 import javafx.stage.Stage;
 
 import javax.inject.Inject;
@@ -13,10 +11,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.algorythm.jdoe.controller.EntityEditorController;
 import de.algorythm.jdoe.controller.IController;
 import de.algorythm.jdoe.model.dao.IDAO;
-import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.ui.jfx.util.FxmlLoaderResult;
 import de.algorythm.jdoe.ui.jfx.util.GuiceFxmlLoader;
 
