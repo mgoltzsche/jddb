@@ -40,7 +40,7 @@ public class MainController extends AbstractXtendController implements IControll
 	@FXML var TextField searchField
 	@FXML var MenuButton newEntityButton
 	var Schema schema
-	var EntityType selectedType = EntityType.ALL
+	var selectedType = EntityType.ALL
 	var String searchPhrase
 	
 	override init() {
