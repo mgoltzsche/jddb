@@ -70,8 +70,10 @@ public class EntityEditorController extends AbstractXtendController implements I
 				entity.model.save
 				entity.applyPropertyValues
 			]
-		} else
+		} else {
 			saveCallback.apply(entity)
+			entity.applyPropertyValues
+		}
 	}
 	
 	def delete() {

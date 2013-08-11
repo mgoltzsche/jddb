@@ -8,17 +8,17 @@ import de.algorythm.jdoe.ui.jfx.model.FXPropertyValue;
 
 public class PropertyCellValueFactory implements Callback<CellDataFeatures<FXEntity, String>, ObservableValue<String>> {
 
-	private final int index;
+	private final int propertyIndex;
 	
-	public PropertyCellValueFactory(final int index) {
-		this.index = index;
+	public PropertyCellValueFactory(final int propertyIndex) {
+		this.propertyIndex = propertyIndex;
 	}
 	
 	@Override
 	public ObservableValue<String> call(
 			final CellDataFeatures<FXEntity, String> features) {
 		final FXEntity entity = features.getValue();
-		final FXPropertyValue value = entity.getValue(index);
+		final FXPropertyValue value = entity.getValue(propertyIndex);
 		
 		return value.getValue();
 	}

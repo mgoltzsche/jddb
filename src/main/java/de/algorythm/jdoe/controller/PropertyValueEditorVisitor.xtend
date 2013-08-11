@@ -193,13 +193,14 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				val containedEntity = valueContainer.value
 				valueContainer.value = null
 				label.textProperty.unbind
+				label.text = ''
 				editButton.text = 'create'
 				containedEntity.closeEntityEditor
 				removeButton.disable = true
 			]
 			
 			saveCallbacks += [|
-				propertyValue.value = valueContainer.value.model
+				propertyValue.value = valueContainer.value?.model
 			]
 			
 			updateCallbacks += [|
@@ -208,6 +209,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				if (containerValue != null && !containerValue.model.exists) {
 					runLater [|
 						label.textProperty.unbind
+						label.text = ''
 						valueContainer.value = null
 						editButton.text = 'create'
 					]

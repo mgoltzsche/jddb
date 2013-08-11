@@ -26,7 +26,7 @@ public class FXEntity {
 		for (IPropertyValue<?> value : modelValues)
 			values.add(new FXPropertyValue(value));
 		
-		label.setValue(model.toString());
+		applyLabelValue();
 	}
 	
 	public IEntity getModel() {
@@ -37,7 +37,20 @@ public class FXEntity {
 		for (FXPropertyValue value : values)
 			value.apply();
 		
-		final String modelLabel = model.toString();
+		applyLabelValue();
+	}
+	
+	private void applyLabelValue() {
+		final StringBuilder sb = new StringBuilder(model.toString());
+		
+		if (sb.length() == 0) {
+			sb.append(model.getType().getLabel());
+		
+			if (!model.isPersisted())
+				sb.append(" (neu)");
+		}
+		
+		final String modelLabel = sb.toString();
 		
 		Platform.runLater(new Runnable() {
 			@Override
@@ -45,8 +58,6 @@ public class FXEntity {
 				label.setValue(modelLabel);
 			}
 		});
-		
-		// TODO: call applyPropertyValues of new contained entities
 	}
 	
 	public String getId() {

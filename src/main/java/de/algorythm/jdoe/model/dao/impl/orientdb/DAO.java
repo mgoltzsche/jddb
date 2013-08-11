@@ -391,9 +391,9 @@ public class DAO implements IDAO {
 				graph.rollback();
 				throw e;
 			}
-			
-			notifyObservers();
 		}
+		
+		notifyObservers();
 	}
 	
 	private void saveInTransaction(final IEntity entity) {
@@ -421,10 +421,11 @@ public class DAO implements IDAO {
 				graph.commit();
 			} catch(Throwable e) {
 				graph.rollback();
+				throw e;
 			}
-			
-			notifyObservers();
 		}
+		
+		notifyObservers();
 	}
 	
 	private void deleteInTransaction(final IEntity entity) {

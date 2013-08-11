@@ -25,6 +25,8 @@ import javafx.scene.control.TableView
 import javafx.scene.control.TextField
 import javax.inject.Inject
 import org.slf4j.LoggerFactory
+import java.util.Collection
+import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
 
 public class MainController extends AbstractXtendController implements IController, IObserver {
 	
@@ -85,8 +87,13 @@ public class MainController extends AbstractXtendController implements IControll
 			else
 				type
 		
-		updateTableColumns
-		showListTab
+		runTask [|
+			updateTableColumns
+			
+			runLater [|
+				showListTab
+			]
+		]
 	}
 	
 	def private void showListTab() {
@@ -111,7 +118,7 @@ public class MainController extends AbstractXtendController implements IControll
 			menuItem.text = type.label
 			
 			menuItem.actionListener [|
-				new FXEntity(type.createEntity).showEntityEditor
+				type.createEntity.wrap.showEntityEditor
 			]
 			
 			menuItems += menuItem
@@ -120,14 +127,18 @@ public class MainController extends AbstractXtendController implements IControll
 		newEntityButton.items.all = menuItems
 	}
 	
-	def private void updateTableColumns() {
+	def private updateTableColumns() {
 		val columns = new LinkedList<TableColumn<FXEntity, String>>
 		
 		if (selectedType == EntityType.ALL) {
-			val column = new TableColumn<FXEntity, String>('Entity')
+			val typeColumn = new TableColumn<FXEntity, String>('Type')
+			val labelColumn = new TableColumn<FXEntity, String>('Entity')
 			
-			column.cellValueFactory = new EntityCellValueFactory
-			columns += column
+			typeColumn.cellValueFactory = EntityTypeCellValueFactory.INSTANCE
+			labelColumn.cellValueFactory = EntityCellValueFactory.INSTANCE
+			
+			columns += typeColumn
+			columns += labelColumn
 		} else {	
 			for (Property property : selectedType.properties) {
 				val column = new TableColumn<FXEntity, String>(property.label)
@@ -137,17 +148,25 @@ public class MainController extends AbstractXtendController implements IControll
 			}
 		}
 		
-		update
-		entityList.columns.all = columns
+		val entities = dao.list(selectedType, searchPhrase).wrap
+		
+		runLater [|
+			entities.updateTableData
+			entityList.columns.all = columns
+		]
 	}
 	
 	override update() {
-		val entities = dao.list(selectedType, searchPhrase)
+		val entities = dao.list(selectedType, searchPhrase).wrap
 		
 		runLater [|
-			entityList.items.all = entities.wrap
-			listTab.text = '''Results («entities.size»)'''
+			entities.updateTableData
 		]
+	}
+	
+	def private updateTableData(Collection<FXEntity> entities) {
+		entityList.items.all = entities
+		listTab.text = '''Results («entities.size»)'''
 	}
 	
 	def openDatabase() {
