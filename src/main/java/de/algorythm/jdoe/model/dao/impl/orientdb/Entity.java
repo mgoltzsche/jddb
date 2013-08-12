@@ -37,11 +37,13 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	private transient Vertex vertex;
 	private ArrayList<IPropertyValue<?>> values;
 	private String id;
+	private transient boolean persisted;
 	
 	public Entity(final Schema schema, final EntityType type) {
 		this.schema = schema;
 		this.type = type;
 		id = UUID.randomUUID().toString();
+		persisted = false;
 		loadProperties();
 	}
 	
@@ -50,6 +52,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 		setVertex(vertex);
 		id = vertex.getProperty(ID);
 		type = getTypeByVertex(vertex);
+		persisted = true;
 		loadProperties();
 	}
 	
@@ -60,7 +63,20 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	
 	@Override
 	public boolean isPersisted() {
-		return vertex != null;
+		return persisted;
+	}
+	
+	public void setPersisted(final boolean persisted) {
+		this.persisted = persisted;
+	}
+	
+	@Override
+	public boolean isChanged() {
+		for (IPropertyValue<?> value : values)
+			if (value.isChanged())
+				return true;
+		
+		return false;
 	}
 	
 	public Vertex getVertex() {
@@ -92,7 +108,9 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 		for (Property property : type.getProperties()) {
 			final IPropertyValue<?> propertyValue = property.createPropertyValue();
 			
-			if (vertex != null)
+			if (vertex == null)
+				((AbstractPropertyValue<?>) propertyValue).setChanged(true);
+			else
 				updatePropertyValue(propertyValue);
 			
 			values.add(propertyValue);
@@ -100,11 +118,9 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 	}
 	
 	private void updatePropertyValue(IPropertyValue<?> propertyValue) {
-		final boolean changed = propertyValue.isChanged();
-		
 		propertyValue.doWithValue(this);
 		
-		((AbstractPropertyValue<?>) propertyValue).setChanged(changed);
+		((AbstractPropertyValue<?>) propertyValue).setChanged(false);
 	}
 	
 	@Override

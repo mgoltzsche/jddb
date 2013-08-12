@@ -31,6 +31,7 @@ import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
+import de.algorythm.jdoe.model.entity.impl.AbstractPropertyValue;
 import de.algorythm.jdoe.model.entity.impl.Association;
 import de.algorythm.jdoe.model.entity.impl.Associations;
 import de.algorythm.jdoe.model.entity.impl.BooleanValue;
@@ -59,14 +60,19 @@ public class DAO implements IDAO {
 		
 		private final Vertex vertex;
 		private final Index<Vertex> searchIndex;
+		private final Collection<Entity> savedEntities;
 		
-		public SaveVisitor(final Entity entity) {
+		public SaveVisitor(final Entity entity, final Collection<Entity> savedEntities) {
 			vertex = entity.getVertex();
 			searchIndex = searchIndices.get(entity.getType().getName());
+			this.savedEntities = savedEntities;
 		}
 		
 		@Override
 		public void doWithAssociations(Associations propertyValue) {
+			if (!propertyValue.isChanged())
+				return;
+			
 			final Property property = propertyValue.getProperty();
 			final String propertyName = property.getName();
 			final LinkedList<Edge> existingEdges = new LinkedList<Edge>();
@@ -76,7 +82,7 @@ public class DAO implements IDAO {
 			
 			for (IEntity refEntity : propertyValue.getValue()) {
 				if (!refEntity.isPersisted()) // save new entity
-					saveInTransaction(refEntity);
+					saveInTransaction(refEntity, savedEntities);
 				
 				// check existing edge
 				boolean edgeAlreadyExists = false;
@@ -105,6 +111,9 @@ public class DAO implements IDAO {
 		
 		@Override
 		public void doWithAssociation(Association propertyValue) {
+			if (!propertyValue.isChanged())
+				return;
+			
 			final Property property = propertyValue.getProperty();
 			final String propertyName = property.getName();
 			final Entity refEntity = (Entity) propertyValue.getValue();
@@ -112,7 +121,7 @@ public class DAO implements IDAO {
 			
 			if (refEntity != null) {
 				if (!refEntity.isPersisted())
-					saveInTransaction(refEntity);
+					saveInTransaction(refEntity, savedEntities);
 				
 				refVertex = refEntity.getVertex();
 			}
@@ -167,18 +176,7 @@ public class DAO implements IDAO {
 			final Property property = propertyValue.getProperty();
 			final String propertyName = property.getName();
 			final Object newValue = propertyValue.getValue();
-			final Object oldValue = vertex.getProperty(propertyName);
 			
-			if (newValue == null && oldValue == null ||
-					newValue != null && newValue.equals(oldValue))
-				return; // do nothing if value hasn't changed
-			
-			// remove existing indices for value
-			if (oldValue != null && property.isSearchable())
-				for (String oldKeyword : createLeftTruncatedIndexKeywords(oldValue))
-					searchIndex.remove(SEARCH_INDEX, oldKeyword, vertex);
-			
-			System.out.println("new value: " + newValue);
 			// persist new value
 			if (newValue == null) {
 				vertex.removeProperty(propertyName);
@@ -186,6 +184,7 @@ public class DAO implements IDAO {
 				vertex.setProperty(propertyName, newValue);
 				
 				if (property.isSearchable())
+					// add value to vertex' index
 					for (String keyword : createLeftTruncatedIndexKeywords(newValue))
 						searchIndex.put(SEARCH_INDEX, keyword, vertex);
 			}
@@ -206,14 +205,57 @@ public class DAO implements IDAO {
 		}
 	};
 	
-	private final class DeleteVisitor implements IPropertyValueVisitor {
+	private class IndexRemovingVisitor implements IPropertyValueVisitor {
 		
 		private final Vertex vertex;
 		private final Index<Vertex> searchIndex;
 		
-		public DeleteVisitor(final Entity entity) {
+		public IndexRemovingVisitor(final Entity entity) {
 			vertex = entity.getVertex();
 			searchIndex = searchIndices.get(entity.getType().getName());
+		}
+		
+		@Override
+		public void doWithAssociations(Associations propertyValue) {}
+		
+		@Override
+		public void doWithAssociation(Association propertyValue) {}
+
+		@Override
+		public void doWithBoolean(BooleanValue propertyValue) {
+			removeFromIndex(searchIndex, propertyValue, vertex);
+		}
+
+		@Override
+		public void doWithDecimal(DecimalValue propertyValue) {
+			removeFromIndex(searchIndex, propertyValue, vertex);
+		}
+
+		@Override
+		public void doWithReal(RealValue propertyValue) {
+			removeFromIndex(searchIndex, propertyValue, vertex);
+		}
+
+		@Override
+		public void doWithDate(DateValue propertyValue) {
+			removeFromIndex(searchIndex, propertyValue, vertex);
+		}
+
+		@Override
+		public void doWithString(StringValue propertyValue) {
+			removeFromIndex(searchIndex, propertyValue, vertex);
+		}
+
+		@Override
+		public void doWithText(TextValue propertyValue) {
+			removeFromIndex(searchIndex, propertyValue, vertex);
+		}
+	};
+	
+	private final class DeleteVisitor extends IndexRemovingVisitor {
+		
+		public DeleteVisitor(final Entity entity) {
+			super(entity);
 		}
 		
 		@Override
@@ -232,46 +274,21 @@ public class DAO implements IDAO {
 					deleteInTransaction(entity);
 			}
 		}
-
-		@Override
-		public void doWithBoolean(BooleanValue propertyValue) {
-			removeIndex(propertyValue);
-		}
-
-		@Override
-		public void doWithDecimal(DecimalValue propertyValue) {
-			removeIndex(propertyValue);
-		}
-
-		@Override
-		public void doWithReal(RealValue propertyValue) {
-			removeIndex(propertyValue);
-		}
-
-		@Override
-		public void doWithDate(DateValue propertyValue) {
-			removeIndex(propertyValue);
-		}
-
-		@Override
-		public void doWithString(StringValue propertyValue) {
-			removeIndex(propertyValue);
-		}
-
-		@Override
-		public void doWithText(TextValue propertyValue) {
-			removeIndex(propertyValue);
-		}
-		
-		private void removeIndex(final IPropertyValue<?> propertyValue) {
-			final String propertyName = propertyValue.getProperty().getName();
-			final Object value = vertex.getProperty(propertyName);
-			
-			if (value != null)
-				for (String keyword : createLeftTruncatedIndexKeywords(value))
-					searchIndex.remove(SEARCH_INDEX, keyword, vertex);
-		}
 	};
+	
+	private void removeFromIndex(final Index<Vertex> searchIndex, final IPropertyValue<?> propertyValue, final Vertex vertex) {
+		final Property property = propertyValue.getProperty();
+		
+		if (!property.isSearchable())
+			return;
+		
+		final String propertyName = property.getName();
+		final Object value = vertex.getProperty(propertyName);
+		
+		if (value != null)
+			for (String keyword : createLeftTruncatedIndexKeywords(value))
+				searchIndex.remove(SEARCH_INDEX, keyword, vertex);
+	}
 	
 	private Iterable<String> createLeftTruncatedIndexKeywords(final Object value) {
 		final LinkedList<String> keywords = new LinkedList<>();
@@ -308,16 +325,14 @@ public class DAO implements IDAO {
 	}
 	
 	public void open() throws IOException {
-		synchronized(this) {
-			loadSchema();
-			
-			graph = new OrientGraph("local:graph.db");
-			
-			graph.setUseLightweightEdges(true);
-			graph.createKeyIndex(Entity.TYPE_FIELD, Vertex.class);
-			
-			mapIndices();
-		}
+		loadSchema();
+		
+		graph = new OrientGraph("local:graph.db");
+		
+		graph.setUseLightweightEdges(true);
+		graph.createKeyIndex(Entity.TYPE_FIELD, Vertex.class);
+		
+		mapIndices();
 	}
 	
 	private void mapIndices() {
@@ -338,12 +353,10 @@ public class DAO implements IDAO {
 	}
 	
 	private void loadSchema() throws IOException {
-		synchronized(this) {
-			try {
-				schema = yaml.loadAs(new FileReader(new File("schema.yaml")), Schema.class);
-			} catch(FileNotFoundException e) {
-				schema = new Schema();
-			}
+		try {
+			schema = yaml.loadAs(new FileReader(new File("schema.yaml")), Schema.class);
+		} catch(FileNotFoundException e) {
+			schema = new Schema();
 		}
 	}
 	
@@ -354,21 +367,19 @@ public class DAO implements IDAO {
 
 	@Override
 	public void setSchema(final Schema schema) throws IOException {
-		synchronized(this) {
-			// update property indices
-			for (EntityType type : schema.getTypes()) {
-				int i = 0;
-				
-				for (Property property : type.getProperties()) {
-					((Property) property).setIndex(i);
-					i++;
-				}
-			}
+		// update property indices
+		for (EntityType type : schema.getTypes()) {
+			int i = 0;
 			
-			// save schema
-			yaml.dump(schema, new FileWriter(new File("schema.yaml")));
-			this.schema = schema;
+			for (Property property : type.getProperties()) {
+				((Property) property).setIndex(i);
+				i++;
+			}
 		}
+		
+		// save schema
+		yaml.dump(schema, new FileWriter(new File("schema.yaml")));
+		this.schema = schema;
 	}
 
 	@Override
@@ -378,22 +389,46 @@ public class DAO implements IDAO {
 	
 	@Override
 	public void save(final IEntity entity) {
-		synchronized(this) {
-			try {
-				saveInTransaction(entity);
-				graph.commit();
-			} catch(Throwable e) {
-				graph.rollback();
-				throw e;
+		if (!entity.isChanged())
+			return;
+		
+		final LinkedList<Entity> savedEntities = new LinkedList<>();
+		
+		try {
+			saveInTransaction(entity, savedEntities);
+			graph.commit();
+		} catch(Throwable e) {
+			graph.rollback();
+			
+			for (Entity savedEntity : savedEntities) {
+				if (savedEntity.isPersisted())
+					savedEntity.update();
+				else
+					savedEntity.setVertex(null);
+			}
+			
+			throw e;
+		}
+		
+		// set entity unchanged
+		for (Entity savedEntity : savedEntities) {
+			savedEntity.setPersisted(true);
+			
+			for (IPropertyValue<?> propertyValue : savedEntity.getValues()) {
+				final AbstractPropertyValue<?> propertyValueImpl = (AbstractPropertyValue<?>) propertyValue;
+				
+				propertyValueImpl.setChanged(false);
 			}
 		}
 		
 		notifyObservers();
 	}
 	
-	private void saveInTransaction(final IEntity entity) {
+	private void saveInTransaction(final IEntity entity, final Collection<Entity> savedEntities) {
 		final Entity entityImpl = (Entity) entity;
 		Vertex vertex = entityImpl.getVertex();
+		
+		savedEntities.add(entityImpl);
 		
 		if (vertex == null) {
 			vertex = graph.addVertex(null);
@@ -402,22 +437,26 @@ public class DAO implements IDAO {
 			entityImpl.setVertex(vertex);
 		}
 		
-		final IPropertyValueVisitor visitor = new SaveVisitor(entityImpl);
+		final IndexRemovingVisitor indexRemovingVisitor = new IndexRemovingVisitor(entityImpl);
+		final SaveVisitor saveVisitor = new SaveVisitor(entityImpl, savedEntities);
 		
+		// remove old vertex index
 		for (IPropertyValue<?> propertyValue : entity.getValues())
-			propertyValue.doWithValue(visitor);
+			propertyValue.doWithValue(indexRemovingVisitor);
+		
+		// save values and rebuild vertex' index
+		for (IPropertyValue<?> propertyValue : entity.getValues())
+			propertyValue.doWithValue(saveVisitor);
 	}
 
 	@Override
 	public void delete(final IEntity entity) {
-		synchronized(this) {
-			try {
-				deleteInTransaction(entity);
-				graph.commit();
-			} catch(Throwable e) {
-				graph.rollback();
-				throw e;
-			}
+		try {
+			deleteInTransaction(entity);
+			graph.commit();
+		} catch(Throwable e) {
+			graph.rollback();
+			throw e;
 		}
 		
 		notifyObservers();
@@ -441,17 +480,15 @@ public class DAO implements IDAO {
 	
 	@Override
 	public Set<IEntity> list(final EntityType type) {
-		synchronized(this) {
-			final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
-			final Iterable<Vertex> vertices = type == EntityType.ALL
-					? graph.getVertices()
-					: graph.getVertices(Entity.TYPE_FIELD, type.getName());
-			
-			for (Vertex vertex : vertices)
-				result.add(new Entity(schema, vertex));
-			
-			return result;
-		}
+		final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
+		final Iterable<Vertex> vertices = type == EntityType.ALL
+				? graph.getVertices()
+				: graph.getVertices(Entity.TYPE_FIELD, type.getName());
+		
+		for (Vertex vertex : vertices)
+			result.add(new Entity(schema, vertex));
+		
+		return result;
 	}
 	
 	@Override
@@ -459,46 +496,44 @@ public class DAO implements IDAO {
 		if (search == null || search.isEmpty())
 			return list(type);
 		
-		synchronized(this) {
-			final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
-			final Collection<Index<Vertex>> useIndices;
-			final Iterable<String> searchKeywords = createIndexKeywords(search);
-			
-			if (type == EntityType.ALL) {
-				useIndices = searchIndices.values();
-			} else {
-				useIndices = new LinkedList<>();
-				useIndices.add(searchIndices.get(type.getName()));
-			}
-			
-			LinkedHashSet<Vertex> foundVertices = null;
-			
-			for (String keyword : searchKeywords) {
-				final LinkedHashSet<Vertex> keywordVertices = new LinkedHashSet<>();
-				
-				for (Index<Vertex> searchIndex : useIndices) {
-					final CloseableIterable<Vertex> hits = searchIndex.get(SEARCH_INDEX, keyword);
-					
-					try {
-						for (Vertex vertex : hits)
-							keywordVertices.add(vertex);
-					} finally {
-						hits.close();
-					}
-				}
-				
-				if (foundVertices == null)
-					foundVertices = keywordVertices;
-				else
-					foundVertices.retainAll(keywordVertices);
-			}
-			
-			if (foundVertices != null)
-				for (Vertex vertex : foundVertices)
-					result.add(new Entity(schema, vertex));
-			
-			return result;
+		final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
+		final Collection<Index<Vertex>> useIndices;
+		final Iterable<String> searchKeywords = createIndexKeywords(search);
+		
+		if (type == EntityType.ALL) {
+			useIndices = searchIndices.values();
+		} else {
+			useIndices = new LinkedList<>();
+			useIndices.add(searchIndices.get(type.getName()));
 		}
+		
+		LinkedHashSet<Vertex> foundVertices = null;
+		
+		for (String keyword : searchKeywords) {
+			final LinkedHashSet<Vertex> keywordVertices = new LinkedHashSet<>();
+			
+			for (Index<Vertex> searchIndex : useIndices) {
+				final CloseableIterable<Vertex> hits = searchIndex.get(SEARCH_INDEX, keyword);
+				
+				try {
+					for (Vertex vertex : hits)
+						keywordVertices.add(vertex);
+				} finally {
+					hits.close();
+				}
+			}
+			
+			if (foundVertices == null)
+				foundVertices = keywordVertices;
+			else
+				foundVertices.retainAll(keywordVertices);
+		}
+		
+		if (foundVertices != null)
+			for (Vertex vertex : foundVertices)
+				result.add(new Entity(schema, vertex));
+		
+		return result;
 	}
 	
 	@Override
@@ -509,16 +544,14 @@ public class DAO implements IDAO {
 		if (vertex == null)
 			throw new IllegalArgumentException("entity is not persistent");
 		
-		synchronized(this) {
-			final boolean notExists = graph.getVertex(vertex.getId()) == null;
-			
-			if (notExists)
-				return false;
-			
-			entityImpl.update();
-			
-			return true;
-		}
+		final boolean notExists = graph.getVertex(vertex.getId()) == null;
+		
+		if (notExists)
+			return false;
+		
+		entityImpl.update();
+		
+		return true;
 	}
 	
 	@Override
@@ -529,9 +562,7 @@ public class DAO implements IDAO {
 		if (vertex == null)
 			throw new IllegalArgumentException("entity is not persistent");
 		
-		synchronized(this) {
-			return graph.getVertex(vertex.getId()) != null;
-		}
+		return graph.getVertex(vertex.getId()) != null;
 	}
 
 	@Override

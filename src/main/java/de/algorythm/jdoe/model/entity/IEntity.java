@@ -9,6 +9,7 @@ public interface IEntity extends Serializable {
 
 	String getId();
 	boolean isPersisted();
+	boolean isChanged();
 	EntityType getType();
 	Collection<IPropertyValue<?>> getValues();
 	Iterable<IEntity> getReferencingEntities();

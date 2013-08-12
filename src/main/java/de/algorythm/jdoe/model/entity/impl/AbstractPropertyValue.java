@@ -36,6 +36,13 @@ public abstract class AbstractPropertyValue<V> implements IPropertyValue<V> {
 	
 	@Override
 	public void setValue(final V value) {
-		this.value = value;
+		if (changed(this.value, value)) {
+			this.value = value;
+			changed = true;
+		}
+	}
+	
+	protected boolean changed(final V oldValue, final V newValue) {
+		return oldValue == null && newValue != null || oldValue != null && !oldValue.equals(newValue);
 	}
 }

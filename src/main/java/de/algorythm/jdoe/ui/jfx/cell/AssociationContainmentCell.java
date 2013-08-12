@@ -23,7 +23,7 @@ public class AssociationContainmentCell extends ListCell<FXEntity> {
 	
 	
 	private final Label label = new Label();
-	private final Button btn = new Button("remove");
+	private final Button removeButton = new Button("remove");
 	private final BorderPane pane = new BorderPane();
 	private FXEntity entity;
 	
@@ -31,9 +31,9 @@ public class AssociationContainmentCell extends ListCell<FXEntity> {
 		BorderPane.setAlignment(label, Pos.CENTER_LEFT);
 		
 		pane.setCenter(label);
-		pane.setRight(btn);
+		pane.setRight(removeButton);
 		
-		btn.setOnAction(new EventHandler<ActionEvent>() {
+		removeButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent evt) {
 				getListView().getItems().remove(entity);
