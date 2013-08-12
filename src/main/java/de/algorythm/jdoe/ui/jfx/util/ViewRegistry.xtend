@@ -1,6 +1,5 @@
 package de.algorythm.jdoe.ui.jfx.util;
 
-import de.algorythm.jdoe.controller.AbstractXtendController
 import de.algorythm.jdoe.controller.EntityEditorController
 import de.algorythm.jdoe.model.entity.IEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
@@ -13,7 +12,7 @@ import javafx.scene.control.TabPane
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
-public class ViewRegistry extends AbstractXtendController implements IEntityEditorManager {
+public class ViewRegistry implements IEntityEditorManager {
 
 	@Inject extension GuiceFxmlLoader
 	val viewMap = new HashMap<String, ViewData>
@@ -48,7 +47,7 @@ public class ViewRegistry extends AbstractXtendController implements IEntityEdit
 			
 			tab.textProperty.bind(entity.label)
 			
-			tab.onClosedListener[|
+			tab.setOnClosed [
 				viewMap.remove(entityId)
 				
 				loaderResult.controller.close

@@ -3,6 +3,9 @@ package de.algorythm.jdoe.ui.jfx.util;
 import java.io.IOException;
 
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 import javax.inject.Inject;
 
@@ -32,5 +35,16 @@ public class GuiceFxmlLoader {
 		}
 		
 		return new FxmlLoaderResult<N, C>(node, controller);
+	}
+	
+	public void showWindow(final String fxmlFileName, final String title, final int width, final int height) throws IOException {
+		final FxmlLoaderResult<Parent, IController> loaderResult = load(fxmlFileName);
+		final Parent rootNode = loaderResult.getNode();
+		final Scene scene = new Scene(rootNode, width, height);
+		final Stage stage = new Stage();
+		
+		stage.setTitle(title);
+		stage.setScene(scene);
+		stage.show();
 	}
 }

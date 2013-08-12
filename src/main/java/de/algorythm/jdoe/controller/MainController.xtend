@@ -8,10 +8,12 @@ import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.model.meta.Schema
 import de.algorythm.jdoe.ui.jfx.cell.EntityCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.EntityRow
+import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.PropertyCellValueFactory
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.util.ViewRegistry
 import java.io.IOException
+import java.util.Collection
 import java.util.LinkedList
 import javafx.beans.property.SimpleStringProperty
 import javafx.fxml.FXML
@@ -24,13 +26,9 @@ import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.scene.control.TextField
 import javax.inject.Inject
-import org.slf4j.LoggerFactory
-import java.util.Collection
-import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
+import javafx.application.Platform
 
 public class MainController extends AbstractXtendController implements IController, IObserver {
-	
-	static val log = LoggerFactory.getLogger(typeof(MainController))
 	
 	@Inject extension IDAO dao
 	@Inject extension JavaDbObjectEditorFacade facade
@@ -53,7 +51,7 @@ public class MainController extends AbstractXtendController implements IControll
 		searchField.textProperty.changeListener [
 			searchPhrase = it
 			
-			runLater [|
+			runReplacedTask('searching') [|
 				showListTab
 				update
 			]
@@ -72,7 +70,7 @@ public class MainController extends AbstractXtendController implements IControll
 		
 		addObserver(this)
 		
-		runLater [|
+		Platform.runLater [|
 			searchField.requestFocus
 		]
 	}
@@ -87,10 +85,10 @@ public class MainController extends AbstractXtendController implements IControll
 			else
 				type
 		
-		runTask [|
+		runReplacedTask('load results for selected type') [|
 			updateTableColumns
 			
-			runLater [|
+			Platform.runLater [|
 				showListTab
 			]
 		]
@@ -117,7 +115,7 @@ public class MainController extends AbstractXtendController implements IControll
 			
 			menuItem.text = type.label
 			
-			menuItem.actionListener [|
+			menuItem.setOnAction [
 				type.createEntity.wrap.showEntityEditor
 			]
 			
@@ -150,7 +148,7 @@ public class MainController extends AbstractXtendController implements IControll
 		
 		val entities = dao.list(selectedType, searchPhrase).wrap
 		
-		runLater [|
+		Platform.runLater [|
 			entities.updateTableData
 			entityList.columns.all = columns
 		]
@@ -159,7 +157,7 @@ public class MainController extends AbstractXtendController implements IControll
 	override update() {
 		val entities = dao.list(selectedType, searchPhrase).wrap
 		
-		runLater [|
+		Platform.runLater [|
 			entities.updateTableData
 		]
 	}

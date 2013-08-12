@@ -7,8 +7,6 @@ import javax.inject.Inject;
 
 import com.google.inject.Guice;
 
-import de.algorythm.jdoe.controller.codegen.InMemoryCompiler;
-
 public class JavaDbObjectEditor extends Application {
 
 	@Inject private JavaDbObjectEditorFacade facade;
@@ -18,11 +16,11 @@ public class JavaDbObjectEditor extends Application {
 	}
 
 	@Override
-	public void start(final Stage stage) throws Exception {
+	public void start(final Stage primaryStage) throws Exception {
 		Guice.createInjector(new JavaDbObjectEditorModule())
 				.injectMembers(this);
 
-		facade.startApplication(stage);
+		facade.startApplication(primaryStage);
 	}
 	
 	@Override

@@ -29,6 +29,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
+import javafx.application.Platform
 
 class PropertyValueEditorVisitor extends AbstractXtendController implements IPropertyValueVisitor {
 
@@ -65,7 +66,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			vBoxChildren += selectedEntities
 			vBoxChildren += addButton
 			
-			addButton.actionListener [|
+			addButton.setOnAction [
 				val newEntity = new FXEntity(collectionType.itemType.createEntity)
 				
 				selectedEntities.items += newEntity
@@ -99,7 +100,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				}
 			]
 			
-			addButton.actionListener [|
+			addButton.setOnAction [
 				val selectedEntity = availableEntities.selectionModel.selectedItem
 				
 				if (selectedEntity != null) {
@@ -108,7 +109,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				}
 			]
 			
-			createButton.actionListener[|
+			createButton.setOnAction [
 				collectionType.itemType.createEntity.wrap.showEntityEditor [
 					model.save
 					selectedEntities.items += it
@@ -131,7 +132,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				
 				entities -= selectedEntities.items
 				
-				runLater [|
+				Platform.runLater [|
 					availableEntities.items.all = entities
 				]
 			]
@@ -173,7 +174,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			hBoxChildren += editButton
 			hBoxChildren += removeButton
 			
-			editButton.actionListener [|
+			editButton.setOnAction [
 				var value = valueContainer.value
 				
 				if (value == null) {
@@ -189,7 +190,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				value.showEntityEditor []
 			]
 			
-			removeButton.actionListener [|
+			removeButton.setOnAction [
 				val containedEntity = valueContainer.value
 				valueContainer.value = null
 				label.textProperty.unbind
@@ -207,7 +208,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				val containerValue = valueContainer.value
 				
 				if (containerValue != null && !containerValue.model.exists) {
-					runLater [|
+					Platform.runLater [|
 						label.textProperty.unbind
 						label.text = ''
 						valueContainer.value = null
@@ -230,7 +231,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 					removeButton.disable = false
 			]
 			
-			createButton.actionListener [|
+			createButton.setOnAction [
 				entityType.createEntity.wrap.showEntityEditor [
 					model.save
 					entityComboBox.value = it
@@ -238,7 +239,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				]
 			]
 			
-			removeButton.actionListener[|
+			removeButton.setOnAction [
 				entityComboBox.value = null
 				removeButton.disable = true
 			]
@@ -251,7 +252,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				val selectedEntity = entityComboBox.value
 				
 				if (selectedEntity != null && !selectedEntity.model.update) {
-					runLater [|
+					Platform.runLater [|
 						entityComboBox.value = null
 						removeButton.disable = true
 					]

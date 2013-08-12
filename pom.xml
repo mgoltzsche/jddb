@@ -95,10 +95,29 @@
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.1</version>
 			</plugin>
+			<!-- Exclude JavaFX dependency in eclipse -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>2.9</version>
+				<configuration>
+					<excludes>
+						<exclude>com.oracle:javafx</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
 	<dependencies>
+		<!-- JavaFX -->
+		<!--<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>javafx</artifactId>
+			<version>2.2</version>
+			<scope>system</scope>
+			<systemPath>${env.JAVA_HOME}/jre/lib/jfxrt.jar</systemPath>
+		</dependency>-->
 		<!-- Guice -->
 		<dependency>
 			<groupId>com.google.inject</groupId>

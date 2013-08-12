@@ -27,7 +27,7 @@
 			<TextField fx:id="searchField" promptText="Search ..."
 				prefWidth="200" />
 			<ComboBox fx:id="typeComboBox" />
-			<MenuButton fx:id="newEntityButton" contentDisplay="RIGHT" text="Neu"/>
+			<MenuButton fx:id="newEntityButton" alignment="CENTER_RIGHT" text="Neu"/>
 		</ToolBar>
 	</top>
 	<center>

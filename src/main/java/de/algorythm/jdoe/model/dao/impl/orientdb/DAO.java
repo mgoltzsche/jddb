@@ -316,13 +316,11 @@ public class DAO implements IDAO {
 			graph.setUseLightweightEdges(true);
 			graph.createKeyIndex(Entity.TYPE_FIELD, Vertex.class);
 			
-			createIndices();
-			
-			System.out.println("db opened");
+			mapIndices();
 		}
 	}
 	
-	private void createIndices() {
+	private void mapIndices() {
 		for (EntityType type : schema.getTypes()) {
 			final String typeName = type.getName();
 			Index<Vertex> typeIndex = graph.getIndex(typeName, Vertex.class);
@@ -335,11 +333,8 @@ public class DAO implements IDAO {
 	}
 	
 	public void close() {
-		synchronized(this) {
+		if (graph != null)
 			graph.shutdown();
-			
-			System.out.println("db closed");
-		}
 	}
 	
 	private void loadSchema() throws IOException {

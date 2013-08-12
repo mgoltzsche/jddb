@@ -4,6 +4,7 @@ import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.entity.IPropertyValue
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
+import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.util.LinkedList
 import javafx.fxml.FXML
 import javafx.geometry.Insets
@@ -14,7 +15,6 @@ import javafx.scene.layout.GridPane
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
-import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 
 public class EntityEditorController extends AbstractXtendController implements IController, IObserver {
 	
@@ -66,7 +66,7 @@ public class EntityEditorController extends AbstractXtendController implements I
 			callback.apply
 		
 		if (entity.persisted || saveCallback == null) {
-			runTask [|
+			runTask('saving entity') [|
 				entity.model.save
 				entity.applyPropertyValues
 			]
@@ -77,7 +77,7 @@ public class EntityEditorController extends AbstractXtendController implements I
 	}
 	
 	def delete() {
-		runTask [|
+		runTask('deleting entity') [|
 			entity.model.delete
 		]
 	}
