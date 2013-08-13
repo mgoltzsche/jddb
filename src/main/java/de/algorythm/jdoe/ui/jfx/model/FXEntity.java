@@ -96,6 +96,11 @@ public class FXEntity {
 	
 	@Override
 	public boolean equals(final Object o) {
-		return model.equals(o);
+		if (o == null || o.getClass() != getClass())
+			return false;
+		
+		final FXEntity other = (FXEntity) o;
+		
+		return model.equals(other.model);
 	}
 }
