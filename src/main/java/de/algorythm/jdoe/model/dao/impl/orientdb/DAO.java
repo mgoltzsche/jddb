@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -20,32 +19,24 @@ import javax.inject.Singleton;
 import org.yaml.snakeyaml.Yaml;
 
 import com.tinkerpop.blueprints.CloseableIterable;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Index;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.IObserver;
+import de.algorythm.jdoe.model.dao.impl.orientdb.visitor.DeleteVisitor;
+import de.algorythm.jdoe.model.dao.impl.orientdb.visitor.IndexKeywordCollectingVisitor;
+import de.algorythm.jdoe.model.dao.impl.orientdb.visitor.SaveVisitor;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.entity.impl.AbstractPropertyValue;
-import de.algorythm.jdoe.model.entity.impl.Association;
-import de.algorythm.jdoe.model.entity.impl.Associations;
-import de.algorythm.jdoe.model.entity.impl.BooleanValue;
-import de.algorythm.jdoe.model.entity.impl.DateValue;
-import de.algorythm.jdoe.model.entity.impl.DecimalValue;
-import de.algorythm.jdoe.model.entity.impl.RealValue;
-import de.algorythm.jdoe.model.entity.impl.StringValue;
-import de.algorythm.jdoe.model.entity.impl.TextValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.Schema;
 
 @Singleton
-public class DAO implements IDAO {
+public class DAO implements IDAO, IDAOVisitorContext {
 	
 	static private final String SEARCH_INDEX = "searchIndex";
 	static private final Pattern WORD_PATTERN = Pattern.compile("[\\w]+");
@@ -55,274 +46,6 @@ public class DAO implements IDAO {
 	private OrientGraph graph;
 	private final HashSet<IObserver> observers = new HashSet<>();
 	private final HashMap<String, Index<Vertex>> searchIndices = new HashMap<>();
-	
-	private final class SaveVisitor implements IPropertyValueVisitor {
-		
-		private final Vertex vertex;
-		private final Index<Vertex> searchIndex;
-		private final Collection<Entity> savedEntities;
-		
-		public SaveVisitor(final Entity entity, final Collection<Entity> savedEntities) {
-			vertex = entity.getVertex();
-			searchIndex = searchIndices.get(entity.getType().getName());
-			this.savedEntities = savedEntities;
-		}
-		
-		@Override
-		public void doWithAssociations(Associations propertyValue) {
-			if (!propertyValue.isChanged())
-				return;
-			
-			final Property property = propertyValue.getProperty();
-			final String propertyName = property.getName();
-			final LinkedList<Edge> existingEdges = new LinkedList<Edge>();
-			
-			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName))
-				existingEdges.add(edge);
-			
-			for (IEntity refEntity : propertyValue.getValue()) {
-				if (!refEntity.isPersisted()) // save new entity
-					saveInTransaction(refEntity, savedEntities);
-				
-				// check existing edge
-				boolean edgeAlreadyExists = false;
-				
-				final Vertex refVertex = ((Entity) refEntity).getVertex();
-				final Iterator<Edge> existingEdgeIter = existingEdges.iterator();
-				
-				while (existingEdgeIter.hasNext()) {
-					final Edge edge = existingEdgeIter.next();
-					
-					if (edge.getVertex(Direction.IN).equals(refVertex)) {
-						edgeAlreadyExists = true;
-						existingEdgeIter.remove();
-						break;
-					}
-				}
-				
-				if (!edgeAlreadyExists) // save new edge
-					vertex.addEdge(propertyName, refVertex);
-			}
-			
-			// remove invalid edges
-			for (Edge edge : existingEdges)
-				deleteEdge(property, edge);
-		}
-		
-		@Override
-		public void doWithAssociation(Association propertyValue) {
-			if (!propertyValue.isChanged())
-				return;
-			
-			final Property property = propertyValue.getProperty();
-			final String propertyName = property.getName();
-			final Entity refEntity = (Entity) propertyValue.getValue();
-			Vertex refVertex = null;
-			
-			if (refEntity != null) {
-				if (!refEntity.isPersisted())
-					saveInTransaction(refEntity, savedEntities);
-				
-				refVertex = refEntity.getVertex();
-			}
-			
-			boolean edgeAlreadyExists = false;
-			
-			// remove outgoing edges
-			for (Edge edge : vertex.getEdges(Direction.OUT, propertyName)) {
-				if (refVertex == null)
-					deleteEdge(property, edge);
-				else if (edge.getVertex(Direction.IN).equals(refVertex))
-					edgeAlreadyExists = true;
-				else
-					deleteEdge(property, edge);
-			}
-			
-			if (refVertex != null && !edgeAlreadyExists) // add edge if not exists
-				vertex.addEdge(propertyName, refVertex);
-		}
-		
-		@Override
-		public void doWithBoolean(BooleanValue propertyValue) {
-			writeAttributeValue(propertyValue);
-		}
-
-		@Override
-		public void doWithDecimal(DecimalValue propertyValue) {
-			writeAttributeValue(propertyValue);
-		}
-
-		@Override
-		public void doWithReal(RealValue propertyValue) {
-			writeAttributeValue(propertyValue);
-		}
-
-		@Override
-		public void doWithDate(DateValue propertyValue) {
-			writeAttributeValue(propertyValue);
-		}
-
-		@Override
-		public void doWithString(StringValue propertyValue) {
-			writeAttributeValue(propertyValue);
-		}
-
-		@Override
-		public void doWithText(TextValue propertyValue) {
-			writeAttributeValue(propertyValue);
-		}
-		
-		private void writeAttributeValue(IPropertyValue<?> propertyValue) {
-			final Property property = propertyValue.getProperty();
-			final String propertyName = property.getName();
-			final Object newValue = propertyValue.getValue();
-			
-			// persist new value
-			if (newValue == null) {
-				vertex.removeProperty(propertyName);
-			} else {
-				vertex.setProperty(propertyName, newValue);
-				
-				if (property.isSearchable())
-					// add value to vertex' index
-					for (String keyword : createLeftTruncatedIndexKeywords(newValue))
-						searchIndex.put(SEARCH_INDEX, keyword, vertex);
-			}
-		}
-		
-		private void deleteEdge(final Property property, final Edge edge) {
-			System.out.println("delete edge " + property.getLabel() + ", containment: " + property.isContainment());
-			final Vertex referredVertex = edge.getVertex(Direction.IN);
-			
-			edge.remove();
-			
-			if (property.isContainment()) {
-				final Entity referredEntity = new Entity(schema, referredVertex);
-				
-				if (property.getType().isConform(referredEntity.getType()))
-					deleteInTransaction(referredEntity);
-			}
-		}
-	};
-	
-	private class IndexRemovingVisitor implements IPropertyValueVisitor {
-		
-		private final Vertex vertex;
-		private final Index<Vertex> searchIndex;
-		
-		public IndexRemovingVisitor(final Entity entity) {
-			vertex = entity.getVertex();
-			searchIndex = searchIndices.get(entity.getType().getName());
-		}
-		
-		@Override
-		public void doWithAssociations(Associations propertyValue) {}
-		
-		@Override
-		public void doWithAssociation(Association propertyValue) {}
-
-		@Override
-		public void doWithBoolean(BooleanValue propertyValue) {
-			removeFromIndex(searchIndex, propertyValue, vertex);
-		}
-
-		@Override
-		public void doWithDecimal(DecimalValue propertyValue) {
-			removeFromIndex(searchIndex, propertyValue, vertex);
-		}
-
-		@Override
-		public void doWithReal(RealValue propertyValue) {
-			removeFromIndex(searchIndex, propertyValue, vertex);
-		}
-
-		@Override
-		public void doWithDate(DateValue propertyValue) {
-			removeFromIndex(searchIndex, propertyValue, vertex);
-		}
-
-		@Override
-		public void doWithString(StringValue propertyValue) {
-			removeFromIndex(searchIndex, propertyValue, vertex);
-		}
-
-		@Override
-		public void doWithText(TextValue propertyValue) {
-			removeFromIndex(searchIndex, propertyValue, vertex);
-		}
-	};
-	
-	private final class DeleteVisitor extends IndexRemovingVisitor {
-		
-		public DeleteVisitor(final Entity entity) {
-			super(entity);
-		}
-		
-		@Override
-		public void doWithAssociations(Associations propertyValue) {
-			if (propertyValue.getProperty().isContainment())
-				for (IEntity entity : propertyValue.getValue())
-					deleteInTransaction(entity);
-		}
-		
-		@Override
-		public void doWithAssociation(Association propertyValue) {
-			if (propertyValue.getProperty().isContainment()) {
-				final IEntity entity = propertyValue.getValue();
-				
-				if (entity != null)
-					deleteInTransaction(entity);
-			}
-		}
-	};
-	
-	private void removeFromIndex(final Index<Vertex> searchIndex, final IPropertyValue<?> propertyValue, final Vertex vertex) {
-		final Property property = propertyValue.getProperty();
-		
-		if (!property.isSearchable())
-			return;
-		
-		final String propertyName = property.getName();
-		final Object value = vertex.getProperty(propertyName);
-		
-		if (value != null)
-			for (String keyword : createLeftTruncatedIndexKeywords(value))
-				searchIndex.remove(SEARCH_INDEX, keyword, vertex);
-	}
-	
-	private Iterable<String> createLeftTruncatedIndexKeywords(final Object value) {
-		final LinkedList<String> keywords = new LinkedList<>();
-		
-		if (value != null) {
-			final String valueStr = value.toString().toLowerCase();
-			final Matcher matcher = WORD_PATTERN.matcher(valueStr);
-			
-			while (matcher.find()) {
-				final String foundWord = matcher.group();
-				
-				for (int i = 1; i <= foundWord.length(); i++) {
-					final String truncatedWord = foundWord.substring(0, i);
-					
-					keywords.add(truncatedWord);
-				}
-			}
-		}
-		
-		return keywords;
-	}
-	
-	private Iterable<String> createIndexKeywords(final String value) {
-		final LinkedList<String> keywords = new LinkedList<>();
-		
-		if (value != null) {
-			final Matcher matcher = WORD_PATTERN.matcher(value.toLowerCase());
-			
-			while (matcher.find())
-				keywords.add(matcher.group());
-		}
-		
-		return keywords;
-	}
 	
 	public void open() throws IOException {
 		loadSchema();
@@ -388,6 +111,11 @@ public class DAO implements IDAO {
 	}
 	
 	@Override
+	public IEntity createEntity(final Vertex vertex) {
+		return new Entity(schema, vertex);
+	}
+	
+	@Override
 	public void save(final IEntity entity) {
 		if (!entity.isChanged())
 			return;
@@ -424,29 +152,44 @@ public class DAO implements IDAO {
 		notifyObservers();
 	}
 	
-	private void saveInTransaction(final IEntity entity, final Collection<Entity> savedEntities) {
+	@Override
+	public void saveInTransaction(final IEntity entity, final Collection<Entity> savedEntities) {
 		final Entity entityImpl = (Entity) entity;
 		Vertex vertex = entityImpl.getVertex();
+		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
 		
 		savedEntities.add(entityImpl);
 		
-		if (vertex == null) {
+		if (vertex == null) { // create new vertex
 			vertex = graph.addVertex(null);
 			vertex.setProperty(Entity.ID, entity.getId());
 			vertex.setProperty(Entity.TYPE_FIELD, entity.getType().getName());
 			entityImpl.setVertex(vertex);
+		} else { // remove old vertex index
+			for (String keyword : createIndexKeywords(createEntity(vertex)))
+				searchIndex.remove(SEARCH_INDEX, keyword, vertex);
 		}
 		
-		final IndexRemovingVisitor indexRemovingVisitor = new IndexRemovingVisitor(entityImpl);
-		final SaveVisitor saveVisitor = new SaveVisitor(entityImpl, savedEntities);
+		final Set<String> indexKeywords = new HashSet<>();
+		final SaveVisitor visitor = new SaveVisitor(this, vertex, savedEntities, WORD_PATTERN, indexKeywords);
 		
-		// remove old vertex index
+		// assign values to vertex
 		for (IPropertyValue<?> propertyValue : entity.getValues())
-			propertyValue.doWithValue(indexRemovingVisitor);
+			propertyValue.doWithValue(visitor);
+		System.out.println("## " + indexKeywords);
+		// rebuild vertex index
+		for (String keyword : indexKeywords)
+			searchIndex.put(SEARCH_INDEX, keyword, vertex);
+	}
+	
+	private Iterable<String> createIndexKeywords(final IEntity entity) {
+		final Set<String> indexKeywords = new HashSet<>();
+		final IndexKeywordCollectingVisitor visitor = new IndexKeywordCollectingVisitor(WORD_PATTERN, indexKeywords);
 		
-		// save values and rebuild vertex' index
 		for (IPropertyValue<?> propertyValue : entity.getValues())
-			propertyValue.doWithValue(saveVisitor);
+			propertyValue.doWithValue(visitor);
+		
+		return indexKeywords;
 	}
 	
 	@Override
@@ -462,13 +205,21 @@ public class DAO implements IDAO {
 		notifyObservers();
 	}
 	
-	private void deleteInTransaction(final IEntity entity) {
+	@Override
+	public void deleteInTransaction(final IEntity entity) {
 		final Entity entityImpl = (Entity) entity;
 		final Vertex vertex = entityImpl.getVertex();
-		final IPropertyValueVisitor visitor = new DeleteVisitor(entityImpl);
+		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
+		final Set<String> indexKeywords = new HashSet<>();
+		final DeleteVisitor visitor = new DeleteVisitor(this, WORD_PATTERN, indexKeywords);
 		
+		// delete containments and collect index
 		for (IPropertyValue<?> value : entity.getValues())
 			value.doWithValue(visitor);
+		
+		// remove vertex index
+		for (String keyword : indexKeywords)
+			searchIndex.remove(SEARCH_INDEX, keyword, vertex);
 		
 		vertex.remove();
 	}
@@ -486,7 +237,7 @@ public class DAO implements IDAO {
 				: graph.getVertices(Entity.TYPE_FIELD, type.getName());
 		
 		for (Vertex vertex : vertices)
-			result.add(new Entity(schema, vertex));
+			result.add(createEntity(vertex));
 		
 		return result;
 	}
@@ -498,7 +249,7 @@ public class DAO implements IDAO {
 		
 		final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
 		final Collection<Index<Vertex>> useIndices;
-		final Iterable<String> searchKeywords = createIndexKeywords(search);
+		final Iterable<String> searchKeywords = createSearchKeywords(search);
 		
 		if (type == EntityType.ALL) {
 			useIndices = searchIndices.values();
@@ -531,7 +282,18 @@ public class DAO implements IDAO {
 		
 		if (foundVertices != null)
 			for (Vertex vertex : foundVertices)
-				result.add(new Entity(schema, vertex));
+				result.add(createEntity(vertex));
+		
+		return result;
+	}
+	
+	private Iterable<String> createSearchKeywords(final String searchPhrase) {
+		final LinkedList<String> result = new LinkedList<>();
+		final String searchPhraseLowerCase = searchPhrase.toLowerCase();
+		final Matcher matcher = WORD_PATTERN.matcher(searchPhraseLowerCase);
+		
+		while (matcher.find())
+			result.add(matcher.group());
 		
 		return result;
 	}
