@@ -448,7 +448,7 @@ public class DAO implements IDAO {
 		for (IPropertyValue<?> propertyValue : entity.getValues())
 			propertyValue.doWithValue(saveVisitor);
 	}
-
+	
 	@Override
 	public void delete(final IEntity entity) {
 		try {

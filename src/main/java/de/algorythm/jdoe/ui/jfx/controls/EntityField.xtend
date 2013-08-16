@@ -2,6 +2,11 @@ package de.algorythm.jdoe.ui.jfx.controls
 
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import java.util.LinkedList
+import javafx.animation.KeyFrame
+import javafx.animation.Timeline
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.geometry.Side
@@ -10,21 +15,13 @@ import javafx.scene.control.CustomMenuItem
 import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.control.TextField
+import javafx.scene.control.Tooltip
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.Region
+import javafx.util.Duration
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2
 
 import static javafx.application.Platform.*
-import javafx.beans.value.ObservableValue
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.value.ChangeListener
-import javafx.scene.control.Tooltip
-import javafx.animation.Timeline
-import javafx.geometry.Point2D
-import javafx.util.Duration
-import javafx.animation.KeyFrame
-import javafx.scene.Cursor
-import javafx.beans.property.BooleanProperty
 
 public class EntityField extends Region implements ChangeListener<String> {
 	val textField = new TextField
@@ -95,6 +92,11 @@ public class EntityField extends Region implements ChangeListener<String> {
 	
 	def ObservableValue<FXEntity> valueProperty() {
 		value
+	}
+	
+	def update() {
+		if (contextMenu.showing)
+			searchHandler.apply(textField.text, availableValues)
 	}
 	
 	def private createMenuItems(Iterable<FXEntity> entities) {

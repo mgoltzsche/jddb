@@ -11,7 +11,9 @@ import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import javax.inject.Singleton
 
+@Singleton
 public class ViewRegistry implements IEntityEditorManager {
 
 	@Inject extension GuiceFxmlLoader
@@ -35,7 +37,7 @@ public class ViewRegistry implements IEntityEditorManager {
 		
 			loaderResult.controller.init(entity, saveCallback)
 			
-			val tab = new Tab()
+			val tab = new Tab
 			
 			tab.content = loaderResult.node
 			

@@ -19,10 +19,8 @@ import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.ValueContainer
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.util.Collection
-import javafx.beans.value.ObservableValue
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
-import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
 import javafx.scene.control.ListView
 import javafx.scene.control.TextArea
@@ -89,35 +87,30 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		} else {
 			val hBox = new HBox
 			val hBoxChildren = hBox.children
-			//val availableEntities = new ComboBox<FXEntity>
 			val createButton = new Button('create')
-			val addEntitySelector = new EntityField [searchPhrase,it|
-				runReplacedTask('search association') [|
+			val addEntityField = new EntityField [searchPhrase,it|
+				runReplacedTask('search-associations') [|
 					all = entityType.list(searchPhrase).wrap
 				]
 			]
+			val selectionChangeListener = [|
+				addButton.disable = addEntityField.value == null ||
+					selectedEntities.items.contains(addEntityField.value)
+			]
+			addButton.disable = true
+			addEntityField.valueProperty.addListener [
+				selectionChangeListener.apply
+			]
+			selectedEntities.items.addListener [
+				selectionChangeListener.apply
+			]
 			
-			//availableEntities.cellFactory = AssociationCell.FACTORY
-			//availableEntities.buttonCell = new AssociationSearchCell(dao, editorManager, entityType)
-			//availableEntities.editable = true
-			//availableEntities.setPrefSize(200, 20);
-			
-			/*selectedEntities.items.changeListener [
-				while (next) {
-					for (entity : removed)
-						availableEntities.items += entity
-					
-					for (entity : addedSubList)
-						availableEntities.items -= entity
-				}
-			]*/
-
 			addButton.setOnAction [
-				val selectedEntity = addEntitySelector.value
+				val selectedEntity = addEntityField.value
 				
 				if (selectedEntity != null) {
 					selectedEntities.items += selectedEntity
-					addEntitySelector.value = null
+					addEntityField.value = null
 				}
 			]
 			
@@ -128,7 +121,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				]
 			]
 			
-			hBoxChildren += addEntitySelector
+			hBoxChildren += addEntityField
 			hBoxChildren += addButton
 			hBoxChildren += createButton
 			vBoxChildren += selectedEntities
@@ -140,6 +133,8 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				while (iter.hasNext)
 					if (!iter.next.model.update)
 						iter.remove
+				
+				addEntityField.update
 			]
 		}
 		
@@ -222,48 +217,51 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				}
 			]
 		} else {
-			val entityComboBox = new ComboBox<FXEntity>
+			val entityField = new EntityField [searchPhrase,it|
+				runReplacedTask('search-association') [|
+					all = entityType.list(searchPhrase).wrap
+				]
+			]
 			val createButton = new Button('create')
 			
-			hBoxChildren += entityComboBox
+			hBoxChildren += entityField
 			hBoxChildren += createButton
 			hBoxChildren += removeButton
 			
-			entityComboBox.value = propertyValue.value.wrap
+			entityField.value = propertyValue.value.wrap
 			
-			entityComboBox.selectionModel.selectedItemProperty.addListener [
-				if (it != null)
-					removeButton.disable = false
+			entityField.valueProperty.addListener [
+				removeButton.disable = entityField.value == null
 			]
 			
 			createButton.setOnAction [
 				entityType.createEntity.wrap.showEntityEditor [
 					model.save
-					entityComboBox.value = it
+					entityField.value = it
 					removeButton.disable = false
 				]
 			]
 			
 			removeButton.setOnAction [
-				entityComboBox.value = null
+				entityField.value = null
 				removeButton.disable = true
 			]
 			
 			saveCallbacks += [|
-				propertyValue.value = entityComboBox.value.model
+				propertyValue.value = entityField.value?.model
 			]
 			
 			updateCallbacks += [|
-				val selectedEntity = entityComboBox.value
+				val selectedEntity = entityField.value
 				
 				if (selectedEntity != null && !selectedEntity.model.update) {
 					runLater [|
-						entityComboBox.value = null
+						entityField.value = null
 						removeButton.disable = true
 					]
 				}
 				
-				entityComboBox.items.all = entityType.list.wrap
+				entityField.update
 			]
 		}
 		

@@ -5,23 +5,19 @@ import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.entity.IPropertyValue
 import de.algorythm.jdoe.taskQueue.TaskQueue
+import de.algorythm.jdoe.ui.jfx.model.EditorStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.util.LinkedList
-import javafx.beans.property.BooleanProperty
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.fxml.FXML
-import javafx.geometry.Insets
 import javafx.geometry.VPos
 import javafx.scene.control.Label
-import javafx.scene.control.ScrollPane
 import javafx.scene.layout.GridPane
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.ui.jfx.model.EditorStateModel
 
 public class EntityEditorController implements IController, IObserver {
 	
@@ -42,29 +38,29 @@ public class EntityEditorController implements IController, IObserver {
 	def init(FXEntity entity, Procedure1<FXEntity> saveCallback) {
 		this.entity = entity
 		this.saveCallback = saveCallback
-		var i = 0
 		
-		//gridPane.children.clear
+		runLater [|
+			var i = 0
+			
+			for (IPropertyValue<?> value : entity.model.values) {
+				val label = new Label(value.property.label + ': ')
+				
+				GridPane.setValignment(label, VPos.TOP)
+				
+				gridPane.add(label, 0, i)
+				
+				val visitor = new PropertyValueEditorVisitor(gridPane, i, createdContainedEntities, propertySaveCallbacks, propertyUpdateCallbacks)
+				
+				visitor.injectMembers
+				
+				value.doWithValue(visitor)
+				
+				i = i + 1
+			}
+			
+			update
+		]
 		
-		for (IPropertyValue<?> value : entity.model.values) {
-			val label = new Label(value.property.label + ': ')
-			
-			GridPane.setValignment(label, VPos.TOP)
-			
-			gridPane.add(label, 0, i)
-			
-			val visitor = new PropertyValueEditorVisitor(gridPane, i, createdContainedEntities, propertySaveCallbacks, propertyUpdateCallbacks)
-			
-			visitor.injectMembers
-			
-			value.doWithValue(visitor)
-			
-			i = i + 1
-		}
-		
-		update
-		
-		// add/remove observer
 		addObserver(this)
 	}
 	
