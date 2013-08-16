@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 import java.util.ArrayList
 import de.algorythm.jdoe.ui.jfx.model.FXType
 
-class TypeEditorController extends AbstractXtendController implements IController {
+class TypeEditorController implements IController {
 
 	static val log = LoggerFactory.getLogger(typeof(TypeEditorController))
 	
@@ -42,7 +42,7 @@ class TypeEditorController extends AbstractXtendController implements IControlle
 		
 		types.all = fxTypes
 		
-		types.changeListener [
+		types.addListener [
 			val schemaTypes = schema.types
 			
 			schemaTypes.clear
@@ -53,8 +53,8 @@ class TypeEditorController extends AbstractXtendController implements IControlle
 		
 		typeList.cellFactory = new TypeCell.Factory
 		typeList.editable = true
-		typeList.selectionModel.selectedItemProperty.changeListener [
-			getBusinessModel.selectType
+		typeList.selectionModel.selectedItemProperty.addListener [
+			selectType(typeList.selectionModel.selectedItem?.businessModel)
 		]
 		
 		// setup property list
@@ -62,7 +62,7 @@ class TypeEditorController extends AbstractXtendController implements IControlle
 		propertyList.editable = true
 		properties = propertyList.items
 		
-		properties.changeListener [
+		properties.addListener [
 			val typeProperties = selectedType.properties
 			
 			typeProperties.clear

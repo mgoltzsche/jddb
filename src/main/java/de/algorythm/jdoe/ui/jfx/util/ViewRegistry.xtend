@@ -33,7 +33,7 @@ public class ViewRegistry implements IEntityEditorManager {
 		if (existingViewData == null) { // create tab
 			val loaderResult = <Node, EntityEditorController>load('/fxml/entity_editor.fxml')
 		
-			loaderResult.controller.init(entity, this, saveCallback)
+			loaderResult.controller.init(entity, saveCallback)
 			
 			val tab = new Tab()
 			

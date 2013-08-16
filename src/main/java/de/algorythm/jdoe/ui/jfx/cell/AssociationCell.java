@@ -15,7 +15,7 @@ public class AssociationCell extends ListCell<FXEntity> {
 	};
 	
 	@Override
-	public void updateItem(FXEntity entity, boolean empty) {
+	public void updateItem(final FXEntity entity, final boolean empty) {
 		super.updateItem(entity, empty);
 		
 		if (empty)

@@ -12,11 +12,14 @@ import de.algorythm.jdoe.model.entity.impl.StringValue
 import de.algorythm.jdoe.model.entity.impl.TextValue
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
-import de.algorythm.jdoe.ui.jfx.cell.AssociationCell
+import de.algorythm.jdoe.taskQueue.TaskQueue
 import de.algorythm.jdoe.ui.jfx.cell.AssociationContainmentCell
+import de.algorythm.jdoe.ui.jfx.controls.EntityField
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.ValueContainer
+import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.util.Collection
+import javafx.beans.value.ObservableValue
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
 import javafx.scene.control.ComboBox
@@ -27,33 +30,34 @@ import javafx.scene.control.TextField
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
+import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
-import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
-import javafx.application.Platform
 
-class PropertyValueEditorVisitor extends AbstractXtendController implements IPropertyValueVisitor {
+import static javafx.application.Platform.*
 
-	extension IDAO dao
-	extension IEntityEditorManager editorManager
+class PropertyValueEditorVisitor implements IPropertyValueVisitor {
+
+	@Inject extension IDAO dao
+	@Inject extension TaskQueue
+	@Inject extension IEntityEditorManager editorManager
 	var GridPane gridPane
 	var int row
 	var Collection<Procedure0> saveCallbacks
 	var Collection<Procedure0> updateCallbacks
 	var Collection<FXEntity> createdContainedEntities
 	
-	new(GridPane gridPane, int row, IDAO dao, IEntityEditorManager editorManager, Collection<FXEntity> createdContainedEntities, Collection<Procedure0> saveCallbacks, Collection<Procedure0> updateCallbacks) {
+	new(GridPane gridPane, int row, Collection<FXEntity> createdContainedEntities, Collection<Procedure0> saveCallbacks, Collection<Procedure0> updateCallbacks) {
 		this.gridPane = gridPane
 		this.row = row
 		this.saveCallbacks = saveCallbacks
 		this.updateCallbacks = updateCallbacks
-		this.dao = dao
-		this.editorManager = editorManager
 		this.createdContainedEntities = createdContainedEntities
 	}
 
 	override doWithAssociations(Associations propertyValue) {
 		val property = propertyValue.property
 		val collectionType = property.type as CollectionType
+		val entityType = collectionType.itemType
 		val vBox = new VBox
 		val selectedEntities = new ListView<FXEntity>
 		val addButton = new Button('add')
@@ -67,7 +71,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			vBoxChildren += addButton
 			
 			addButton.setOnAction [
-				val newEntity = new FXEntity(collectionType.itemType.createEntity)
+				val newEntity = new FXEntity(entityType.createEntity)
 				
 				selectedEntities.items += newEntity
 				createdContainedEntities += newEntity
@@ -85,12 +89,20 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 		} else {
 			val hBox = new HBox
 			val hBoxChildren = hBox.children
-			val availableEntities = new ComboBox<FXEntity>
+			//val availableEntities = new ComboBox<FXEntity>
 			val createButton = new Button('create')
+			val addEntitySelector = new EntityField [searchPhrase,it|
+				runReplacedTask('search association') [|
+					all = entityType.list(searchPhrase).wrap
+				]
+			]
 			
-			availableEntities.cellFactory = AssociationCell.FACTORY
+			//availableEntities.cellFactory = AssociationCell.FACTORY
+			//availableEntities.buttonCell = new AssociationSearchCell(dao, editorManager, entityType)
+			//availableEntities.editable = true
+			//availableEntities.setPrefSize(200, 20);
 			
-			selectedEntities.items.changeListener [
+			/*selectedEntities.items.changeListener [
 				while (next) {
 					for (entity : removed)
 						availableEntities.items += entity
@@ -98,43 +110,36 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 					for (entity : addedSubList)
 						availableEntities.items -= entity
 				}
-			]
-			
+			]*/
+
 			addButton.setOnAction [
-				val selectedEntity = availableEntities.selectionModel.selectedItem
+				val selectedEntity = addEntitySelector.value
 				
 				if (selectedEntity != null) {
 					selectedEntities.items += selectedEntity
-					availableEntities.value = null
+					addEntitySelector.value = null
 				}
 			]
 			
 			createButton.setOnAction [
-				collectionType.itemType.createEntity.wrap.showEntityEditor [
+				entityType.createEntity.wrap.showEntityEditor [
 					model.save
 					selectedEntities.items += it
 				]
 			]
 			
-			hBoxChildren += availableEntities
+			hBoxChildren += addEntitySelector
 			hBoxChildren += addButton
 			hBoxChildren += createButton
 			vBoxChildren += selectedEntities
 			vBoxChildren += hBox
 			
-			updateCallbacks += [|
-				val entities = collectionType.itemType.list.wrap
+			updateCallbacks += [| // remove deleted entities
 				val iter = selectedEntities.items.iterator
 				
 				while (iter.hasNext)
 					if (!iter.next.model.update)
 						iter.remove
-				
-				entities -= selectedEntities.items
-				
-				Platform.runLater [|
-					availableEntities.items.all = entities
-				]
 			]
 		}
 		
@@ -208,7 +213,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				val containerValue = valueContainer.value
 				
 				if (containerValue != null && !containerValue.model.exists) {
-					Platform.runLater [|
+					runLater [|
 						label.textProperty.unbind
 						label.text = ''
 						valueContainer.value = null
@@ -226,7 +231,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 			
 			entityComboBox.value = propertyValue.value.wrap
 			
-			entityComboBox.selectionModel.selectedItemProperty.changeListener [
+			entityComboBox.selectionModel.selectedItemProperty.addListener [
 				if (it != null)
 					removeButton.disable = false
 			]
@@ -252,7 +257,7 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 				val selectedEntity = entityComboBox.value
 				
 				if (selectedEntity != null && !selectedEntity.model.update) {
-					Platform.runLater [|
+					runLater [|
 						entityComboBox.value = null
 						removeButton.disable = true
 					]
@@ -270,8 +275,8 @@ class PropertyValueEditorVisitor extends AbstractXtendController implements IPro
 		
 		checkBox.selected = propertyValue.value
 		
-		checkBox.selectedProperty.changeListener [
-			propertyValue.value = it
+		checkBox.selectedProperty.addListener [
+			propertyValue.value = checkBox.selected
 		]
 		
 		gridPane.add(checkBox, 1, row)

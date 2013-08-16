@@ -6,6 +6,7 @@ import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.model.meta.Schema
+import de.algorythm.jdoe.taskQueue.TaskQueue
 import de.algorythm.jdoe.ui.jfx.cell.EntityCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.EntityRow
 import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
@@ -26,11 +27,13 @@ import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.scene.control.TextField
 import javax.inject.Inject
-import javafx.application.Platform
 
-public class MainController extends AbstractXtendController implements IController, IObserver {
+import static javafx.application.Platform.*
+
+public class MainController implements IController, IObserver {
 	
 	@Inject extension IDAO dao
+	@Inject extension TaskQueue
 	@Inject extension JavaDbObjectEditorFacade facade
 	@Inject extension ViewRegistry
 	@FXML var ComboBox<EntityType> typeComboBox
@@ -48,8 +51,8 @@ public class MainController extends AbstractXtendController implements IControll
 		
 		schema = dao.schema
 		
-		searchField.textProperty.changeListener [
-			searchPhrase = it
+		searchField.textProperty.addListener [
+			searchPhrase = searchField.text
 			
 			runReplacedTask('searching') [|
 				showListTab
@@ -61,8 +64,8 @@ public class MainController extends AbstractXtendController implements IControll
 			showEntityEditor
 		])
 		
-		typeComboBox.valueProperty.changeListener [
-			setSelectedType
+		typeComboBox.valueProperty.addListener [
+			setSelectedType(typeComboBox.value)
 		]
 		
 		setupTypeSelection
@@ -70,7 +73,7 @@ public class MainController extends AbstractXtendController implements IControll
 		
 		addObserver(this)
 		
-		Platform.runLater [|
+		runLater [|
 			searchField.requestFocus
 		]
 	}
@@ -88,7 +91,7 @@ public class MainController extends AbstractXtendController implements IControll
 		runReplacedTask('load results for selected type') [|
 			updateTableColumns
 			
-			Platform.runLater [|
+			runLater [|
 				showListTab
 			]
 		]
@@ -148,7 +151,7 @@ public class MainController extends AbstractXtendController implements IControll
 		
 		val entities = dao.list(selectedType, searchPhrase).wrap
 		
-		Platform.runLater [|
+		runLater [|
 			entities.updateTableData
 			entityList.columns.all = columns
 		]
@@ -157,7 +160,7 @@ public class MainController extends AbstractXtendController implements IControll
 	override update() {
 		val entities = dao.list(selectedType, searchPhrase).wrap
 		
-		Platform.runLater [|
+		runLater [|
 			entities.updateTableData
 		]
 	}
