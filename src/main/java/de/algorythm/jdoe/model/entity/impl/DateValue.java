@@ -20,7 +20,7 @@ public class DateValue extends AbstractPropertyValue<Date> {
 	
 	@Override
 	public String toString() {
-		return value == null ? null : value.toString();
+		return value == null ? EMPTY : value.toString();
 	}
 
 }

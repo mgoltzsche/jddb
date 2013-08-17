@@ -25,9 +25,9 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.IObserver;
-import de.algorythm.jdoe.model.dao.impl.orientdb.visitor.DeleteVisitor;
-import de.algorythm.jdoe.model.dao.impl.orientdb.visitor.IndexKeywordCollectingVisitor;
-import de.algorythm.jdoe.model.dao.impl.orientdb.visitor.SaveVisitor;
+import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.DeleteVisitor;
+import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.IndexKeywordCollectingVisitor;
+import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.SaveVisitor;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.impl.AbstractPropertyValue;
@@ -157,6 +157,7 @@ public class DAO implements IDAO, IDAOVisitorContext {
 		final Entity entityImpl = (Entity) entity;
 		Vertex vertex = entityImpl.getVertex();
 		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
+		final Set<String> oldIndexKeywords;
 		
 		savedEntities.add(entityImpl);
 		
@@ -165,9 +166,9 @@ public class DAO implements IDAO, IDAOVisitorContext {
 			vertex.setProperty(Entity.ID, entity.getId());
 			vertex.setProperty(Entity.TYPE_FIELD, entity.getType().getName());
 			entityImpl.setVertex(vertex);
-		} else { // remove old vertex index
-			for (String keyword : createIndexKeywords(createEntity(vertex)))
-				searchIndex.remove(SEARCH_INDEX, keyword, vertex);
+			oldIndexKeywords = new HashSet<>();
+		} else {
+			oldIndexKeywords = createIndexKeywords(createEntity(vertex));
 		}
 		
 		final Set<String> indexKeywords = new HashSet<>();
@@ -176,13 +177,21 @@ public class DAO implements IDAO, IDAOVisitorContext {
 		// assign values to vertex
 		for (IPropertyValue<?> propertyValue : entity.getValues())
 			propertyValue.doWithValue(visitor);
-		System.out.println("## " + indexKeywords);
-		// rebuild vertex index
-		for (String keyword : indexKeywords)
+		
+		// update vertex index if keyword changed
+		final HashSet<String> newIndexKeywords = new HashSet<>(indexKeywords);
+		
+		newIndexKeywords.removeAll(oldIndexKeywords);
+		oldIndexKeywords.removeAll(indexKeywords);
+		
+		for (String keyword : oldIndexKeywords) // remove expired keywords
+			searchIndex.remove(SEARCH_INDEX, keyword, vertex);
+		
+		for (String keyword : newIndexKeywords) // save new keywords
 			searchIndex.put(SEARCH_INDEX, keyword, vertex);
 	}
 	
-	private Iterable<String> createIndexKeywords(final IEntity entity) {
+	private Set<String> createIndexKeywords(final IEntity entity) {
 		final Set<String> indexKeywords = new HashSet<>();
 		final IndexKeywordCollectingVisitor visitor = new IndexKeywordCollectingVisitor(WORD_PATTERN, indexKeywords);
 		

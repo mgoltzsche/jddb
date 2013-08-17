@@ -1,4 +1,4 @@
-package de.algorythm.jdoe.model.dao.impl.orientdb.visitor;
+package de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor;
 
 import java.util.LinkedList;
 import java.util.Set;

@@ -19,6 +19,6 @@ public class Association extends AbstractPropertyValue<IEntity> {
 	
 	@Override
 	public String toString() {
-		return value == null ? null : value.toString();
+		return value == null ? EMPTY : value.toString();
 	}
 }

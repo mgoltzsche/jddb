@@ -234,7 +234,7 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 			if (!value.getProperty().getType().isUserDefined()) { // attrs only
 				final String valueStr = value.toString();
 				
-				if (valueStr != null) {
+				if (!valueStr.isEmpty()) {
 					if (sb.length() > 0)
 						sb.append(", ");
 					

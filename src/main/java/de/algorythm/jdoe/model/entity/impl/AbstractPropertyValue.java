@@ -6,6 +6,7 @@ import de.algorythm.jdoe.model.meta.Property;
 public abstract class AbstractPropertyValue<V> implements IPropertyValue<V> {
 
 	static private final long serialVersionUID = 3601500282325296848L;
+	static protected final String EMPTY = "";
 	
 	protected V value;
 	private Property property;

@@ -19,6 +19,7 @@ import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.ValueContainer
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.util.Collection
+import java.util.regex.Pattern
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
 import javafx.scene.control.Label
@@ -30,10 +31,18 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
+import java.text.NumberFormat
+import java.text.ParseException
 
 class PropertyValueEditorVisitor implements IPropertyValueVisitor {
+
+	static private val LOG = LoggerFactory.getLogger(typeof(PropertyValueEditorVisitor))
+	static private val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
+	static private val REAL_PATTERN = Pattern.compile('^\\d*((\\.|,)\\d*)?$')
 
 	@Inject extension IDAO dao
 	@Inject extension TaskQueue
@@ -152,6 +161,11 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		val HBox hBox = new HBox
 		val hBoxChildren = hBox.children
 		val removeButton = new Button('remove')
+		val editButtonLabel = if (entity == null)
+					'create'
+				else
+					'edit'
+		val editButton = new Button(editButtonLabel)
 		
 		if (entity == null)
 			removeButton.disable = true
@@ -159,11 +173,6 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		if (property.containment) {
 			val valueContainer = new ValueContainer<FXEntity>
 			val label = new Label
-			val editButtonLabel = if (entity == null)
-					'create'
-				else
-					'edit'
-			val editButton = new Button(editButtonLabel)
 			
 			if (entity != null) {
 				valueContainer.value = entity.wrap
@@ -207,13 +216,19 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 			updateCallbacks += [|
 				val containerValue = valueContainer.value
 				
-				if (containerValue != null && !containerValue.model.exists) {
-					runLater [|
-						label.textProperty.unbind
-						label.text = ''
-						valueContainer.value = null
-						editButton.text = 'create'
-					]
+				if (containerValue != null) {
+					if (containerValue.model.update) {
+						runLater [|
+							containerValue.applyPropertyValues
+						]
+					} else {
+						runLater [|
+							label.textProperty.unbind
+							label.text = ''
+							valueContainer.value = null
+							editButton.text = 'create'
+						]
+					}
 				}
 			]
 		} else {
@@ -222,24 +237,33 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 					all = entityType.list(searchPhrase).wrap
 				]
 			]
-			val createButton = new Button('create')
 			
 			hBoxChildren += entityField
-			hBoxChildren += createButton
+			hBoxChildren += editButton
 			hBoxChildren += removeButton
 			
 			entityField.value = propertyValue.value.wrap
 			
 			entityField.valueProperty.addListener [
 				removeButton.disable = entityField.value == null
+				editButton.text = if (removeButton.disable)
+						'create'
+					else
+						'edit'
 			]
 			
-			createButton.setOnAction [
-				entityType.createEntity.wrap.showEntityEditor [
-					model.save
-					entityField.value = it
-					removeButton.disable = false
-				]
+			editButton.setOnAction [
+				val selectedEntity = entityField.value
+				
+				if (selectedEntity == null) {
+					entityType.createEntity.wrap.showEntityEditor [
+						model.save
+						entityField.value = it
+						removeButton.disable = false
+					]
+				} else {
+					selectedEntity.showEntityEditor
+				}
 			]
 			
 			removeButton.setOnAction [
@@ -254,11 +278,17 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 			updateCallbacks += [|
 				val selectedEntity = entityField.value
 				
-				if (selectedEntity != null && !selectedEntity.model.update) {
-					runLater [|
-						entityField.value = null
-						removeButton.disable = true
-					]
+				if (selectedEntity != null) {
+					if (selectedEntity.model.update) {
+						runLater [|
+							selectedEntity.applyPropertyValues
+						]
+					} else {
+						runLater [|
+							entityField.value = null
+							removeButton.disable = true
+						]
+					}
 				}
 				
 				entityField.update
@@ -285,7 +315,6 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 	}
 
 	override doWithDecimal(DecimalValue propertyValue) {
-		// TODO: check format
 		val value = propertyValue.value
 		val valueStr = if (value == null)
 				null
@@ -293,45 +322,70 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				value.toString
 		val textField = new TextField(valueStr)
 		
+		textField.textProperty.addListener [o,oldValue,newValue|
+			if (newValue != null && !DECIMAL_PATTERN.matcher(newValue).matches)
+				textField.text = oldValue
+		]
+		
 		gridPane.add(textField, 1, row)
 		
 		saveCallbacks += [|
-			val txt = textField.text
-			
-			if (txt != null) {
-				try {
-					propertyValue.value = Long.valueOf(txt)
-					return;
-				} catch(NumberFormatException e) {}
-			}
-			
-			propertyValue.value = null
+			propertyValue.value = textField.text.asLong
 		]
+	}
+	
+	def private asLong(String txt) {
+		if (txt != null && !txt.empty) {
+			try {
+				return Long.valueOf(txt)
+			} catch(NumberFormatException e) {
+				LOG.warn('Invalid decimal format: ' + txt)
+			}
+		}
+		
+		return null
 	}
 
 	override doWithReal(RealValue propertyValue) {
-		// TODO: check format
-		val value = propertyValue.value
-		val valueStr = if (value == null)
-				null
-			else
-				value.toString
-		val textField = new TextField(valueStr)
+		val textField = new TextField(propertyValue.toString)
 		
 		gridPane.add(textField, 1, row)
 		
-		saveCallbacks += [|
-			val txt = textField.text
-			
-			if (txt != null) {
+		textField.textProperty.addListener [o,oldValue,newValue| // allow real value only
+			if (newValue != null) {
 				try {
-					propertyValue.value = Double.valueOf(txt)
-					return;
-				} catch(NumberFormatException e) {}
+					newValue.asNumber
+					
+					if (!REAL_PATTERN.matcher(newValue).matches)
+						textField.text = oldValue
+				} catch(ParseException e) {
+					textField.text = oldValue
+				}
 			}
-			
-			propertyValue.value = null
 		]
+		
+		saveCallbacks += [|
+			try {
+				val number = textField.text.asNumber
+				
+				propertyValue.value = if (number == null)	
+						null
+					else
+						number.doubleValue
+			} catch(ParseException e) {
+				propertyValue.value = null
+				LOG.warn('Invalid real format: ' + textField.text)
+			}
+		]
+	}
+	
+	def private asNumber(String dbl) {
+		var txt = dbl
+		
+		return if (txt != null && !txt.empty)
+				NumberFormat.instance.parse(txt)
+			else
+				null
 	}
 
 	override doWithDate(DateValue propertyValue) {
@@ -347,7 +401,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		saveCallbacks += [|
 			val txt = textField.text
 			
-			propertyValue.value = if (txt == null)
+			propertyValue.value = if (txt == null || txt.empty)
 					null
 				else
 					txt
@@ -362,10 +416,14 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		saveCallbacks += [|
 			val txt = textArea.text
 			
-			propertyValue.value = if (txt == null)
+			propertyValue.value = if (txt == null || txt.empty)
 					null
 				else
 					txt
 		]
+	}
+	
+	def private void createFieldMask(Procedure1<String> callback) {
+		
 	}
 }

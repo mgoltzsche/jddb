@@ -3,7 +3,6 @@ package de.algorythm.jdoe.ui.jfx.model;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import de.algorythm.jdoe.model.entity.IEntity;
@@ -50,14 +49,7 @@ public class FXEntity {
 				sb.append(" (neu)");
 		}
 		
-		final String modelLabel = sb.toString();
-		
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				label.setValue(modelLabel);
-			}
-		});
+		label.setValue(sb.toString());
 	}
 	
 	public String getId() {

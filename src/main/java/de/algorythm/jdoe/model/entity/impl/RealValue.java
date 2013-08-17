@@ -18,6 +18,6 @@ public class RealValue extends AbstractPropertyValue<Double> {
 	
 	@Override
 	public String toString() {
-		return value == null ? null : String.format("%.2f", value);
+		return value == null ? EMPTY : String.format("%.2f", value);
 	}
 }

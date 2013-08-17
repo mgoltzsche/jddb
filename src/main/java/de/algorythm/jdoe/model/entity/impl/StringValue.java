@@ -18,6 +18,6 @@ public class StringValue extends AbstractPropertyValue<String> {
 	
 	@Override
 	public String toString() {
-		return value;
+		return value == null ? EMPTY : value;
 	}
 }

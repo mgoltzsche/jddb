@@ -1,0 +1,4 @@
+.field-error {
+	-fx-background-color: #FFAAAA;
+	-fx-border-color: #990000;
+}

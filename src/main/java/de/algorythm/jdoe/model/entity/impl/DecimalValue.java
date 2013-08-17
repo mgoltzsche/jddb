@@ -18,6 +18,6 @@ public class DecimalValue extends AbstractPropertyValue<Long> {
 	
 	@Override
 	public String toString() {
-		return value == null ? null : value.toString();
+		return value == null ? EMPTY : value.toString();
 	}
 }

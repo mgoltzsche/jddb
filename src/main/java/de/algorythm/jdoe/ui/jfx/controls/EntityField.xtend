@@ -5,6 +5,7 @@ import java.util.LinkedList
 import javafx.animation.KeyFrame
 import javafx.animation.Timeline
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
@@ -24,10 +25,14 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure2
 import static javafx.application.Platform.*
 
 public class EntityField extends Region implements ChangeListener<String> {
+	
+	static val FIELD_ERROR_STYLE_CLASS = 'field-error'
+	
 	val textField = new TextField
 	val contextMenu = new ContextMenu
 	val value = new SimpleObjectProperty<FXEntity>
 	val availableValues = FXCollections.synchronizedObservableList(FXCollections.observableList(new LinkedList<FXEntity>))
+	val selectedValueLabelProperty = new SimpleStringProperty
 	var Procedure2<String, ObservableList<FXEntity>> searchHandler
 	val searchErrorTooltip = new Tooltip
     var Timeline searchErrorTooltipHidder = null
@@ -45,21 +50,28 @@ public class EntityField extends Region implements ChangeListener<String> {
 				contextMenu.requestFocus
 		]
 		textField.textProperty.addListener(this)
+		selectedValueLabelProperty.addListener [
+			text = selectedValueLabelProperty.value
+		]
 		value.addListener [
-			textField.textProperty.removeListener(this)
-			textField.text = value.value?.label?.value
-			textField.textProperty.addListener(this)
+			val entityLabelProperty = value.value?.label
+			
+			selectedValueLabelProperty.unbind
+			
+			if (entityLabelProperty != null)
+				selectedValueLabelProperty.bind(entityLabelProperty)
 		]
 		availableValues.addListener [
 			if (availableValues.empty) {
 				runLater [|
-					showError('No match found')
+					//showError('No match found\ntry sth else')
+					error = true
 					
 					contextMenu.hide
 				]
 			} else if (availableValues.size == 1) {
 				runLater [|
-					value.value = availableValues.get(0)
+					setValue(availableValues.get(0))
 					
 					contextMenu.hide
 				]
@@ -67,6 +79,7 @@ public class EntityField extends Region implements ChangeListener<String> {
 				val menuItems = availableValues.createMenuItems
 				
 				runLater [|
+					error = true
 					contextMenu.items.all = menuItems
 					
 					if (!contextMenu.showing)
@@ -88,10 +101,21 @@ public class EntityField extends Region implements ChangeListener<String> {
 	
 	def void setValue(FXEntity value) {
 		this.value.value = value
+		text = if (value == null)
+				''
+			else
+				value.label.value
+		error = false
 	}
 	
 	def ObservableValue<FXEntity> valueProperty() {
 		value
+	}
+	
+	def private setText(String txt) {
+		textField.textProperty.removeListener(this)
+		textField.text = txt
+		textField.textProperty.addListener(this)
 	}
 	
 	def update() {
@@ -112,11 +136,18 @@ public class EntityField extends Region implements ChangeListener<String> {
 			menuItems += item
 			
 			item.setOnAction [
-				value.value = entity
+				setValue(entity)
 			]
 		}
 		
 		menuItems
+	}
+
+	def private void setError(boolean error) {
+		if (error)
+			textField.styleClass += FIELD_ERROR_STYLE_CLASS
+		else
+			textField.styleClass -= FIELD_ERROR_STYLE_CLASS
 	}
 
 	def private void showError(String message) {

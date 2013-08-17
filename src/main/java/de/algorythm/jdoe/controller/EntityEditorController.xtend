@@ -18,6 +18,8 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
+import javafx.scene.layout.Priority
+import javafx.geometry.Insets
 
 public class EntityEditorController implements IController, IObserver {
 	
@@ -46,6 +48,7 @@ public class EntityEditorController implements IController, IObserver {
 				val label = new Label(value.property.label + ': ')
 				
 				GridPane.setValignment(label, VPos.TOP)
+				GridPane.setMargin(label, new Insets(4, 0, 0, 0));
 				
 				gridPane.add(label, 0, i)
 				
