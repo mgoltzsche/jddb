@@ -10,6 +10,7 @@ import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.util.LinkedList
 import javafx.fxml.FXML
+import javafx.geometry.Insets
 import javafx.geometry.VPos
 import javafx.scene.control.Label
 import javafx.scene.layout.GridPane
@@ -18,8 +19,6 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
-import javafx.scene.layout.Priority
-import javafx.geometry.Insets
 
 public class EntityEditorController implements IController, IObserver {
 	

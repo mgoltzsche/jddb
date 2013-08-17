@@ -11,15 +11,18 @@ import javax.inject.Inject;
 
 import com.google.inject.Injector;
 
+import de.algorythm.jdoe.bundle.Bundle;
 import de.algorythm.jdoe.controller.IController;
 
 public class GuiceFxmlLoader {
 
 	@Inject private Injector injector;
+	@Inject private Bundle bundle;
 	
 	@SuppressWarnings("unchecked")
 	public <N, C extends IController> FxmlLoaderResult<N, C> load(final String fxmlFileName) throws IOException {
 		final FXMLLoader loader = new FXMLLoader();
+		loader.setResources(bundle.bundle);
 		final N node = (N) loader.load(getClass().getResourceAsStream(fxmlFileName));
 		final C controller;
 		

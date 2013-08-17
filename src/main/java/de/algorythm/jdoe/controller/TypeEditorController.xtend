@@ -6,15 +6,15 @@ import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.model.meta.Schema
 import de.algorythm.jdoe.ui.jfx.cell.PropertyEditCell
 import de.algorythm.jdoe.ui.jfx.cell.TypeCell
+import de.algorythm.jdoe.ui.jfx.model.FXType
 import java.io.IOException
+import java.util.ArrayList
 import javafx.collections.ObservableList
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ListView
 import javax.inject.Inject
 import org.slf4j.LoggerFactory
-import java.util.ArrayList
-import de.algorythm.jdoe.ui.jfx.model.FXType
 
 class TypeEditorController implements IController {
 
@@ -74,7 +74,7 @@ class TypeEditorController implements IController {
 		try {
 			dao.schema = schema
 		} catch (IOException e) {
-			log.error("Cannot save schema", e);
+			log.error('Cannot save schema', e);
 		}
 	}
 	

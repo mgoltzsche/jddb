@@ -12,10 +12,12 @@ import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Stage
 import javax.inject.Inject
+import de.algorythm.jdoe.bundle.Bundle
 
 public class JavaDbObjectEditorFacade {
 
 	@Inject TaskQueue taskQueue
+	@Inject Bundle bundle
 	@Inject IDAO dao
 	@Inject extension GuiceFxmlLoader
 	
@@ -43,6 +45,6 @@ public class JavaDbObjectEditorFacade {
 	}
 	
 	def showTypeEditor() throws IOException {
-		showWindow('/fxml/type_editor.fxml', 'jDOE - Data type definition', 500, 400)
+		showWindow('/fxml/type_editor.fxml', 'jDOE - ' + bundle.typeDefinition, 500, 400)
 	}
 }

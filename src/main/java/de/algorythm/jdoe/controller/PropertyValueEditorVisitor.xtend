@@ -38,6 +38,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.bundle.Bundle
 
 class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 
@@ -49,6 +50,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 	@Inject extension IDAO dao
 	@Inject extension TaskQueue
 	@Inject extension IEntityEditorManager editorManager
+	@Inject Bundle bundle
 	var GridPane gridPane
 	var int row
 	var Collection<Procedure0> saveCallbacks
@@ -69,7 +71,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		val entityType = collectionType.itemType
 		val vBox = new VBox
 		val selectedEntities = new ListView<FXEntity>
-		val addButton = new Button('add')
+		val addButton = new Button(bundle.add)
 		val vBoxChildren = vBox.children
 		
 		selectedEntities.cellFactory = AssociationContainmentCell.FACTORY
@@ -98,7 +100,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		} else {
 			val hBox = new HBox
 			val hBoxChildren = hBox.children
-			val createButton = new Button('create')
+			val createButton = new Button(bundle.create)
 			val addEntityField = new EntityField [searchPhrase,it|
 				runReplacedTask('search-associations') [|
 					all = entityType.list(searchPhrase).wrap
@@ -162,11 +164,11 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		val entity = propertyValue.value
 		val HBox hBox = new HBox
 		val hBoxChildren = hBox.children
-		val removeButton = new Button('remove')
+		val removeButton = new Button(bundle.remove)
 		val editButtonLabel = if (entity == null)
-					'create'
+					bundle.create
 				else
-					'edit'
+					bundle.edit
 		val editButton = new Button(editButtonLabel)
 		
 		if (entity == null)
@@ -191,7 +193,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				if (value == null) {
 					value = new FXEntity(entityType.createEntity)
 					valueContainer.value = value
-					editButton.text = 'edit'
+					editButton.text = bundle.edit
 					removeButton.disable = false
 					createdContainedEntities += value
 				}
@@ -206,7 +208,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				valueContainer.value = null
 				label.textProperty.unbind
 				label.text = ''
-				editButton.text = 'create'
+				editButton.text = bundle.create
 				containedEntity.closeEntityEditor
 				removeButton.disable = true
 			]
@@ -228,7 +230,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 							label.textProperty.unbind
 							label.text = ''
 							valueContainer.value = null
-							editButton.text = 'create'
+							editButton.text = bundle.create
 						]
 					}
 				}
@@ -249,9 +251,9 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 			entityField.valueProperty.addListener [
 				removeButton.disable = entityField.value == null
 				editButton.text = if (removeButton.disable)
-						'create'
+						bundle.create
 					else
-						'edit'
+						bundle.create
 			]
 			
 			editButton.setOnAction [
@@ -411,7 +413,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 					try {
 						format.parse(txt)
 					} catch(ParseException e) {
-						LOG.warn("Invalid date format: " + txt)
+						LOG.warn('Invalid date format: ' + txt)
 						null
 					}
 		]

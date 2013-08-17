@@ -18,6 +18,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
+import de.algorythm.jdoe.bundle.Bundle;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
@@ -27,6 +28,8 @@ import de.algorythm.jdoe.ui.jfx.model.FXPropertyType;
 import de.algorythm.jdoe.ui.jfx.model.FXType;
 
 public class PropertyEditCell extends AbstractLabeledListCell<Property> implements ChangeListener<FXPropertyType<? extends IPropertyType>> {
+	
+	static private final Bundle bundle = Bundle.getInstance();
 	
 	static public class Factory implements Callback<ListView<Property>, ListCell<Property>> {
 
@@ -51,10 +54,10 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 	
 	private final ObservableList<FXType> types;
 	private VBox editor = new VBox();
-	private Button deleteButton = new Button("delete");
+	private Button deleteButton = new Button(bundle.delete);
 	private ComboBox<FXPropertyType<? extends IPropertyType>> typeComboBox = new ComboBox<>();
-	private CheckBox searchableCheckBox = new CheckBox("searchable");
-	private CheckBox containmentCheckBox = new CheckBox("contained");
+	private CheckBox searchableCheckBox = new CheckBox(bundle.searchable);
+	private CheckBox containmentCheckBox = new CheckBox(bundle.contained);
 	private Collection<Node> attributeEditElements = new ArrayList<>(4);
 	private Collection<Node> referenceEditElements = new ArrayList<>(4);
 	

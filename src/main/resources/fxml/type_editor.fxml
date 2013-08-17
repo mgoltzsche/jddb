@@ -21,9 +21,9 @@
 			<BorderPane>
 				<top>
 					<ToolBar>
-						<Label text="Types"/>
+						<Label text="%types"/>
 						<Region prefWidth="30"/>
-						<Button text="add" onAction="#addType" styleClass="toolbar-button"/>
+						<Button text="%add" onAction="#addType" styleClass="toolbar-button"/>
 					</ToolBar>
 				</top>
 				<center>
@@ -33,9 +33,9 @@
 			<BorderPane>
 				<top>
 					<ToolBar>
-						<Label text="Properties"/>
+						<Label text="%properties"/>
 						<Region prefWidth="30"/>
-						<Button fx:id="btnAddProperty" text="add" onAction="#addProperty" styleClass="toolbar-button" disable="true"/>
+						<Button fx:id="btnAddProperty" text="%add" onAction="#addProperty" styleClass="toolbar-button" disable="true"/>
 					</ToolBar>
 				</top>
 				<center>
@@ -45,6 +45,6 @@
 		</SplitPane>
 	</center>
 	<bottom>
-		<Button text="Save" onAction="#save"/>
+		<Button text="%save" onAction="#save"/>
 	</bottom>
 </BorderPane>

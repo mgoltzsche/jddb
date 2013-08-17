@@ -29,6 +29,7 @@ import javafx.scene.control.TextField
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.bundle.Bundle
 
 public class MainController implements IController, IObserver {
 	
@@ -36,6 +37,7 @@ public class MainController implements IController, IObserver {
 	@Inject extension TaskQueue
 	@Inject extension JavaDbObjectEditorFacade facade
 	@Inject extension ViewRegistry
+	@Inject var Bundle bundle
 	@FXML var ComboBox<EntityType> typeComboBox
 	@FXML var TabPane tabs
 	@FXML var Tab listTab
@@ -132,8 +134,8 @@ public class MainController implements IController, IObserver {
 		val columns = new LinkedList<TableColumn<FXEntity, String>>
 		
 		if (selectedType == EntityType.ALL) {
-			val typeColumn = new TableColumn<FXEntity, String>('Type')
-			val labelColumn = new TableColumn<FXEntity, String>('Entity')
+			val typeColumn = new TableColumn<FXEntity, String>(bundle.type)
+			val labelColumn = new TableColumn<FXEntity, String>(bundle.entity)
 			
 			typeColumn.cellValueFactory = EntityTypeCellValueFactory.INSTANCE
 			labelColumn.cellValueFactory = EntityCellValueFactory.INSTANCE
@@ -167,7 +169,7 @@ public class MainController implements IController, IObserver {
 	
 	def private updateTableData(Collection<FXEntity> entities) {
 		entityList.items.all = entities
-		listTab.text = '''Results («entities.size»)'''
+		listTab.text = '''«bundle.results» («entities.size»)'''
 	}
 	
 	def openDatabase() {

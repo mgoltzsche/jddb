@@ -21,19 +21,19 @@
 	<top>
 		<ToolBar>
 			<Label fx:id="currentDatabaseLabel" />
-			<Button text="open" onAction="#openDatabase" />
-			<Button text="configure" onAction="#showTypeEditor" />
+			<Button text="%open" onAction="#openDatabase" />
+			<Button text="%configure" onAction="#showTypeEditor" />
 			<Region prefWidth="50" />
-			<TextField fx:id="searchField" promptText="Search ..."
+			<TextField fx:id="searchField" promptText="%search"
 				prefWidth="200" />
 			<ComboBox fx:id="typeComboBox" />
-			<MenuButton fx:id="newEntityButton" alignment="CENTER_RIGHT" text="Neu"/>
+			<MenuButton fx:id="newEntityButton" alignment="CENTER_RIGHT" text="%newEntity"/>
 		</ToolBar>
 	</top>
 	<center>
 		<TabPane fx:id="tabs">
 			<tabs>
-				<Tab fx:id="listTab" id="list" text="Results" closable="false">
+				<Tab fx:id="listTab" id="list" text="%results" closable="false">
 					<TableView fx:id="entityList" />
 				</Tab>
 			</tabs>

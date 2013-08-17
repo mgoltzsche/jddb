@@ -2,6 +2,7 @@ package de.algorythm.jdoe;
 
 import com.google.inject.AbstractModule;
 
+import de.algorythm.jdoe.bundle.Bundle;
 import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.impl.orientdb.DAO;
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager;
@@ -13,5 +14,6 @@ public class JavaDbObjectEditorModule extends AbstractModule {
 	protected void configure() {
 		bind(IDAO.class).to(DAO.class);
 		bind(IEntityEditorManager.class).to(ViewRegistry.class);
+		bind(Bundle.class).toInstance(Bundle.getInstance());
 	}
 }

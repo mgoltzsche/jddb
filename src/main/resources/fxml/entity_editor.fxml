@@ -19,8 +19,8 @@
 	</fx:define>
 	<top>
 		<ToolBar>
-			<Button text="delete" onAction="#delete"/>
-			<Button text="save" onAction="#save"/>
+			<Button text="%delete" onAction="#delete"/>
+			<Button text="%save" onAction="#save"/>
 		</ToolBar>
 	</top>
 	<center>
@@ -33,6 +33,6 @@
 		</ScrollPane>
 	</center>
 	<bottom>
-		<Button text="save" onAction="#save"/>
+		<Button text="%save" onAction="#save"/>
 	</bottom>
 </BorderPane>
