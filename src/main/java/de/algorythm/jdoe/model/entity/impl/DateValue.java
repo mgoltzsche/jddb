@@ -1,5 +1,6 @@
 package de.algorythm.jdoe.model.entity.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
@@ -20,7 +21,13 @@ public class DateValue extends AbstractPropertyValue<Date> {
 	
 	@Override
 	public String toString() {
-		return value == null ? EMPTY : value.toString();
+		if (value == null)
+			return EMPTY;
+		else {
+			final SimpleDateFormat fmt = new SimpleDateFormat();
+			
+			return fmt.format(value);
+		}
 	}
 
 }

@@ -7,6 +7,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -28,6 +31,8 @@ import de.algorythm.jdoe.model.meta.Schema;
 
 public class Entity implements IEntity, IPropertyValueVisitor {
 
+	static private final Logger LOG = LoggerFactory.getLogger(Entity.class);
+	
 	static private final long serialVersionUID = -4116231309999192319L;
 	static final String TYPE_FIELD = "_type";
 	static final String ID = "_id";
@@ -145,7 +150,12 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 		final String valueAsString = attributeValueAsString(propertyValue);
 		
 		if (valueAsString != null)
-			propertyValue.setValue(Boolean.valueOf(valueAsString));
+			try {
+				propertyValue.setValue(Boolean.valueOf(valueAsString));
+			} catch(Throwable e) {
+				propertyValue.setValue(false);
+				LOG.debug("Couldn't read boolean property " + propertyValue.getProperty().getLabel(), e);
+			}
 	}
 	
 	@Override
@@ -153,7 +163,12 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 		final String valueAsString = attributeValueAsString(propertyValue);
 		
 		if (valueAsString != null)
-			propertyValue.setValue(Long.valueOf(valueAsString));
+			try {
+				propertyValue.setValue(Long.valueOf(valueAsString));
+			} catch(Throwable e) {
+				LOG.debug("Couldn't read decimal property " + propertyValue.getProperty().getLabel(), e);
+				propertyValue.setValue(null);
+			}
 	}
 
 	@Override
@@ -161,18 +176,22 @@ public class Entity implements IEntity, IPropertyValueVisitor {
 		final String valueAsString = attributeValueAsString(propertyValue);
 		
 		if (valueAsString != null)
-			propertyValue.setValue(Double.valueOf(valueAsString));
+			try {
+				propertyValue.setValue(Double.valueOf(valueAsString));
+			} catch(Throwable e) {
+				LOG.debug("Couldn't read real property " + propertyValue.getProperty().getLabel(), e);
+				propertyValue.setValue(null);
+			}
 	}
 
 	@Override
 	public void doWithDate(final DateValue propertyValue) {
-		final String valueAsString = attributeValueAsString(propertyValue);
+		final Object value = vertex.getProperty(propertyValue.getProperty().getName());
 		
-		if (valueAsString != null) {
-			final long timestamp = Long.valueOf(valueAsString);
-			final Date value = new Date(timestamp);
-			propertyValue.setValue(value);
-		}
+		if (value != null && value.getClass() == Date.class)
+			propertyValue.setValue((Date) value);
+		else
+			propertyValue.setValue(null);
 	}
 
 	@Override

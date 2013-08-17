@@ -18,6 +18,9 @@ import de.algorythm.jdoe.ui.jfx.controls.EntityField
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.ValueContainer
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
+import java.text.NumberFormat
+import java.text.ParseException
+import java.text.SimpleDateFormat
 import java.util.Collection
 import java.util.regex.Pattern
 import javafx.scene.control.Button
@@ -30,19 +33,18 @@ import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javax.inject.Inject
+import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
-import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
-import java.text.NumberFormat
-import java.text.ParseException
 
 class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 
-	static private val LOG = LoggerFactory.getLogger(typeof(PropertyValueEditorVisitor))
-	static private val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
-	static private val REAL_PATTERN = Pattern.compile('^\\d*((\\.|,)\\d*)?$')
+	static val LOG = LoggerFactory.getLogger(typeof(PropertyValueEditorVisitor))
+	static val FIELD_ERROR_STYLE_CLASS = 'field-error'
+	static val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
+	static val REAL_PATTERN = Pattern.compile('^\\d+((\\.|,)\\d+)?$')
 
 	@Inject extension IDAO dao
 	@Inject extension TaskQueue
@@ -315,16 +317,10 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 	}
 
 	override doWithDecimal(DecimalValue propertyValue) {
-		val value = propertyValue.value
-		val valueStr = if (value == null)
-				null
-			else
-				value.toString
-		val textField = new TextField(valueStr)
+		val textField = new TextField(propertyValue.toString)
 		
-		textField.textProperty.addListener [o,oldValue,newValue|
-			if (newValue != null && !DECIMAL_PATTERN.matcher(newValue).matches)
-				textField.text = oldValue
+		textField.validate [
+			empty || DECIMAL_PATTERN.matcher(it).matches
 		]
 		
 		gridPane.add(textField, 1, row)
@@ -335,7 +331,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 	}
 	
 	def private asLong(String txt) {
-		if (txt != null && !txt.empty) {
+		if (!txt.empty) {
 			try {
 				return Long.valueOf(txt)
 			} catch(NumberFormatException e) {
@@ -351,17 +347,16 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		
 		gridPane.add(textField, 1, row)
 		
-		textField.textProperty.addListener [o,oldValue,newValue| // allow real value only
-			if (newValue != null) {
+		textField.validate [
+			if (empty)
+				true
+			else
 				try {
-					newValue.asNumber
-					
-					if (!REAL_PATTERN.matcher(newValue).matches)
-						textField.text = oldValue
+					asNumber
+					REAL_PATTERN.matcher(it).matches
 				} catch(ParseException e) {
-					textField.text = oldValue
+					false
 				}
-			}
 		]
 		
 		saveCallbacks += [|
@@ -389,8 +384,37 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 	}
 
 	override doWithDate(DateValue propertyValue) {
-		// TODO Auto-generated method stub
+		val format = new SimpleDateFormat
+		val textField = new TextField(propertyValue.toString)
 		
+		textField.validate [
+			if (empty) {
+				true
+			} else {
+				try {
+					format.parse(it)
+					true
+				} catch(ParseException e) {
+					false
+				}
+			}
+		]
+		
+		gridPane.add(textField, 1, row)
+		
+		saveCallbacks += [|
+			val txt = textField.text
+			
+			propertyValue.value = if (txt == null || txt.empty)
+					null
+				else
+					try {
+						format.parse(txt)
+					} catch(ParseException e) {
+						LOG.warn("Invalid date format: " + txt)
+						null
+					}
+		]
 	}
 
 	override doWithString(StringValue propertyValue) {
@@ -423,7 +447,12 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		]
 	}
 	
-	def private void createFieldMask(Procedure1<String> callback) {
-		
+	def private void validate(TextField field, Function1<String, Boolean> validator) {
+		field.textProperty.addListener [c,o,newValue|
+			if (!validator.apply(newValue))
+				field.styleClass += FIELD_ERROR_STYLE_CLASS
+			else
+				field.styleClass -= FIELD_ERROR_STYLE_CLASS
+		]
 	}
 }
