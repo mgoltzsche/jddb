@@ -47,7 +47,7 @@ public class EntityEditorController implements IController, IObserver {
 				val label = new Label(value.property.label + ': ')
 				
 				GridPane.setValignment(label, VPos.TOP)
-				GridPane.setMargin(label, new Insets(4, 0, 0, 0));
+				GridPane.setMargin(label, new Insets(4, 0, 0, 0))
 				
 				gridPane.add(label, 0, i)
 				
