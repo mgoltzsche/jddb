@@ -19,7 +19,7 @@ public class ViewData {
 		return tab;
 	}
 	
-	public FXEntity getEntity() {
+	public FXEntityReference getEntity() {
 		return entity;
 	}
 	

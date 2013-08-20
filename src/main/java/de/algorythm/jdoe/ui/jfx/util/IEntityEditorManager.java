@@ -1,11 +1,9 @@
 package de.algorythm.jdoe.ui.jfx.util;
 
-import java.util.Collection;
-
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
-import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.ui.jfx.model.FXEntity;
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 
 public interface IEntityEditorManager {
 
@@ -16,8 +14,7 @@ public interface IEntityEditorManager {
 	 * @return the view ID
 	 */
 	void showEntityEditor(FXEntity entity, Procedure1<FXEntity> saveCallback);
+	void showEntityEditor(FXEntityReference entity, Procedure1<FXEntity> saveCallback);
 	void showEntityEditor(FXEntity entity);
-	void closeEntityEditor(FXEntity entity);
-	FXEntity wrap(IEntity entity);
-	Collection<FXEntity> wrap(Iterable<IEntity> entities);
+	void closeEntityEditor(FXEntityReference entity);
 }

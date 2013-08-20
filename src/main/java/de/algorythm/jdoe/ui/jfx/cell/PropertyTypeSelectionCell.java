@@ -4,7 +4,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
 import de.algorythm.jdoe.model.meta.IPropertyType;
-import de.algorythm.jdoe.ui.jfx.model.FXPropertyType;
+import de.algorythm.jdoe.ui.jfx.model.meta.FXPropertyType;
 
 public class PropertyTypeSelectionCell extends ListCell<FXPropertyType<? extends IPropertyType>> {
 

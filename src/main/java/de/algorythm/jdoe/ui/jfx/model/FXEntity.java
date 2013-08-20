@@ -3,96 +3,70 @@ package de.algorythm.jdoe.ui.jfx.model;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import de.algorythm.jdoe.model.entity.IEntity;
-import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.impl.Entity;
 import de.algorythm.jdoe.model.meta.EntityType;
 
-public class FXEntity {
+public class FXEntity extends Entity implements FXEntityReference {
+
+	static private final long serialVersionUID = -5386143358866304236L;
 	
-	private final IEntity model;
-	private final ArrayList<FXPropertyValue> values;
+	private final ArrayList<FXPropertyValue<?>> values;
 	private final SimpleStringProperty label = new SimpleStringProperty();
 	
-	public FXEntity(final IEntity model) {
-		this.model = model;
-		
-		final Collection<IPropertyValue<?>> modelValues = model.getValues();
-		
-		values = new ArrayList<FXPropertyValue>(modelValues.size());
-		
-		for (IPropertyValue<?> value : modelValues)
-			values.add(new FXPropertyValue(value));
+	public FXEntity(final EntityType type, final ArrayList<FXPropertyValue<?>> values) {
+		super(type, values);
+		this.values = values;
 		
 		applyLabelValue();
 	}
 	
-	public IEntity getModel() {
-		return model;
+	public FXEntity(final String id, final EntityType type, final ArrayList<FXPropertyValue<?>> values) {
+		super(id, type, values);
+		this.values = values;
+		
+		applyLabelValue();
 	}
 	
-	public void applyPropertyValues() {
-		for (FXPropertyValue value : values)
-			value.apply();
+	public FXEntity(final String id, final EntityType type, final ArrayList<FXPropertyValue<?>> values, final Collection<FXEntityReference> referringEntities) {
+		super(id, type, values, referringEntities);
+		this.values = values;
 		
 		applyLabelValue();
 	}
 	
 	private void applyLabelValue() {
-		final StringBuilder sb = new StringBuilder(model.toString());
+		final StringBuilder sb = new StringBuilder();
 		
-		if (sb.length() == 0) {
-			sb.append(model.getType().getLabel());
-		
-			if (!model.isPersisted())
-				sb.append(" (neu)");
-		}
+		for (FXPropertyValue<?> value : values)
+			if (value.getProperty().getType().isUserDefined())
+				sb.append(value.labelProperty().get());
 		
 		label.setValue(sb.toString());
 	}
 	
-	public String getId() {
-		return model.getId();
-	}
-	
-	public EntityType getType() {
-		return model.getType();
-	}
-	
-	public boolean isPersisted() {
-		return model.isPersisted();
-	}
-	
-	public Iterable<FXPropertyValue> getValues() {
-		return values;
-	}
-	
-	public FXPropertyValue getValue(int index) {
+	public FXPropertyValue<?> getValue(int index) {
 		return values.get(index);
 	}
 	
-	public StringProperty getLabel() {
+	public ReadOnlyStringProperty labelProperty() {
 		return label;
 	}
 	
 	@Override
-	public String toString() {
-		return model.toString();
-	}
-	
-	@Override
-	public int hashCode() {
-		return model.hashCode();
-	}
-	
-	@Override
-	public boolean equals(final Object o) {
-		if (o == null || o.getClass() != getClass())
-			return false;
-		
-		final FXEntity other = (FXEntity) o;
-		
-		return model.equals(other.model);
+	public void toString(final StringBuilder sb) {
+		for (FXPropertyValue<?> value : values) {
+			if (!value.getProperty().getType().isUserDefined()) { // attrs only
+				final String valueStr = value.labelProperty().get();
+				
+				if (!valueStr.isEmpty()) {
+					if (sb.length() > 0)
+						sb.append(", ");
+					
+					sb.append(valueStr);
+				}
+			}
+		}
 	}
 }

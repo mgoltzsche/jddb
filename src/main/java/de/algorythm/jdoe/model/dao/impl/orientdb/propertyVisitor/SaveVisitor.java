@@ -1,6 +1,7 @@
 package de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
@@ -10,27 +11,19 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
-import de.algorythm.jdoe.model.dao.impl.orientdb.Entity;
 import de.algorythm.jdoe.model.dao.impl.orientdb.IDAOVisitorContext;
 import de.algorythm.jdoe.model.entity.IEntity;
+import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.entity.impl.Association;
-import de.algorythm.jdoe.model.entity.impl.Associations;
-import de.algorythm.jdoe.model.entity.impl.BooleanValue;
-import de.algorythm.jdoe.model.entity.impl.DateValue;
-import de.algorythm.jdoe.model.entity.impl.DecimalValue;
-import de.algorythm.jdoe.model.entity.impl.RealValue;
-import de.algorythm.jdoe.model.entity.impl.StringValue;
-import de.algorythm.jdoe.model.entity.impl.TextValue;
 import de.algorythm.jdoe.model.meta.Property;
 
 public class SaveVisitor extends IndexKeywordCollectingVisitor {
 	
 	private final Vertex vertex;
-	private final Collection<Entity> savedEntities;
+	private final Collection<IEntity> savedEntities;
 	private final IDAOVisitorContext dao;
 	
-	public SaveVisitor(final IDAOVisitorContext dao, final Vertex vertex, final Collection<Entity> savedEntities, final Pattern wordPattern, final Set<String> indexKeywords) {
+	public SaveVisitor(final IDAOVisitorContext dao, final Vertex vertex, final Collection<IEntity> savedEntities, final Pattern wordPattern, final Set<String> indexKeywords) {
 		super(wordPattern, indexKeywords);
 		this.dao = dao;
 		this.vertex = vertex;
@@ -38,7 +31,7 @@ public class SaveVisitor extends IndexKeywordCollectingVisitor {
 	}
 	
 	@Override
-	public void doWithAssociations(Associations propertyValue) {
+	public void doWithAssociations(final IPropertyValue<Collection<IEntityReference>> propertyValue) {
 		if (!propertyValue.isChanged())
 			return;
 		
@@ -49,14 +42,14 @@ public class SaveVisitor extends IndexKeywordCollectingVisitor {
 		for (Edge edge : vertex.getEdges(Direction.OUT, propertyName))
 			existingEdges.add(edge);
 		
-		for (IEntity refEntity : propertyValue.getValue()) {
-			if (!refEntity.isPersisted()) // save new entity
-				dao.saveInTransaction(refEntity, savedEntities);
+		for (IEntityReference entityRef : propertyValue.getValue()) {
+			if (entityRef.isTransientInstance()) // save new entity
+				dao.saveInTransaction(entityRef.getTransientInstance(), savedEntities);
 			
 			// check existing edge
 			boolean edgeAlreadyExists = false;
 			
-			final Vertex refVertex = ((Entity) refEntity).getVertex();
+			final Vertex refVertex = dao.findVertex(entityRef);
 			final Iterator<Edge> existingEdgeIter = existingEdges.iterator();
 			
 			while (existingEdgeIter.hasNext()) {
@@ -79,20 +72,23 @@ public class SaveVisitor extends IndexKeywordCollectingVisitor {
 	}
 	
 	@Override
-	public void doWithAssociation(Association propertyValue) {
+	public void doWithAssociation(final IPropertyValue<IEntityReference> propertyValue) {
 		if (!propertyValue.isChanged())
 			return;
 		
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
-		final Entity refEntity = (Entity) propertyValue.getValue();
+		final IEntityReference entityRef = propertyValue.getValue();
 		Vertex refVertex = null;
 		
-		if (refEntity != null) {
-			if (!refEntity.isPersisted())
-				dao.saveInTransaction(refEntity, savedEntities);
-			
-			refVertex = refEntity.getVertex();
+		if (entityRef != null) {
+			if (entityRef.isTransientInstance())
+				refVertex = dao.saveInTransaction(entityRef.getTransientInstance(), savedEntities);
+			try { // find associated vertex
+				refVertex = dao.findVertex(entityRef);
+			} catch(IllegalArgumentException e) { // create 
+				
+			}
 		}
 		
 		boolean edgeAlreadyExists = false;
@@ -112,37 +108,37 @@ public class SaveVisitor extends IndexKeywordCollectingVisitor {
 	}
 	
 	@Override
-	public void doWithBoolean(BooleanValue propertyValue) {
+	public void doWithBoolean(final IPropertyValue<Boolean> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithBoolean(propertyValue);
 	}
 
 	@Override
-	public void doWithDecimal(DecimalValue propertyValue) {
+	public void doWithDecimal(final IPropertyValue<Long> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithDecimal(propertyValue);
 	}
 
 	@Override
-	public void doWithReal(RealValue propertyValue) {
+	public void doWithReal(final IPropertyValue<Double> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithReal(propertyValue);
 	}
 
 	@Override
-	public void doWithDate(DateValue propertyValue) {
+	public void doWithDate(final IPropertyValue<Date> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithDate(propertyValue);
 	}
 
 	@Override
-	public void doWithString(StringValue propertyValue) {
+	public void doWithString(final IPropertyValue<String> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithString(propertyValue);
 	}
 
 	@Override
-	public void doWithText(TextValue propertyValue) {
+	public void doWithText(final IPropertyValue<String> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithText(propertyValue);
 	}
@@ -166,7 +162,7 @@ public class SaveVisitor extends IndexKeywordCollectingVisitor {
 		edge.remove();
 		
 		if (property.isContainment()) {
-			final IEntity referredEntity = dao.createEntity(referredVertex);
+			final IEntityReference referredEntity = dao.createEntityReference(referredVertex);
 			
 			if (property.getType().isConform(referredEntity.getType()))
 				dao.deleteInTransaction(referredEntity);

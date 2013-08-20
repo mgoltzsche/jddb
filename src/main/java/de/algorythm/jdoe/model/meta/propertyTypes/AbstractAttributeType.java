@@ -6,11 +6,11 @@ import java.util.LinkedList;
 
 import de.algorythm.jdoe.model.meta.IPropertyType;
 
-public abstract class AbstractAttributeType implements IPropertyType, Serializable {
+public abstract class AbstractAttributeType<V> implements IPropertyType<V>, Serializable {
 
 	static private final long serialVersionUID = 4590467257394701843L;
 	
-	static public final Collection<AbstractAttributeType> ATTRIBUTE_TYPES = new LinkedList<>();
+	static public final Collection<AbstractAttributeType<?>> ATTRIBUTE_TYPES = new LinkedList<>();
 	
 	static {
 		ATTRIBUTE_TYPES.add(new TBoolean());
@@ -43,8 +43,13 @@ public abstract class AbstractAttributeType implements IPropertyType, Serializab
 	}
 	
 	@Override
-	public boolean isConform(final IPropertyType type) {
+	public boolean isConform(final IPropertyType<?> type) {
 		return this == type;
+	}
+	
+	@Override
+	public boolean valueChanged(final V oldValue, final V newValue) {
+		return oldValue == null && newValue != null || oldValue != null && !oldValue.equals(newValue);
 	}
 
 	@Override
@@ -63,7 +68,7 @@ public abstract class AbstractAttributeType implements IPropertyType, Serializab
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AbstractAttributeType other = (AbstractAttributeType) obj;
+		AbstractAttributeType<?> other = (AbstractAttributeType<?>) obj;
 		if (label == null) {
 			if (other.label != null)
 				return false;

@@ -1,12 +1,12 @@
 package de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import de.algorythm.jdoe.model.dao.impl.orientdb.IDAOVisitorContext;
-import de.algorythm.jdoe.model.entity.IEntity;
-import de.algorythm.jdoe.model.entity.impl.Association;
-import de.algorythm.jdoe.model.entity.impl.Associations;
+import de.algorythm.jdoe.model.entity.IEntityReference;
+import de.algorythm.jdoe.model.entity.IPropertyValue;
 
 public class DeleteVisitor extends IndexKeywordCollectingVisitor {
 	
@@ -18,19 +18,19 @@ public class DeleteVisitor extends IndexKeywordCollectingVisitor {
 	}
 	
 	@Override
-	public void doWithAssociations(Associations propertyValue) {
+	public void doWithAssociations(final IPropertyValue<Collection<IEntityReference>> propertyValue) {
 		if (propertyValue.getProperty().isContainment())
-			for (IEntity entity : propertyValue.getValue())
-				dao.deleteInTransaction(entity);
+			for (IEntityReference entityRef : propertyValue.getValue())
+				dao.deleteInTransaction(entityRef);
 	}
 	
 	@Override
-	public void doWithAssociation(Association propertyValue) {
+	public void doWithAssociation(final IPropertyValue<IEntityReference> propertyValue) {
 		if (propertyValue.getProperty().isContainment()) {
-			final IEntity entity = propertyValue.getValue();
+			final IEntityReference entityRef = propertyValue.getValue();
 			
-			if (entity != null)
-				dao.deleteInTransaction(entity);
+			if (entityRef != null)
+				dao.deleteInTransaction(entityRef);
 		}
 	}
 }

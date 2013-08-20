@@ -1,15 +1,10 @@
 package de.algorythm.jdoe.controller
 
+import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.model.dao.IDAO
+import de.algorythm.jdoe.model.entity.IEntityReference
+import de.algorythm.jdoe.model.entity.IPropertyValue
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor
-import de.algorythm.jdoe.model.entity.impl.Association
-import de.algorythm.jdoe.model.entity.impl.Associations
-import de.algorythm.jdoe.model.entity.impl.BooleanValue
-import de.algorythm.jdoe.model.entity.impl.DateValue
-import de.algorythm.jdoe.model.entity.impl.DecimalValue
-import de.algorythm.jdoe.model.entity.impl.RealValue
-import de.algorythm.jdoe.model.entity.impl.StringValue
-import de.algorythm.jdoe.model.entity.impl.TextValue
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
 import de.algorythm.jdoe.taskQueue.TaskQueue
@@ -22,6 +17,7 @@ import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Collection
+import java.util.Date
 import java.util.regex.Pattern
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
@@ -38,7 +34,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.bundle.Bundle
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 
 class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 
@@ -47,7 +43,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 	static val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
 	static val REAL_PATTERN = Pattern.compile('^\\d+((\\.|,)\\d+)?$')
 
-	@Inject extension IDAO dao
+	@Inject extension IDAO<FXEntity> dao
 	@Inject extension TaskQueue
 	@Inject extension IEntityEditorManager editorManager
 	@Inject Bundle bundle
@@ -65,27 +61,27 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		this.createdContainedEntities = createdContainedEntities
 	}
 
-	override doWithAssociations(Associations propertyValue) {
+	override doWithAssociations(IPropertyValue<Collection<IEntityReference>> propertyValue) {
 		val property = propertyValue.property
 		val collectionType = property.type as CollectionType
 		val entityType = collectionType.itemType
 		val vBox = new VBox
-		val selectedEntities = new ListView<FXEntity>
+		val selectedEntities = new ListView<FXEntityReference>
 		val addButton = new Button(bundle.add)
 		val vBoxChildren = vBox.children
 		
 		selectedEntities.cellFactory = AssociationContainmentCell.FACTORY
-		selectedEntities.items.all = propertyValue.value.wrap
+		selectedEntities.items.all = propertyValue.value
 		
 		if (property.containment) {
 			vBoxChildren += selectedEntities
 			vBoxChildren += addButton
 			
 			addButton.setOnAction [
-				val newEntity = new FXEntity(entityType.createEntity)
+				val newEntity = entityType.createEntity
 				
-				selectedEntities.items += newEntity
 				createdContainedEntities += newEntity
+				selectedEntities.items += newEntity
 				
 				newEntity.showEntityEditor []
 			]
@@ -94,7 +90,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				val iter = selectedEntities.items.iterator
 				
 				while (iter.hasNext)
-					if (!iter.next.model.exists)
+					if (!iter.next.exists)
 						iter.remove
 			]
 		} else {
@@ -103,7 +99,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 			val createButton = new Button(bundle.create)
 			val addEntityField = new EntityField [searchPhrase,it|
 				runReplacedTask('search-associations') [|
-					all = entityType.list(searchPhrase).wrap
+					all = entityType.list(searchPhrase)
 				]
 			]
 			val selectionChangeListener = [|
@@ -128,8 +124,8 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 			]
 			
 			createButton.setOnAction [
-				entityType.createEntity.wrap.showEntityEditor [
-					model.save
+				entityType.createEntity.showEntityEditor [
+					save
 					selectedEntities.items += it
 				]
 			]
@@ -144,7 +140,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				val iter = selectedEntities.items.iterator
 				
 				while (iter.hasNext)
-					if (!iter.next.model.update)
+					if (!iter.next.exists)
 						iter.remove
 				
 				addEntityField.update
@@ -154,11 +150,11 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		gridPane.add(vBox, 1, row)
 		
 		saveCallbacks += [|
-			propertyValue.value = selectedEntities.items.map(e|e.model)
+			propertyValue.value = selectedEntities.items
 		]
 	}
 	
-	override doWithAssociation(Association propertyValue) {
+	override doWithAssociation(IPropertyValue<IEntityReference> propertyValue) {
 		val property = propertyValue.property
 		val entityType = property.type as EntityType
 		val entity = propertyValue.value
@@ -179,8 +175,8 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 			val label = new Label
 			
 			if (entity != null) {
-				valueContainer.value = entity.wrap
-				label.textProperty.bind(valueContainer.value.label)
+				valueContainer.value = entity
+				label.textProperty.bind(valueContainer.value.labelProperty)
 			}
 			
 			hBoxChildren += label
@@ -191,14 +187,14 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				var value = valueContainer.value
 				
 				if (value == null) {
-					value = new FXEntity(entityType.createEntity)
+					value = entityType.createEntity
 					valueContainer.value = value
 					editButton.text = bundle.edit
 					removeButton.disable = false
 					createdContainedEntities += value
 				}
 				
-				label.textProperty.bind(value.label)
+				label.textProperty.bind(value.labelProperty)
 				
 				value.showEntityEditor []
 			]
@@ -214,14 +210,14 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 			]
 			
 			saveCallbacks += [|
-				propertyValue.value = valueContainer.value?.model
+				propertyValue.value = valueContainer.value
 			]
 			
 			updateCallbacks += [|
 				val containerValue = valueContainer.value
 				
 				if (containerValue != null) {
-					if (containerValue.model.update) {
+					if (containerValue.update) {
 						runLater [|
 							containerValue.applyPropertyValues
 						]
@@ -238,7 +234,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		} else {
 			val entityField = new EntityField [searchPhrase,it|
 				runReplacedTask('search-association') [|
-					all = entityType.list(searchPhrase).wrap
+					all = entityType.list(searchPhrase)
 				]
 			]
 			
@@ -246,7 +242,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 			hBoxChildren += editButton
 			hBoxChildren += removeButton
 			
-			entityField.value = propertyValue.value.wrap
+			entityField.value = propertyValue.value
 			
 			entityField.valueProperty.addListener [
 				removeButton.disable = entityField.value == null
@@ -260,8 +256,8 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				val selectedEntity = entityField.value
 				
 				if (selectedEntity == null) {
-					entityType.createEntity.wrap.showEntityEditor [
-						model.save
+					entityType.createEntity.showEntityEditor [
+						save
 						entityField.value = it
 						removeButton.disable = false
 					]
@@ -276,14 +272,14 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 			]
 			
 			saveCallbacks += [|
-				propertyValue.value = entityField.value?.model
+				propertyValue.value = entityField.value
 			]
 			
 			updateCallbacks += [|
 				val selectedEntity = entityField.value
 				
 				if (selectedEntity != null) {
-					if (selectedEntity.model.update) {
+					if (selectedEntity.update) {
 						runLater [|
 							selectedEntity.applyPropertyValues
 						]
@@ -302,7 +298,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		gridPane.add(hBox, 1, row)
 	}
 
-	override doWithBoolean(BooleanValue propertyValue) {
+	override doWithBoolean(IPropertyValue<Boolean> propertyValue) {
 		val checkBox = new CheckBox
 		
 		checkBox.selected = propertyValue.value
@@ -318,7 +314,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		]
 	}
 
-	override doWithDecimal(DecimalValue propertyValue) {
+	override doWithDecimal(IPropertyValue<Long> propertyValue) {
 		val textField = new TextField(propertyValue.toString)
 		
 		textField.validate [
@@ -344,7 +340,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		return null
 	}
 
-	override doWithReal(RealValue propertyValue) {
+	override doWithReal(IPropertyValue<Double> propertyValue) {
 		val textField = new TextField(propertyValue.toString)
 		
 		gridPane.add(textField, 1, row)
@@ -385,7 +381,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				null
 	}
 
-	override doWithDate(DateValue propertyValue) {
+	override doWithDate(IPropertyValue<Date> propertyValue) {
 		val format = new SimpleDateFormat
 		val textField = new TextField(propertyValue.toString)
 		
@@ -419,7 +415,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		]
 	}
 
-	override doWithString(StringValue propertyValue) {
+	override doWithString(IPropertyValue<String> propertyValue) {
 		val textField = new TextField(propertyValue.value)
 		
 		gridPane.add(textField, 1, row)
@@ -434,7 +430,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		]
 	}
 
-	override doWithText(TextValue propertyValue) {
+	override doWithText(IPropertyValue<String> propertyValue) {
 		val textArea = new TextArea(propertyValue.value)
 		
 		gridPane.add(textArea, 1, row)

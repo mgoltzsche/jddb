@@ -3,7 +3,7 @@ package de.algorythm.jdoe.ui.jfx.cell;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
-import de.algorythm.jdoe.ui.jfx.model.FXType;
+import de.algorythm.jdoe.ui.jfx.model.meta.FXType;
 
 public class TypeCell extends AbstractLabeledListCell<FXType> {
 	

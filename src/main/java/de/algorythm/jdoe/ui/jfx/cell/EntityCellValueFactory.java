@@ -14,6 +14,6 @@ public class EntityCellValueFactory implements Callback<CellDataFeatures<FXEntit
 	@Override
 	public ObservableValue<String> call(
 			final CellDataFeatures<FXEntity, String> features) {
-		return features.getValue().getLabel();
+		return features.getValue().labelProperty();
 	}
 }

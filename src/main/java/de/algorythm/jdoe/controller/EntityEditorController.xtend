@@ -22,10 +22,10 @@ import static javafx.application.Platform.*
 
 public class EntityEditorController implements IController, IObserver {
 	
-	@Inject extension IDAO
 	@Inject extension TaskQueue
 	@Inject extension IEntityEditorManager
 	@Inject extension Injector
+	@Inject extension IDAO<FXEntity> dao
 	@FXML var GridPane gridPane
 	@FXML var EditorStateModel editorState
 	var FXEntity entity
@@ -37,13 +37,12 @@ public class EntityEditorController implements IController, IObserver {
 	override init() {}
 	
 	def init(FXEntity entity, Procedure1<FXEntity> saveCallback) {
-		this.entity = entity
 		this.saveCallback = saveCallback
 		
 		runLater [|
 			var i = 0
 			
-			for (IPropertyValue<?> value : entity.model.values) {
+			for (IPropertyValue<?> value : entity.values) {
 				val label = new Label(value.property.label + ': ')
 				
 				GridPane.setValignment(label, VPos.TOP)
@@ -60,22 +59,21 @@ public class EntityEditorController implements IController, IObserver {
 				i = i + 1
 			}
 			
+			addObserver(this)
 			update
 		]
-		
-		addObserver(this)
 	}
 	
 	def save() {
 		for (callback : propertySaveCallbacks)
 			callback.apply
 		
-		if (entity.persisted || saveCallback == null) {
+		if (entity.isTransientInstance || saveCallback == null) {
 			editorState.disableProperty.value = true
 			
 			runTask('saving entity') [|
 				try {
-					entity.model.save
+					entity.save
 				} finally {
 					runLater [|
 						entity.applyPropertyValues
@@ -94,7 +92,7 @@ public class EntityEditorController implements IController, IObserver {
 		
 		runTask('deleting entity') [|
 			try {
-				entity.model.delete
+				entity.delete
 			} finally {
 				runLater [|
 					editorState.disableProperty.value = false
@@ -104,7 +102,7 @@ public class EntityEditorController implements IController, IObserver {
 	}
 
 	override update() {
-		if (!entity.persisted || entity.model.update)
+		if (!entity.isTransientInstance || entity.exists)
 			for (callback : propertyUpdateCallbacks)
 				callback.apply
 		else
@@ -115,7 +113,7 @@ public class EntityEditorController implements IController, IObserver {
 		removeObserver(this)
 		
 		for (entity : createdContainedEntities)
-			if (!entity.persisted)
+			if (!entity.isTransientInstance)
 				entity.closeEntityEditor
 	}
 }

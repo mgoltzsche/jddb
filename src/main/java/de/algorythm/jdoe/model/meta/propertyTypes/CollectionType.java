@@ -3,14 +3,15 @@ package de.algorythm.jdoe.model.meta.propertyTypes;
 import java.io.Serializable;
 import java.util.Collection;
 
-import de.algorythm.jdoe.model.entity.IEntity;
+import de.algorythm.jdoe.model.dao.IPropertyValueFactory;
+import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.entity.impl.Associations;
+import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class CollectionType implements IPropertyType, Serializable {
+public class CollectionType implements IPropertyType<Collection<IEntityReference>>, Serializable {
 
 	static private final long serialVersionUID = 5746102308534615947L;
 	static private final String LABEL_SUFFIX = " (Liste)";
@@ -42,22 +43,34 @@ public class CollectionType implements IPropertyType, Serializable {
 	}
 
 	@Override
-	public IPropertyValue<Collection<IEntity>> createPropertyValue(final Property property) {
-		return new Associations(property);
+	public <P extends IPropertyValue<?>> P createPropertyValue(final Property property, final IPropertyValueFactory<P> factory) {
+		return factory.createAssociationsValue(property);
 	}
 	
 	@Override
-	public boolean isConform(final IPropertyType type) {
+	public void doWithPropertyValue(final IPropertyValue<Collection<IEntityReference>> value,
+			final IPropertyValueVisitor visitor) {
+		visitor.doWithAssociations(value);
+	}
+	
+	@Override
+	public boolean valueChanged(final Collection<IEntityReference> oldValue, final Collection<IEntityReference> newValue) {
+		return !oldValue.containsAll(newValue) || !newValue.containsAll(oldValue);
+	}
+	
+	@Override
+	public boolean isConform(final IPropertyType<?> type) {
 		return itemType.isConform(type);
 	}
-
+	
+	@Override
+	public void valueToString(final Collection<IEntityReference> value, StringBuilder sb) {
+		sb.append(String.valueOf(value.size()));
+	}
+	
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((itemType == null) ? 0 : itemType.hashCode());
-		return result;
+		return 31 + ((itemType == null) ? 0 : itemType.hashCode());
 	}
 
 	@Override

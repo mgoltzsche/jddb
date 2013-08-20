@@ -9,14 +9,14 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Callback;
-import de.algorythm.jdoe.ui.jfx.model.FXEntity;
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 
-public class AssociationContainmentCell extends ListCell<FXEntity> {
+public class AssociationContainmentCell extends ListCell<FXEntityReference> {
 
-	static public final Callback<ListView<FXEntity>, ListCell<FXEntity>> FACTORY = new Callback<ListView<FXEntity>, ListCell<FXEntity>>() {
+	static public final Callback<ListView<FXEntityReference>, ListCell<FXEntityReference>> FACTORY = new Callback<ListView<FXEntityReference>, ListCell<FXEntityReference>>() {
 
 		@Override
-		public ListCell<FXEntity> call(final ListView<FXEntity> view) {
+		public ListCell<FXEntityReference> call(final ListView<FXEntityReference> view) {
 			return new AssociationContainmentCell();
 		}
 	};
@@ -25,7 +25,7 @@ public class AssociationContainmentCell extends ListCell<FXEntity> {
 	private final Label label = new Label();
 	private final Button removeButton = new Button("remove");
 	private final BorderPane pane = new BorderPane();
-	private FXEntity entity;
+	private FXEntityReference entity;
 	
 	public AssociationContainmentCell() {
 		BorderPane.setAlignment(label, Pos.CENTER_LEFT);
@@ -42,7 +42,7 @@ public class AssociationContainmentCell extends ListCell<FXEntity> {
 	}
 	
 	@Override
-	public void updateItem(FXEntity entity, boolean empty) {
+	public void updateItem(FXEntityReference entity, boolean empty) {
 		super.updateItem(entity, empty);
 		
 		this.entity = entity;
@@ -50,7 +50,7 @@ public class AssociationContainmentCell extends ListCell<FXEntity> {
 		if (empty) {
 			label.textProperty().unbind();
 		} else {
-			label.textProperty().bind(entity.getLabel());
+			label.textProperty().bind(entity.labelProperty());
 			setGraphic(pane);
 		}
 	}

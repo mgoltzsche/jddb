@@ -21,6 +21,6 @@ public class AssociationCell extends ListCell<FXEntity> {
 		if (empty)
 			textProperty().unbind();
 		else
-			textProperty().bind(entity.getLabel());
+			textProperty().bind(entity.labelProperty());
 	}
 }

@@ -1,23 +1,16 @@
 package de.algorythm.jdoe.model.entity;
 
-import de.algorythm.jdoe.model.entity.impl.Association;
-import de.algorythm.jdoe.model.entity.impl.Associations;
-import de.algorythm.jdoe.model.entity.impl.BooleanValue;
-import de.algorythm.jdoe.model.entity.impl.DateValue;
-import de.algorythm.jdoe.model.entity.impl.DecimalValue;
-import de.algorythm.jdoe.model.entity.impl.RealValue;
-import de.algorythm.jdoe.model.entity.impl.StringValue;
-import de.algorythm.jdoe.model.entity.impl.TextValue;
+import java.util.Collection;
+import java.util.Date;
 
+public interface IPropertyValueVisitor<ENTITYREF extends IEntityReference> {
 
-public interface IPropertyValueVisitor {
-
-	void doWithAssociation(Association propertyValue);
-	void doWithAssociations(Associations propertyValue);
-	void doWithBoolean(BooleanValue propertyValue);
-	void doWithDecimal(DecimalValue propertyValue);
-	void doWithReal(RealValue propertyValue);
-	void doWithDate(DateValue propertyValue);
-	void doWithString(StringValue propertyValue);
-	void doWithText(TextValue propertyValue);
+	void doWithAssociation(IPropertyValue<ENTITYREF> propertyValue);
+	void doWithAssociations(IPropertyValue<Collection<ENTITYREF>> propertyValue);
+	void doWithBoolean(IPropertyValue<Boolean> propertyValue);
+	void doWithDecimal(IPropertyValue<Long> propertyValue);
+	void doWithReal(IPropertyValue<Double> propertyValue);
+	void doWithDate(IPropertyValue<Date> propertyValue);
+	void doWithString(IPropertyValue<String> propertyValue);
+	void doWithText(IPropertyValue<String> propertyValue);
 }

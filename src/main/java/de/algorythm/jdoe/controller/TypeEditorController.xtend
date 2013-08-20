@@ -6,7 +6,7 @@ import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.model.meta.Schema
 import de.algorythm.jdoe.ui.jfx.cell.PropertyEditCell
 import de.algorythm.jdoe.ui.jfx.cell.TypeCell
-import de.algorythm.jdoe.ui.jfx.model.FXType
+import de.algorythm.jdoe.ui.jfx.model.meta.FXType
 import java.io.IOException
 import java.util.ArrayList
 import javafx.collections.ObservableList
@@ -15,12 +15,13 @@ import javafx.scene.control.Button
 import javafx.scene.control.ListView
 import javax.inject.Inject
 import org.slf4j.LoggerFactory
+import de.algorythm.jdoe.ui.jfx.model.FXEntity
 
 class TypeEditorController implements IController {
 
 	static val log = LoggerFactory.getLogger(typeof(TypeEditorController))
 	
-	@Inject extension IDAO dao
+	@Inject extension IDAO<FXEntity> dao
 	@FXML var ListView<FXType> typeList
 	@FXML var ListView<Property> propertyList
 	@FXML var Button btnAddProperty

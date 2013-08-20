@@ -18,8 +18,8 @@ public class PropertyCellValueFactory implements Callback<CellDataFeatures<FXEnt
 	public ObservableValue<String> call(
 			final CellDataFeatures<FXEntity, String> features) {
 		final FXEntity entity = features.getValue();
-		final FXPropertyValue value = entity.getValue(propertyIndex);
+		final FXPropertyValue<?> value = entity.getValue(propertyIndex);
 		
-		return value.getValue();
+		return value.labelProperty();
 	}
 }

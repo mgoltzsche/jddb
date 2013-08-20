@@ -23,9 +23,9 @@ import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
 import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType;
-import de.algorythm.jdoe.ui.jfx.model.FXCollectionType;
-import de.algorythm.jdoe.ui.jfx.model.FXPropertyType;
-import de.algorythm.jdoe.ui.jfx.model.FXType;
+import de.algorythm.jdoe.ui.jfx.model.meta.FXCollectionType;
+import de.algorythm.jdoe.ui.jfx.model.meta.FXPropertyType;
+import de.algorythm.jdoe.ui.jfx.model.meta.FXType;
 
 public class PropertyEditCell extends AbstractLabeledListCell<Property> implements ChangeListener<FXPropertyType<? extends IPropertyType>> {
 	

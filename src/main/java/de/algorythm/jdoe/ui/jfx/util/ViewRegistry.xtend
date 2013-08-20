@@ -1,22 +1,28 @@
 package de.algorythm.jdoe.ui.jfx.util;
 
 import de.algorythm.jdoe.controller.EntityEditorController
-import de.algorythm.jdoe.model.entity.IEntity
+import de.algorythm.jdoe.model.dao.impl.orientdb.DAO
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.ViewData
 import java.util.HashMap
-import java.util.LinkedList
 import javafx.scene.Node
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javax.inject.Inject
-import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import javax.inject.Singleton
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import org.slf4j.LoggerFactory
+import de.algorythm.jdoe.ui.jfx.model.FXPropertyValue
+import static extension javafx.application.Platform.*
 
 @Singleton
 public class ViewRegistry implements IEntityEditorManager {
 
+	static val LOG = LoggerFactory.getLogger(typeof(ViewRegistry))
+
 	@Inject extension GuiceFxmlLoader
+	@Inject extension DAO<FXEntity, FXEntityReference, FXPropertyValue<?>>
 	val viewMap = new HashMap<String, ViewData>
 	var TabPane tabPane
 	
@@ -28,13 +34,25 @@ public class ViewRegistry implements IEntityEditorManager {
 		showEntityEditor(entity, null)
 	}
 	
+	override showEntityEditor(FXEntityReference entityRef, Procedure1<FXEntity> saveCallback) {
+		try {
+			val entity = entityRef.find
+			
+			runLater [|
+				entity.showEntityEditor(saveCallback)
+			]
+		} catch(IllegalArgumentException e) {
+			LOG.debug('''Cannot open entity editor for «entityRef»(«entityRef») because the entity does not exist''')
+		}
+	}
+	
 	override showEntityEditor(FXEntity entity, Procedure1<FXEntity> saveCallback) {
 		val entityId = entity.id
 		val existingViewData = viewMap.get(entityId)
 		
 		if (existingViewData == null) { // create tab
 			val loaderResult = <Node, EntityEditorController>load('/fxml/entity_editor.fxml')
-		
+			
 			loaderResult.controller.init(entity, saveCallback)
 			
 			val tab = new Tab
@@ -47,7 +65,7 @@ public class ViewRegistry implements IEntityEditorManager {
 			
 			viewMap.put(entityId, viewData)
 			
-			tab.textProperty.bind(entity.label)
+			tab.textProperty.bind(entity.labelProperty)
 			
 			tab.setOnClosed [
 				viewMap.remove(entityId)
@@ -60,7 +78,7 @@ public class ViewRegistry implements IEntityEditorManager {
 			tabPane.selectionModel.select(existingViewData.tab)
 	}
 	
-	override closeEntityEditor(FXEntity entity) {
+	override closeEntityEditor(FXEntityReference entity) {
 		val existingTab = viewMap.get(entity.id)
 		
 		if (existingTab != null) {
@@ -72,26 +90,4 @@ public class ViewRegistry implements IEntityEditorManager {
 			tabPane.tabs -= tab
 		}
 	}
-	
-	override wrap(IEntity entity) {
-		if (entity == null)
-			return null
-		
-		val view = viewMap.get(entity.id)
-		
-		return if (view == null)
-			new FXEntity(entity)
-		else
-			view.entity
-	}
-	
-	override wrap(Iterable<IEntity> entities) {
-		val fxEntities = new LinkedList<FXEntity>
-		
-		for (entity : entities)
-			fxEntities += wrap(entity)
-		
-		fxEntities
-	}
-	
 }

@@ -1,4 +1,4 @@
-package de.algorythm.jdoe.ui.jfx.model;
+package de.algorythm.jdoe.ui.jfx.model.meta;
 
 import javafx.beans.property.StringProperty;
 import de.algorythm.jdoe.model.meta.EntityType;

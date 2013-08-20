@@ -1,36 +1,34 @@
 package de.algorythm.jdoe.ui.jfx.model;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.impl.PropertyValue;
+import de.algorythm.jdoe.model.meta.IPropertyType;
+import de.algorythm.jdoe.model.meta.Property;
 
-public class FXPropertyValue {
+public class FXPropertyValue<V> extends PropertyValue<V> {
+
+	static private final long serialVersionUID = -8869779848370884103L;
+	static private final String EMPTY = "";
 	
-	private final IPropertyValue<?> model;
-	private final SimpleStringProperty value = new SimpleStringProperty();
-	private final BooleanProperty validProperty = new SimpleBooleanProperty(true);
+	private final SimpleStringProperty label = new SimpleStringProperty(EMPTY);
 	
-	public FXPropertyValue(final IPropertyValue<?> model) {
-		this.model = model;
+	public FXPropertyValue(final Property property, final IPropertyType<V> type) {
+		super(property, type);
+	}
+	
+	@Override
+	public void setValue(final V value) {
+		super.setValue(value);
 		
-		apply();
+		final StringBuilder sb = new StringBuilder();
+		
+		type.valueToString(value, sb);
+		
+		label.set(sb.toString());
 	}
 	
-	public void apply() {
-		value.setValue(model.toString());
-	}
-	
-	public IPropertyValue<?> getModel() {
-		return model;
-	}
-	
-	public StringProperty getValue() {
-		return value;
-	}
-	
-	public BooleanProperty validProperty() {
-		return validProperty;
+	public ReadOnlyStringProperty labelProperty() {
+		return label;
 	}
 }

@@ -26,6 +26,8 @@ public class Bundle {
 	public final String remove;
 	public final String create;
 	public final String edit;
+	public final String yes;
+	public final String no;
 	
 	public final String open;
 	public final String configure;
@@ -65,5 +67,7 @@ public class Bundle {
 		newEntity = b.getString("newEntity");
 		results = b.getString("results");
 		entity = b.getString("entity");
+		yes = b.getString("yes");
+		no = b.getString("no");
 	}
 }

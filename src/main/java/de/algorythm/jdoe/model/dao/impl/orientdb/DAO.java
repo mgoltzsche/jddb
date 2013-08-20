@@ -5,9 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -16,44 +18,62 @@ import java.util.regex.Pattern;
 
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import com.tinkerpop.blueprints.CloseableIterable;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Index;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import de.algorythm.jdoe.model.dao.IDAO;
+import de.algorythm.jdoe.model.dao.IModelFactory;
 import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.DeleteVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.IndexKeywordCollectingVisitor;
+import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.LoadVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.SaveVisitor;
 import de.algorythm.jdoe.model.entity.IEntity;
+import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.entity.impl.AbstractPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
+import de.algorythm.jdoe.model.entity.impl.Entity;
+import de.algorythm.jdoe.model.entity.impl.PropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.Schema;
 
 @Singleton
-public class DAO implements IDAO, IDAOVisitorContext {
+public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPropertyValue<?>> implements IDAO<V>, IDAOVisitorContext {
 	
+	static private final Logger LOG = LoggerFactory.getLogger(DAO.class);
+	
+	static private final String TYPE_FIELD = "_type";
+	static private final String ID = "_id";
 	static private final String SEARCH_INDEX = "searchIndex";
 	static private final Pattern WORD_PATTERN = Pattern.compile("[\\w]+");
 	
+	private final IModelFactory<V, VREF, P> modelFactory;
 	private final Yaml yaml = new Yaml();
 	private Schema schema;
 	private OrientGraph graph;
 	private final HashSet<IObserver> observers = new HashSet<>();
 	private final HashMap<String, Index<Vertex>> searchIndices = new HashMap<>();
 	
+	public DAO(IModelFactory<V, VREF, P> modelFactory) {
+		this.modelFactory = modelFactory;
+	}
+	
 	public void open() throws IOException {
 		loadSchema();
-		
 		graph = new OrientGraph("local:graph.db");
 		
 		graph.setUseLightweightEdges(true);
-		graph.createKeyIndex(Entity.TYPE_FIELD, Vertex.class);
+		graph.createKeyIndex(TYPE_FIELD, Vertex.class);
+		graph.createKeyIndex(ID, Vertex.class);
 		
 		mapIndices();
 	}
@@ -90,29 +110,72 @@ public class DAO implements IDAO, IDAOVisitorContext {
 
 	@Override
 	public void setSchema(final Schema schema) throws IOException {
-		// update property indices
-		for (EntityType type : schema.getTypes()) {
-			int i = 0;
-			
-			for (Property property : type.getProperties()) {
-				((Property) property).setIndex(i);
-				i++;
-			}
-		}
-		
-		// save schema
 		yaml.dump(schema, new FileWriter(new File("schema.yaml")));
 		this.schema = schema;
 	}
 
 	@Override
-	public IEntity createEntity(final EntityType type) {
-		return new Entity(schema, type);
+	public V createEntity(final EntityType type) {
+		final Collection<Property> properties = type.getProperties();
+		final ArrayList<P> propertyValues = new ArrayList<>(properties.size());
+		
+		for (Property property : type.getProperties())
+			propertyValues.add(property.createPropertyValue(modelFactory));
+		
+		return modelFactory.createTransientEntity(type, propertyValues);
 	}
 	
 	@Override
-	public IEntity createEntity(final Vertex vertex) {
-		return new Entity(schema, vertex);
+	public VREF createEntityReference(final Vertex vertex) {
+		final String id = vertex.<String>getProperty(ID);
+		final EntityType type = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
+		final IPropertyValueVisitor visitor = new LoadVisitor(vertex, this);
+		final Collection<Property> properties = type.getProperties();
+		final ArrayList<P> propertyValues = new ArrayList<>(properties.size());
+		
+		for (Property property : type.getProperties()) {
+			if (!property.getType().isUserDefined()) {
+				final P propertyValue = property.createPropertyValue(modelFactory);
+				
+				propertyValue.doWithValue(visitor);
+				((PropertyValue<?>) propertyValue).setChanged(false);
+				
+				propertyValues.add(propertyValue);
+			}
+		}
+		
+		return modelFactory.createEntityReference(id, type, propertyValues);
+	}
+	
+	private V createEntity(final Vertex vertex) {
+		final String id = vertex.<String>getProperty(ID);
+		final EntityType type = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
+		final IPropertyValueVisitor visitor = new LoadVisitor(vertex, this);
+		final Collection<Property> properties = type.getProperties();
+		final ArrayList<P> propertyValues = new ArrayList<>(properties.size());
+		
+		for (Property property : type.getProperties()) {
+			final P propertyValue = property.createPropertyValue(modelFactory);
+			
+			propertyValue.doWithValue(visitor);
+			((PropertyValue<?>) propertyValue).setChanged(false);
+			
+			propertyValues.add(propertyValue);
+		}
+		
+		return modelFactory.createEntity(id, type, propertyValues, referredEntities(vertex));
+	}
+	
+	private Collection<VREF> referredEntities(final Vertex vertex) {
+		final LinkedList<VREF> entities = new LinkedList<>();
+		
+		for (Edge edge : vertex.getEdges(Direction.IN)) {
+			final Vertex referringVertex = edge.getVertex(Direction.OUT);
+			
+			entities.add(createEntityReference(referringVertex));
+		}
+		
+		return entities;
 	}
 	
 	@Override
@@ -120,7 +183,7 @@ public class DAO implements IDAO, IDAOVisitorContext {
 		if (!entity.isChanged())
 			return;
 		
-		final LinkedList<Entity> savedEntities = new LinkedList<>();
+		final LinkedList<IEntity> savedEntities = new LinkedList<>();
 		
 		try {
 			saveInTransaction(entity, savedEntities);
@@ -128,44 +191,32 @@ public class DAO implements IDAO, IDAOVisitorContext {
 		} catch(Throwable e) {
 			graph.rollback();
 			
-			for (Entity savedEntity : savedEntities) {
-				if (savedEntity.isPersisted())
-					savedEntity.update();
-				else
-					savedEntity.setVertex(null);
-			}
-			
 			throw e;
 		}
 		
 		// set entity unchanged
-		for (Entity savedEntity : savedEntities) {
-			savedEntity.setPersisted(true);
+		for (IEntity savedEntity : savedEntities) {
+			((Entity) savedEntity).setTransientInstance(false);
 			
-			for (IPropertyValue<?> propertyValue : savedEntity.getValues()) {
-				final AbstractPropertyValue<?> propertyValueImpl = (AbstractPropertyValue<?>) propertyValue;
-				
-				propertyValueImpl.setChanged(false);
-			}
+			for (IPropertyValue<?> propertyValue : savedEntity.getValues())
+				((PropertyValue<?>) propertyValue).setChanged(false);
 		}
 		
 		notifyObservers();
 	}
 	
 	@Override
-	public void saveInTransaction(final IEntity entity, final Collection<Entity> savedEntities) {
-		final Entity entityImpl = (Entity) entity;
-		Vertex vertex = entityImpl.getVertex();
+	public Vertex saveInTransaction(final IEntity entity, final Collection<IEntity> savedEntities) {
+		Vertex vertex = findVertex(entity);
 		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
 		final Set<String> oldIndexKeywords;
 		
-		savedEntities.add(entityImpl);
+		savedEntities.add(entity);
 		
 		if (vertex == null) { // create new vertex
 			vertex = graph.addVertex(null);
-			vertex.setProperty(Entity.ID, entity.getId());
-			vertex.setProperty(Entity.TYPE_FIELD, entity.getType().getName());
-			entityImpl.setVertex(vertex);
+			vertex.setProperty(ID, entity.getId());
+			vertex.setProperty(TYPE_FIELD, entity.getType().getName());
 			oldIndexKeywords = new HashSet<>();
 		} else {
 			oldIndexKeywords = createIndexKeywords(createEntity(vertex));
@@ -189,6 +240,8 @@ public class DAO implements IDAO, IDAOVisitorContext {
 		
 		for (String keyword : newIndexKeywords) // save new keywords
 			searchIndex.put(SEARCH_INDEX, keyword, vertex);
+		
+		return vertex;
 	}
 	
 	private Set<String> createIndexKeywords(final IEntity entity) {
@@ -215,9 +268,17 @@ public class DAO implements IDAO, IDAOVisitorContext {
 	}
 	
 	@Override
-	public void deleteInTransaction(final IEntity entity) {
-		final Entity entityImpl = (Entity) entity;
-		final Vertex vertex = entityImpl.getVertex();
+	public void deleteInTransaction(final IEntityReference entityRef) {
+		final Vertex vertex;
+		
+		try {
+			vertex = findVertex(entityRef);
+		} catch(IllegalArgumentException e) {
+			LOG.warn("Cannot remove entity " + entityRef + "(" + entityRef.getId() + ") because it doesn't exist");
+			return;
+		}
+		
+		final IEntity entity = createEntity(vertex);
 		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
 		final Set<String> indexKeywords = new HashSet<>();
 		final DeleteVisitor visitor = new DeleteVisitor(this, WORD_PATTERN, indexKeywords);
@@ -230,20 +291,25 @@ public class DAO implements IDAO, IDAOVisitorContext {
 		for (String keyword : indexKeywords)
 			searchIndex.remove(SEARCH_INDEX, keyword, vertex);
 		
+		// remove all edges
+		//for (Edge edge : vertex.getEdges(Direction.BOTH))
+		//	edge.remove();
+		
+		// remove vertex
 		vertex.remove();
 	}
-
+	
 	private void notifyObservers() {
 		for (IObserver observer : new LinkedList<IObserver>(observers))
 			observer.update();
 	}
 	
 	@Override
-	public Set<IEntity> list(final EntityType type) {
-		final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
+	public Set<V> list(final EntityType type) {
+		final LinkedHashSet<V> result = new LinkedHashSet<>();
 		final Iterable<Vertex> vertices = type == EntityType.ALL
 				? graph.getVertices()
-				: graph.getVertices(Entity.TYPE_FIELD, type.getName());
+				: graph.getVertices(TYPE_FIELD, type.getName());
 		
 		for (Vertex vertex : vertices)
 			result.add(createEntity(vertex));
@@ -252,11 +318,11 @@ public class DAO implements IDAO, IDAOVisitorContext {
 	}
 	
 	@Override
-	public Set<IEntity> list(final EntityType type, final String search) {
+	public Set<V> list(final EntityType type, final String search) {
 		if (search == null || search.isEmpty())
 			return list(type);
 		
-		final LinkedHashSet<IEntity> result = new LinkedHashSet<>();
+		final LinkedHashSet<V> result = new LinkedHashSet<>();
 		final Collection<Index<Vertex>> useIndices;
 		final Iterable<String> searchKeywords = createSearchKeywords(search);
 		
@@ -306,35 +372,6 @@ public class DAO implements IDAO, IDAOVisitorContext {
 		
 		return result;
 	}
-	
-	@Override
-	public boolean update(final IEntity entity) {
-		final Entity entityImpl = (Entity) entity;
-		final Vertex vertex = entityImpl.getVertex();
-		
-		if (vertex == null)
-			throw new IllegalArgumentException("entity is not persistent");
-		
-		final boolean notExists = graph.getVertex(vertex.getId()) == null;
-		
-		if (notExists)
-			return false;
-		
-		entityImpl.update();
-		
-		return true;
-	}
-	
-	@Override
-	public boolean exists(final IEntity entity) {
-		final Entity entityImpl = (Entity) entity;
-		final Vertex vertex = entityImpl.getVertex();
-		
-		if (vertex == null)
-			throw new IllegalArgumentException("entity is not persistent");
-		
-		return graph.getVertex(vertex.getId()) != null;
-	}
 
 	@Override
 	public void addObserver(final IObserver observer) {
@@ -344,5 +381,30 @@ public class DAO implements IDAO, IDAOVisitorContext {
 	@Override
 	public void removeObserver(final IObserver observer) {
 		observers.remove(observer);
+	}
+
+	@Override
+	public V find(final IEntityReference entityRef) {
+		return createEntity(findVertex(entityRef));
+	}
+	
+	@Override
+	public Vertex findVertex(final IEntityReference entityRef) {
+		final Iterator<Vertex> iter = graph.getVertices(ID, entityRef.getId()).iterator();
+		
+		if (!iter.hasNext())
+			throw new IllegalArgumentException("vertex with id " + entityRef.getId() + " does not exist");
+		
+		return iter.next();
+	}
+
+	@Override
+	public boolean exists(final IEntityReference entityRef) {
+		try {
+			findVertex(entityRef);
+			return true;
+		} catch(IllegalArgumentException e) {
+			return false;
+		}
 	}
 }

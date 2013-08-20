@@ -1,6 +1,7 @@
 package de.algorythm.jdoe.controller
 
 import de.algorythm.jdoe.JavaDbObjectEditorFacade
+import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.meta.EntityType
@@ -29,11 +30,10 @@ import javafx.scene.control.TextField
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.bundle.Bundle
 
 public class MainController implements IController, IObserver {
 	
-	@Inject extension IDAO dao
+	@Inject extension IDAO<FXEntity> dao
 	@Inject extension TaskQueue
 	@Inject extension JavaDbObjectEditorFacade facade
 	@Inject extension ViewRegistry
@@ -121,7 +121,7 @@ public class MainController implements IController, IObserver {
 			menuItem.text = type.label
 			
 			menuItem.setOnAction [
-				type.createEntity.wrap.showEntityEditor
+				type.createEntity.showEntityEditor
 			]
 			
 			menuItems += menuItem
@@ -142,16 +142,18 @@ public class MainController implements IController, IObserver {
 			
 			columns += typeColumn
 			columns += labelColumn
-		} else {	
+		} else {
+			var i = 0
+			
 			for (Property property : selectedType.properties) {
 				val column = new TableColumn<FXEntity, String>(property.label)
 				
-				column.cellValueFactory = new PropertyCellValueFactory(property.index)
+				column.cellValueFactory = new PropertyCellValueFactory(i)
 				columns += column
 			}
 		}
 		
-		val entities = dao.list(selectedType, searchPhrase).wrap
+		val entities = dao.list(selectedType, searchPhrase)
 		
 		runLater [|
 			entities.updateTableData
@@ -160,7 +162,7 @@ public class MainController implements IController, IObserver {
 	}
 	
 	override update() {
-		val entities = dao.list(selectedType, searchPhrase).wrap
+		val entities = dao.list(selectedType, searchPhrase)
 		
 		runLater [|
 			entities.updateTableData

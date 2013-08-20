@@ -45,7 +45,7 @@ public class EntityField extends TextField implements ChangeListener<String> {
 			textInternal = selectedValueLabelProperty.value
 		]
 		value.addListener [
-			val entityLabelProperty = value.value?.label
+			val entityLabelProperty = value.value?.labelProperty
 			
 			selectedValueLabelProperty.unbind
 			
@@ -95,7 +95,7 @@ public class EntityField extends TextField implements ChangeListener<String> {
 		textInternal = if (value == null)
 				''
 			else
-				value.label.value
+				value.labelProperty.value
 		error = false
 	}
 	
@@ -121,7 +121,7 @@ public class EntityField extends TextField implements ChangeListener<String> {
 			val itemLabel = new Label
 			val item = new CustomMenuItem(itemLabel, true)
 			
-			itemLabel.textProperty.bind(entity.label)
+			itemLabel.textProperty.bind(entity.labelProperty)
 			itemLabel.styleClass += 'item-label'
 			item.styleClass += 'search-menu-item'
 			menuItems += item

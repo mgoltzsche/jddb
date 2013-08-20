@@ -1,10 +1,10 @@
-package de.algorythm.jdoe.ui.jfx.model;
+package de.algorythm.jdoe.ui.jfx.model.meta;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 
-public class FXPropertyType<V extends IPropertyType> {
+public class FXPropertyType<V extends IPropertyType<?>> {
 
 	protected final V businessModel;
 	protected final SimpleStringProperty labelProperty; 

@@ -14,6 +14,7 @@ import javax.inject.Singleton;
 import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.entity.IEntity;
+import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Schema;
 
@@ -99,19 +100,19 @@ public class DAO implements IDAO {
 	}
 
 	@Override
-	public boolean update(IEntity entity) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public Set<IEntity> list(EntityType type, String search) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean exists(IEntity entity) {
+	public IEntity find(IEntityReference entityRef) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean exists(IEntityReference entityRef) {
 		// TODO Auto-generated method stub
 		return false;
 	}

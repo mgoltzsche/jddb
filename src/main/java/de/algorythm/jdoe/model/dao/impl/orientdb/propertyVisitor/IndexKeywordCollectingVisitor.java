@@ -1,20 +1,15 @@
 package de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
-import de.algorythm.jdoe.model.entity.impl.Association;
-import de.algorythm.jdoe.model.entity.impl.Associations;
-import de.algorythm.jdoe.model.entity.impl.BooleanValue;
-import de.algorythm.jdoe.model.entity.impl.DateValue;
-import de.algorythm.jdoe.model.entity.impl.DecimalValue;
-import de.algorythm.jdoe.model.entity.impl.RealValue;
-import de.algorythm.jdoe.model.entity.impl.StringValue;
-import de.algorythm.jdoe.model.entity.impl.TextValue;
 
 public class IndexKeywordCollectingVisitor implements IPropertyValueVisitor {
 	
@@ -26,39 +21,43 @@ public class IndexKeywordCollectingVisitor implements IPropertyValueVisitor {
 		this.indexKeywords = indexKeywords;
 	}
 	
-	@Override
-	public void doWithAssociations(Associations propertyValue) {}
+	protected boolean valueChanged(final IEntityReference oldValue, final IEntityReference newValue) {
+		return oldValue == null && newValue != null || oldValue != null && !oldValue.equals(newValue);
+	}
 	
 	@Override
-	public void doWithAssociation(Association propertyValue) {}
+	public void doWithAssociations(final IPropertyValue<Collection<IEntityReference>> propertyValue) {}
+	
+	@Override
+	public void doWithAssociation(final IPropertyValue<IEntityReference> propertyValue) {}
 
 	@Override
-	public void doWithBoolean(BooleanValue propertyValue) {
+	public void doWithBoolean(final IPropertyValue<Boolean> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 
 	@Override
-	public void doWithDecimal(DecimalValue propertyValue) {
+	public void doWithDecimal(final IPropertyValue<Long> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 
 	@Override
-	public void doWithReal(RealValue propertyValue) {
+	public void doWithReal(final IPropertyValue<Double> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 
 	@Override
-	public void doWithDate(DateValue propertyValue) {
+	public void doWithDate(final IPropertyValue<Date> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 
 	@Override
-	public void doWithString(StringValue propertyValue) {
+	public void doWithString(final IPropertyValue<String> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 
 	@Override
-	public void doWithText(TextValue propertyValue) {
+	public void doWithText(final IPropertyValue<String> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 	
