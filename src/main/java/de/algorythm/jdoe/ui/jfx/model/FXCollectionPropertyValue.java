@@ -2,9 +2,7 @@ package de.algorythm.jdoe.ui.jfx.model;
 
 import java.util.Collection;
 
-import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
-import de.algorythm.jdoe.model.entity.impl.PropertyValue;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
 
@@ -14,11 +12,11 @@ public class FXCollectionPropertyValue extends FXPropertyValue<Collection<FXEnti
 
 	public FXCollectionPropertyValue(final Property property,
 			final IPropertyType<Collection<FXEntityReference>> type) {
-		super(property, type);
+		super(property);
 	}
 	
 	@Override
-	public void doWithValue(final IPropertyValueVisitor<FXEntityReference> visitor) {
+	public void doWithValue(final IPropertyValueVisitor visitor) {
 		visitor.doWithAssociations(this);
 	}
 }

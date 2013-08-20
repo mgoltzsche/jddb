@@ -27,7 +27,7 @@ import de.algorythm.jdoe.ui.jfx.model.meta.FXCollectionType;
 import de.algorythm.jdoe.ui.jfx.model.meta.FXPropertyType;
 import de.algorythm.jdoe.ui.jfx.model.meta.FXType;
 
-public class PropertyEditCell extends AbstractLabeledListCell<Property> implements ChangeListener<FXPropertyType<? extends IPropertyType>> {
+public class PropertyEditCell extends AbstractLabeledListCell<Property> implements ChangeListener<FXPropertyType<? extends IPropertyType<?>>> {
 	
 	static private final Bundle bundle = Bundle.getInstance();
 	
@@ -45,17 +45,17 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 		}
 	}
 	
-	static private final LinkedList<FXPropertyType<? extends IPropertyType>> FX_ATTRIBUTE_TYPES = new LinkedList<>();
+	static private final LinkedList<FXPropertyType<? extends IPropertyType<?>>> FX_ATTRIBUTE_TYPES = new LinkedList<>();
 	
 	static {
-		for (IPropertyType attributeType : AbstractAttributeType.ATTRIBUTE_TYPES)
-			FX_ATTRIBUTE_TYPES.add(new FXPropertyType<IPropertyType>(attributeType));
+		for (IPropertyType<?> attributeType : AbstractAttributeType.ATTRIBUTE_TYPES)
+			FX_ATTRIBUTE_TYPES.add(new FXPropertyType<IPropertyType<?>>(attributeType));
 	}
 	
 	private final ObservableList<FXType> types;
 	private VBox editor = new VBox();
 	private Button deleteButton = new Button(bundle.delete);
-	private ComboBox<FXPropertyType<? extends IPropertyType>> typeComboBox = new ComboBox<>();
+	private ComboBox<FXPropertyType<? extends IPropertyType<?>>> typeComboBox = new ComboBox<>();
 	private CheckBox searchableCheckBox = new CheckBox(bundle.searchable);
 	private CheckBox containmentCheckBox = new CheckBox(bundle.contained);
 	private Collection<Node> attributeEditElements = new ArrayList<>(4);
@@ -124,7 +124,7 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 	
 	private void updateTypeComboBox() {
 		final int size = FX_ATTRIBUTE_TYPES.size() + types.size();
-		final ArrayList<FXPropertyType<? extends IPropertyType>> availablePropertyTypes = new ArrayList<>(size);
+		final ArrayList<FXPropertyType<? extends IPropertyType<?>>> availablePropertyTypes = new ArrayList<>(size);
 		
 		availablePropertyTypes.addAll(FX_ATTRIBUTE_TYPES);
 		
@@ -147,8 +147,8 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 		}
 	}
 	
-	private FXPropertyType<? extends IPropertyType> getFxPropertyType(final IPropertyType propertyType) {
-		for (FXPropertyType<? extends IPropertyType> fxType : typeComboBox.getItems())
+	private FXPropertyType<? extends IPropertyType<?>> getFxPropertyType(final IPropertyType<?> propertyType) {
+		for (FXPropertyType<? extends IPropertyType<?>> fxType : typeComboBox.getItems())
 			if (fxType.getBusinessModel().equals(propertyType))
 				return fxType;
 		return null;
@@ -157,7 +157,7 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 	@Override
 	protected void showLabel() {
 		final String name = object.getLabel();
-		final IPropertyType type = object.getType();
+		final IPropertyType<?> type = object.getType();
 		
 		StringBuilder label = new StringBuilder();
 		
@@ -179,8 +179,8 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 	}
 
 	@Override
-	public void changed(ObservableValue<? extends FXPropertyType<? extends IPropertyType>> valueContainer,
-			FXPropertyType<? extends IPropertyType> oldValue, FXPropertyType<? extends IPropertyType> newValue) {
+	public void changed(ObservableValue<? extends FXPropertyType<? extends IPropertyType<?>>> valueContainer,
+			FXPropertyType<? extends IPropertyType<?>> oldValue, FXPropertyType<? extends IPropertyType<?>> newValue) {
 		if (newValue != null) {
 			object.setType(newValue.getBusinessModel());
 			showEditor();

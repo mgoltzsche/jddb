@@ -19,6 +19,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 
 public class EntityEditorController implements IController, IObserver {
 	

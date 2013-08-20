@@ -18,9 +18,10 @@ public class JavaDbObjectEditorModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		final IModelFactory<FXEntity, FXEntityReference, FXPropertyValue<?>> modelFactory = new FXModelFactory();
+		
 		bind(IDAO.class).to(DAO.class);
 		bind(IEntityEditorManager.class).to(ViewRegistry.class);
 		bind(Bundle.class).toInstance(Bundle.getInstance());
-		bind(IDAO.class).toInstance(new DAO<FXEntity, FXEntityReference, FXPropertyValue<?>>(modelFactory));
+		bind(IDAO.class).toInstance(new DAO<>(modelFactory));
 	}
 }

@@ -3,10 +3,10 @@ package de.algorythm.jdoe.model.entity;
 import java.util.Collection;
 import java.util.Date;
 
-public interface IPropertyValueVisitor<ENTITYREF extends IEntityReference> {
+public interface IPropertyValueVisitor {
 
-	void doWithAssociation(IPropertyValue<ENTITYREF> propertyValue);
-	void doWithAssociations(IPropertyValue<Collection<ENTITYREF>> propertyValue);
+	void doWithAssociation(IPropertyValue<IEntityReference> propertyValue);
+	void doWithAssociations(IPropertyValue<Collection<IEntityReference>> propertyValue);
 	void doWithBoolean(IPropertyValue<Boolean> propertyValue);
 	void doWithDecimal(IPropertyValue<Long> propertyValue);
 	void doWithReal(IPropertyValue<Double> propertyValue);

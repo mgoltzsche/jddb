@@ -41,7 +41,7 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.entity.impl.Entity;
-import de.algorythm.jdoe.model.entity.impl.PropertyValue;
+import de.algorythm.jdoe.model.entity.impl.propertyValue.AbstractPropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.Schema;
@@ -138,7 +138,7 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 				final P propertyValue = property.createPropertyValue(modelFactory);
 				
 				propertyValue.doWithValue(visitor);
-				((PropertyValue<?>) propertyValue).setChanged(false);
+				((AbstractPropertyValue<?>) propertyValue).setChanged(false);
 				
 				propertyValues.add(propertyValue);
 			}
@@ -158,7 +158,7 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 			final P propertyValue = property.createPropertyValue(modelFactory);
 			
 			propertyValue.doWithValue(visitor);
-			((PropertyValue<?>) propertyValue).setChanged(false);
+			((AbstractPropertyValue<?>) propertyValue).setChanged(false);
 			
 			propertyValues.add(propertyValue);
 		}
@@ -199,7 +199,7 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 			((Entity) savedEntity).setTransientInstance(false);
 			
 			for (IPropertyValue<?> propertyValue : savedEntity.getValues())
-				((PropertyValue<?>) propertyValue).setChanged(false);
+				((AbstractPropertyValue<?>) propertyValue).setChanged(false);
 		}
 		
 		notifyObservers();

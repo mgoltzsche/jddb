@@ -1,23 +1,22 @@
-package de.algorythm.jdoe.model.entity.impl;
+package de.algorythm.jdoe.model.entity.impl.propertyValue;
 
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class PropertyValue<V> implements IPropertyValue<V> {
+public abstract class AbstractPropertyValue<V> implements IPropertyValue<V> {
 
 	static private final long serialVersionUID = 3601500282325296848L;
 	static protected final String EMPTY = "";
 	
 	protected V value;
 	private Property property;
-	protected IPropertyType<V> type;
+	protected IPropertyType<?> type;
 	protected transient boolean changed;
 
-	public PropertyValue(final Property property, final IPropertyType<V> type) {
+	public AbstractPropertyValue(final Property property) {
 		this.property = property;
-		this.type = type;
+		this.type = property.getType();
 	}
 	
 	@Override
@@ -41,26 +40,30 @@ public class PropertyValue<V> implements IPropertyValue<V> {
 	
 	@Override
 	public void setValue(final V value) {
-		if (type.valueChanged(this.value, value)) {
+		if (valueChanged(this.value, value)) {
 			this.value = value;
 			changed = true;
 		}
 	}
 	
-	@Override
-	public void doWithValue(final IPropertyValueVisitor visitor) {
+	protected boolean valueChanged(V oldValue, V newValue) {
+		return oldValue == null && newValue != null || oldValue != null && !oldValue.equals(newValue);
+	}
+	
+	/*@Override
+	public void doWithValue(final IPropertyValueVisitor<ENTITYREF> visitor) {
 		type.doWithPropertyValue(this, visitor);
 	}
 	
 	@Override
 	public void toString(final StringBuilder sb) {
 		type.valueToString(value, sb);
-	}
+	}*/
 	
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
-		type.valueToString(value, sb);
+		toString(sb);
 		return sb.toString();
 	}
 }

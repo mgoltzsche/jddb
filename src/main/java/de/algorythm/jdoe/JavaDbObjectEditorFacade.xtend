@@ -13,12 +13,13 @@ import javafx.scene.Scene
 import javafx.stage.Stage
 import javax.inject.Inject
 import de.algorythm.jdoe.bundle.Bundle
+import de.algorythm.jdoe.ui.jfx.model.FXEntity
 
 public class JavaDbObjectEditorFacade {
 
 	@Inject TaskQueue taskQueue
 	@Inject Bundle bundle
-	@Inject IDAO dao
+	@Inject IDAO<FXEntity> dao
 	@Inject extension GuiceFxmlLoader
 	
 	def startApplication(Stage primaryStage) throws IOException {

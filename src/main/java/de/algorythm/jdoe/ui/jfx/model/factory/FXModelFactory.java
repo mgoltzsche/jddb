@@ -39,14 +39,12 @@ public class FXModelFactory implements IModelFactory<FXEntity, FXEntityReference
 	}
 
 	@Override
-	public FXPropertyValue<?> createAssociationValue(Property property) {
-		// TODO Auto-generated method stub
-		return null;
+	public FXPropertyValue<FXEntityReference> createAssociationValue(Property property) {
+		return new FXPropertyValue<FXEntityReference>(property, property.getType());
 	}
 
 	@Override
-	public FXPropertyValue<?> createAssociationsValue(Property property) {
-		// TODO Auto-generated method stub
-		return null;
+	public FXPropertyValue<Collection<FXEntityReference>> createAssociationsValue(Property property) {
+		return new FXPropertyValue<Collection<FXEntityReference>>(property, property.getType());
 	}
 }
