@@ -39,14 +39,6 @@ public class AbstractEntity<REF extends IEntityReference> implements IEntity<REF
 		this.values = values;
 	}
 	
-	/*public AbstractEntity(final Entity<REF> entity) {
-		id = entity.id;
-		type = entity.type;
-		values = new ArrayList<>(entity.values);
-		referencingEntities = entity.referencingEntities;
-		transientInstance = entity.transientInstance;
-	}*/
-	
 	@Override
 	public String getId() {
 		return id;

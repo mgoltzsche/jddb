@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
+import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.impl.AbstractEntity;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
@@ -35,6 +36,11 @@ public class FXEntity extends AbstractEntity<FXEntityReference> implements FXEnt
 		this.values = values;
 		
 		applyLabelValue();
+	}
+	
+	public FXEntity(final FXEntity entity) {
+		this(entity.getId(), entity.getType(), new ArrayList<>(entity.getValues())); 
+		setTransientInstance(entity.isTransientInstance());
 	}
 	
 	private void applyLabelValue() {

@@ -30,6 +30,7 @@ public class EntityEditorController implements IController, IObserver {
 	@FXML var GridPane gridPane
 	@FXML var EditorStateModel editorState
 	var FXEntity entity
+	var FXEntity savedEntity
 	val propertySaveCallbacks = new LinkedList<Procedure0>
 	val propertyUpdateCallbacks = new LinkedList<Procedure0>
 	var Procedure1<FXEntity> saveCallback
@@ -38,6 +39,8 @@ public class EntityEditorController implements IController, IObserver {
 	override init() {}
 	
 	def init(FXEntity entity, Procedure1<FXEntity> saveCallback) {
+		this.savedEntity = entity
+		this.entity = new FXEntity(entity)
 		this.saveCallback = saveCallback
 		
 		runLater [|
