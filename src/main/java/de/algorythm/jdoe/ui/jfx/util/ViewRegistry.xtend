@@ -4,6 +4,7 @@ import de.algorythm.jdoe.controller.EntityEditorController
 import de.algorythm.jdoe.model.dao.impl.orientdb.DAO
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
+import de.algorythm.jdoe.ui.jfx.model.FXPropertyValue
 import de.algorythm.jdoe.ui.jfx.model.ViewData
 import java.util.HashMap
 import javafx.scene.Node
@@ -13,8 +14,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.slf4j.LoggerFactory
-import de.algorythm.jdoe.ui.jfx.model.FXPropertyValue
-import static extension javafx.application.Platform.*
+
+import static javafx.application.Platform.*
 
 @Singleton
 public class ViewRegistry implements IEntityEditorManager {

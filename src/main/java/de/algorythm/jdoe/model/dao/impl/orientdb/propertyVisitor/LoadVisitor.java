@@ -2,7 +2,7 @@ package de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ public class LoadVisitor implements IPropertyValueVisitor {
 
 	@Override
 	public void doWithAssociations(final IPropertyValue<Collection<IEntityReference>> propertyValue) {
-		final HashSet<IEntityReference> associations = new HashSet<>();
+		final LinkedHashSet<IEntityReference> associations = new LinkedHashSet<>();
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		
@@ -54,7 +54,7 @@ public class LoadVisitor implements IPropertyValueVisitor {
 				associations.add(entity);
 		}
 		
-		propertyValue.setValue(associations);
+		propertyValue.getValue().addAll(associations);
 	}
 	
 	@Override
