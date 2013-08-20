@@ -4,7 +4,7 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class Association extends AbstractPropertyValue<IEntityReference> {
+public class Association extends AbstractPropertyValue<IEntityReference,IEntityReference> {
 
 	static private final long serialVersionUID = 6390396248168541378L;
 
@@ -13,7 +13,7 @@ public class Association extends AbstractPropertyValue<IEntityReference> {
 	}
 	
 	@Override
-	public void doWithValue(final IPropertyValueVisitor visitor) {
+	public void doWithValue(final IPropertyValueVisitor<IEntityReference> visitor) {
 		visitor.doWithAssociation(this);
 	}
 

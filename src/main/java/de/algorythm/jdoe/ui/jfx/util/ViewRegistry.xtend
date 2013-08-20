@@ -1,10 +1,9 @@
 package de.algorythm.jdoe.ui.jfx.util;
 
 import de.algorythm.jdoe.controller.EntityEditorController
-import de.algorythm.jdoe.model.dao.impl.orientdb.DAO
+import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
-import de.algorythm.jdoe.ui.jfx.model.FXPropertyValue
 import de.algorythm.jdoe.ui.jfx.model.ViewData
 import java.util.HashMap
 import javafx.scene.Node
@@ -23,7 +22,7 @@ public class ViewRegistry implements IEntityEditorManager {
 	static val LOG = LoggerFactory.getLogger(typeof(ViewRegistry))
 
 	@Inject extension GuiceFxmlLoader
-	@Inject extension DAO<FXEntity, FXEntityReference, FXPropertyValue<?>>
+	@Inject extension IDAO<FXEntityReference, FXEntity>
 	val viewMap = new HashMap<String, ViewData>
 	var TabPane tabPane
 	

@@ -36,14 +36,14 @@ import org.slf4j.LoggerFactory
 import static javafx.application.Platform.*
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 
-class PropertyValueEditorVisitor implements IPropertyValueVisitor {
+class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityReference> {
 
 	static val LOG = LoggerFactory.getLogger(typeof(PropertyValueEditorVisitor))
 	static val FIELD_ERROR_STYLE_CLASS = 'field-error'
 	static val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
 	static val REAL_PATTERN = Pattern.compile('^\\d+((\\.|,)\\d+)?$')
 
-	@Inject extension IDAO<FXEntity> dao
+	@Inject extension IDAO<FXEntityReference,FXEntity> dao
 	@Inject extension TaskQueue
 	@Inject extension IEntityEditorManager editorManager
 	@Inject Bundle bundle
@@ -61,7 +61,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		this.createdContainedEntities = createdContainedEntities
 	}
 
-	override doWithAssociations(IPropertyValue<Collection<IEntityReference>> propertyValue) {
+	override doWithAssociations(IPropertyValue<Collection<FXEntityReference>,FXEntityReference> propertyValue) {
 		val property = propertyValue.property
 		val collectionType = property.type as CollectionType
 		val entityType = collectionType.itemType
@@ -154,7 +154,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		]
 	}
 	
-	override doWithAssociation(IPropertyValue<IEntityReference> propertyValue) {
+	override doWithAssociation(IPropertyValue<FXEntityReference,FXEntityReference> propertyValue) {
 		val property = propertyValue.property
 		val entityType = property.type as EntityType
 		val entity = propertyValue.value
@@ -298,7 +298,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		gridPane.add(hBox, 1, row)
 	}
 
-	override doWithBoolean(IPropertyValue<Boolean> propertyValue) {
+	override doWithBoolean(IPropertyValue<Boolean,?> propertyValue) {
 		val checkBox = new CheckBox
 		
 		checkBox.selected = propertyValue.value
@@ -314,7 +314,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		]
 	}
 
-	override doWithDecimal(IPropertyValue<Long> propertyValue) {
+	override doWithDecimal(IPropertyValue<Long,?> propertyValue) {
 		val textField = new TextField(propertyValue.toString)
 		
 		textField.validate [
@@ -340,7 +340,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		return null
 	}
 
-	override doWithReal(IPropertyValue<Double> propertyValue) {
+	override doWithReal(IPropertyValue<Double,?> propertyValue) {
 		val textField = new TextField(propertyValue.toString)
 		
 		gridPane.add(textField, 1, row)
@@ -381,7 +381,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 				null
 	}
 
-	override doWithDate(IPropertyValue<Date> propertyValue) {
+	override doWithDate(IPropertyValue<Date,?> propertyValue) {
 		val format = new SimpleDateFormat
 		val textField = new TextField(propertyValue.toString)
 		
@@ -415,7 +415,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		]
 	}
 
-	override doWithString(IPropertyValue<String> propertyValue) {
+	override doWithString(IPropertyValue<String,?> propertyValue) {
 		val textField = new TextField(propertyValue.value)
 		
 		gridPane.add(textField, 1, row)
@@ -430,7 +430,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor {
 		]
 	}
 
-	override doWithText(IPropertyValue<String> propertyValue) {
+	override doWithText(IPropertyValue<String,?> propertyValue) {
 		val textArea = new TextArea(propertyValue.value)
 		
 		gridPane.add(textArea, 1, row)

@@ -37,8 +37,8 @@ public class EntityType extends AbstractLabeledElement implements IPropertyType<
 	}
 	
 	@Override
-	public <P extends IPropertyValue<?>> P createPropertyValue(final Property property, final IPropertyValueFactory<P> factory) {
-		return factory.createPropertyValue(property, this);
+	public <E extends IEntityReference, P extends IPropertyValue<?,E>> P createPropertyValue(final Property property, final IPropertyValueFactory<E,P> factory) {
+		return factory.createAssociationValue(property);
 	}
 	
 	@Override

@@ -7,11 +7,11 @@ import com.tinkerpop.blueprints.Vertex;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 
-public interface IDAOVisitorContext {
+public interface IDAOVisitorContext<E extends IEntityReference> {
 
 	//IEntity createEntity(Vertex vertex);
-	IEntityReference createEntityReference(Vertex vertex);
+	E createEntityReference(Vertex vertex);
 	Vertex findVertex(IEntityReference entityRef);
-	Vertex saveInTransaction(IEntity entity, Collection<IEntity> savedEntities);
+	Vertex saveInTransaction(IEntity<E> entity, Collection<IEntity<E>> savedEntities);
 	void deleteInTransaction(IEntityReference entity);
 }

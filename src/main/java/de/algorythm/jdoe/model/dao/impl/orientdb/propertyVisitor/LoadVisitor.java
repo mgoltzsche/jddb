@@ -16,25 +16,25 @@ import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class LoadVisitor implements IPropertyValueVisitor {
+public class LoadVisitor<E extends IEntityReference> implements IPropertyValueVisitor<E> {
 	
 	static private final Logger LOG = LoggerFactory.getLogger(LoadVisitor.class);
 	
 	private final Vertex vertex;
-	private final IDAOVisitorContext dao;
+	private final IDAOVisitorContext<E> dao;
 	
-	public LoadVisitor(final Vertex vertex, final IDAOVisitorContext dao) {
+	public LoadVisitor(final Vertex vertex, final IDAOVisitorContext<E> dao) {
 		this.vertex = vertex;
 		this.dao = dao;
 	}
 	
 	@Override
-	public void doWithAssociation(final IPropertyValue<IEntityReference> propertyValue) {
+	public void doWithAssociation(final IPropertyValue<E,E> propertyValue) {
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {
-			final IEntityReference entityRef = dao.createEntityReference(referencingVertex);
+			final E entityRef = dao.createEntityReference(referencingVertex);
 			
 			if (property.getType().isConform(entityRef.getType()))
 				propertyValue.setValue(entityRef);
@@ -42,23 +42,23 @@ public class LoadVisitor implements IPropertyValueVisitor {
 	}
 
 	@Override
-	public void doWithAssociations(final IPropertyValue<Collection<IEntityReference>> propertyValue) {
-		final LinkedHashSet<IEntityReference> associations = new LinkedHashSet<>();
+	public void doWithAssociations(final IPropertyValue<Collection<E>,E> propertyValue) {
+		final LinkedHashSet<E> associations = new LinkedHashSet<>();
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {
-			final IEntityReference entity = dao.createEntityReference(referencingVertex);
+			final E entity = dao.createEntityReference(referencingVertex);
 			
 			if (property.getType().isConform(entity.getType()))
 				associations.add(entity);
 		}
 		
-		propertyValue.getValue().addAll(associations);
+		propertyValue.setValue(associations);
 	}
 	
 	@Override
-	public void doWithBoolean(final IPropertyValue<Boolean> propertyValue) {
+	public void doWithBoolean(final IPropertyValue<Boolean,?> propertyValue) {
 		final String valueAsString = attributeValueAsString(propertyValue);
 		
 		if (valueAsString != null)
@@ -71,7 +71,7 @@ public class LoadVisitor implements IPropertyValueVisitor {
 	}
 	
 	@Override
-	public void doWithDecimal(final IPropertyValue<Long> propertyValue) {
+	public void doWithDecimal(final IPropertyValue<Long,?> propertyValue) {
 		final String valueAsString = attributeValueAsString(propertyValue);
 		
 		if (valueAsString != null)
@@ -84,7 +84,7 @@ public class LoadVisitor implements IPropertyValueVisitor {
 	}
 
 	@Override
-	public void doWithReal(final IPropertyValue<Double> propertyValue) {
+	public void doWithReal(final IPropertyValue<Double,?> propertyValue) {
 		final String valueAsString = attributeValueAsString(propertyValue);
 		
 		if (valueAsString != null)
@@ -97,7 +97,7 @@ public class LoadVisitor implements IPropertyValueVisitor {
 	}
 
 	@Override
-	public void doWithDate(final IPropertyValue<Date> propertyValue) {
+	public void doWithDate(final IPropertyValue<Date,?> propertyValue) {
 		final Object value = vertex.getProperty(propertyValue.getProperty().getName());
 		
 		if (value != null && value.getClass() == Date.class)
@@ -107,16 +107,16 @@ public class LoadVisitor implements IPropertyValueVisitor {
 	}
 
 	@Override
-	public void doWithString(final IPropertyValue<String> propertyValue) {
+	public void doWithString(final IPropertyValue<String,?> propertyValue) {
 		propertyValue.setValue(attributeValueAsString(propertyValue));
 	}
 
 	@Override
-	public void doWithText(final IPropertyValue<String> propertyValue) {
+	public void doWithText(final IPropertyValue<String,?> propertyValue) {
 		propertyValue.setValue(attributeValueAsString(propertyValue));
 	}
 	
-	private String attributeValueAsString(final IPropertyValue<?> propertyValue) {
+	private String attributeValueAsString(final IPropertyValue<?,?> propertyValue) {
 		final Object value = vertex.getProperty(propertyValue.getProperty().getName());
 		
 		if (value == null)

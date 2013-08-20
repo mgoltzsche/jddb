@@ -1,6 +1,6 @@
 package de.algorythm.jdoe.ui.jfx.controls
 
-import de.algorythm.jdoe.ui.jfx.model.FXEntity
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import java.util.LinkedList
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -24,12 +24,12 @@ public class EntityField extends TextField implements ChangeListener<String> {
 	static val FIELD_ERROR_STYLE_CLASS = 'field-error'
 	
 	val contextMenu = new ContextMenu
-	val value = new SimpleObjectProperty<FXEntity>
-	val availableValues = FXCollections.synchronizedObservableList(FXCollections.observableList(new LinkedList<FXEntity>))
+	val value = new SimpleObjectProperty<FXEntityReference>
+	val availableValues = FXCollections.synchronizedObservableList(FXCollections.observableList(new LinkedList<FXEntityReference>))
 	val selectedValueLabelProperty = new SimpleStringProperty
-	var Procedure2<String, ObservableList<FXEntity>> searchHandler
+	var Procedure2<String, ObservableList<FXEntityReference>> searchHandler
 
-	new(Procedure2<String, ObservableList<FXEntity>> searchHandler) {
+	new(Procedure2<String, ObservableList<FXEntityReference>> searchHandler) {
 		this.searchHandler = searchHandler
 		id = 'EntityField'
 		setPrefSize(150, 24)
@@ -82,7 +82,7 @@ public class EntityField extends TextField implements ChangeListener<String> {
 		]
 	}
 	
-	def void setSearchHandler(Procedure2<String, ObservableList<FXEntity>> searchHandler) {
+	def void setSearchHandler(Procedure2<String, ObservableList<FXEntityReference>> searchHandler) {
 		this.searchHandler = searchHandler
 	}
 	
@@ -90,7 +90,7 @@ public class EntityField extends TextField implements ChangeListener<String> {
 		value.value
 	}
 	
-	def void setValue(FXEntity value) {
+	def void setValue(FXEntityReference value) {
 		this.value.value = value
 		textInternal = if (value == null)
 				''
@@ -99,7 +99,7 @@ public class EntityField extends TextField implements ChangeListener<String> {
 		error = false
 	}
 	
-	def ObservableValue<FXEntity> valueProperty() {
+	def ObservableValue<FXEntityReference> valueProperty() {
 		value
 	}
 	
@@ -114,7 +114,7 @@ public class EntityField extends TextField implements ChangeListener<String> {
 			searchHandler.apply(text, availableValues)
 	}
 	
-	def private createMenuItems(Iterable<FXEntity> entities) {
+	def private createMenuItems(Iterable<FXEntityReference> entities) {
 		val menuItems = new LinkedList<MenuItem>
 		
 		for (entity : entities) {

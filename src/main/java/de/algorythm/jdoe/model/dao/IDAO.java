@@ -8,7 +8,7 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Schema;
 
-public interface IDAO<V extends IEntity> {
+public interface IDAO<VREF extends IEntityReference, V extends IEntity<VREF>> {
 	
 	void open() throws IOException;
 	void close() throws IOException;
@@ -20,7 +20,7 @@ public interface IDAO<V extends IEntity> {
 	Set<V> list(EntityType type, String search);
 	V createEntity(EntityType type);
 	V find(IEntityReference entityRef);
-	void save(IEntity entity);
-	void delete(IEntity entity);
+	void save(IEntity<VREF> entity);
+	void delete(IEntity<VREF> entity);
 	boolean exists(IEntityReference entityRef);
 }

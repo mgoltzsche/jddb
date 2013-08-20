@@ -4,11 +4,11 @@ import java.io.Serializable;
 
 import de.algorythm.jdoe.model.meta.Property;
 
-public interface IPropertyValue<V> extends Serializable {
+public interface IPropertyValue<V,E extends IEntityReference> extends Serializable {
 	
 	Property getProperty();
 	boolean isChanged();
-	void doWithValue(IPropertyValueVisitor visitor);
+	void doWithValue(IPropertyValueVisitor<E> visitor);
 	V getValue();
 	void setValue(V v);
 	void toString(StringBuilder sb);

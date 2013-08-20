@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 
 public abstract class AbstractAttributeType<V> implements IPropertyType<V>, Serializable {
@@ -53,7 +53,7 @@ public abstract class AbstractAttributeType<V> implements IPropertyType<V>, Seri
 		return oldValue == null && newValue != null || oldValue != null && !oldValue.equals(newValue);
 	}
 	
-	public abstract void doWithPropertyValue(IPropertyValue<V> value, IPropertyValueVisitor visitor);
+	public abstract void doWithPropertyValue(IPropertyValue<V,?> value, IAttributeValueVisitor visitor);
 
 	public abstract void valueToString(V value, StringBuilder sb);
 	

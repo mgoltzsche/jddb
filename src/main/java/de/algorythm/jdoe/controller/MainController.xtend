@@ -30,10 +30,11 @@ import javafx.scene.control.TextField
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 
 public class MainController implements IController, IObserver {
 	
-	@Inject extension IDAO<FXEntity> dao
+	@Inject extension IDAO<FXEntityReference,FXEntity> dao
 	@Inject extension TaskQueue
 	@Inject extension JavaDbObjectEditorFacade facade
 	@Inject extension ViewRegistry

@@ -11,7 +11,7 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 
-public class IndexKeywordCollectingVisitor implements IPropertyValueVisitor {
+public class IndexKeywordCollectingVisitor<E extends IEntityReference> implements IPropertyValueVisitor<E> {
 	
 	private final Set<String> indexKeywords;
 	private final Pattern wordPattern;
@@ -21,47 +21,47 @@ public class IndexKeywordCollectingVisitor implements IPropertyValueVisitor {
 		this.indexKeywords = indexKeywords;
 	}
 	
-	protected boolean valueChanged(final IEntityReference oldValue, final IEntityReference newValue) {
+	protected boolean valueChanged(final E oldValue, final E newValue) {
 		return oldValue == null && newValue != null || oldValue != null && !oldValue.equals(newValue);
 	}
 	
 	@Override
-	public void doWithAssociations(final IPropertyValue<Collection<IEntityReference>> propertyValue) {}
+	public void doWithAssociations(final IPropertyValue<Collection<E>,E> propertyValue) {}
 	
 	@Override
-	public void doWithAssociation(final IPropertyValue<IEntityReference> propertyValue) {}
+	public void doWithAssociation(final IPropertyValue<E,E> propertyValue) {}
 
 	@Override
-	public void doWithBoolean(final IPropertyValue<Boolean> propertyValue) {
+	public void doWithBoolean(final IPropertyValue<Boolean,?> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 
 	@Override
-	public void doWithDecimal(final IPropertyValue<Long> propertyValue) {
+	public void doWithDecimal(final IPropertyValue<Long,?> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 
 	@Override
-	public void doWithReal(final IPropertyValue<Double> propertyValue) {
+	public void doWithReal(final IPropertyValue<Double,?> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 
 	@Override
-	public void doWithDate(final IPropertyValue<Date> propertyValue) {
+	public void doWithDate(final IPropertyValue<Date,?> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 
 	@Override
-	public void doWithString(final IPropertyValue<String> propertyValue) {
+	public void doWithString(final IPropertyValue<String,?> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 
 	@Override
-	public void doWithText(final IPropertyValue<String> propertyValue) {
+	public void doWithText(final IPropertyValue<String,?> propertyValue) {
 		addIndexKeywords(propertyValue);
 	}
 	
-	private void addIndexKeywords(IPropertyValue<?> propertyValue) {
+	private void addIndexKeywords(IPropertyValue<?,?> propertyValue) {
 		if (propertyValue.getProperty().isSearchable()) {
 			final String value = propertyValue.toString();
 			

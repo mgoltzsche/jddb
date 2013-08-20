@@ -1,12 +1,13 @@
 package de.algorythm.jdoe.model.dao;
 
+import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
 
-public interface IPropertyValueFactory<P extends IPropertyValue<?>> {
+public interface IPropertyValueFactory<E extends IEntityReference, P extends IPropertyValue<?,E>> {
 
 	P createAssociationValue(Property property);
 	P createAssociationsValue(Property property);
-	<V> P createPropertyValue(Property property, IPropertyType<V> type);
+	<V> P createAttributeValue(Property property, AbstractAttributeType<V> type);
 }

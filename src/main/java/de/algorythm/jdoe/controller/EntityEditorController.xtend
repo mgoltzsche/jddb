@@ -7,6 +7,7 @@ import de.algorythm.jdoe.model.entity.IPropertyValue
 import de.algorythm.jdoe.taskQueue.TaskQueue
 import de.algorythm.jdoe.ui.jfx.model.EditorStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.util.LinkedList
 import javafx.fxml.FXML
@@ -19,14 +20,13 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 
 public class EntityEditorController implements IController, IObserver {
 	
 	@Inject extension TaskQueue
 	@Inject extension IEntityEditorManager
 	@Inject extension Injector
-	@Inject extension IDAO<FXEntity> dao
+	@Inject extension IDAO<FXEntityReference, FXEntity> dao
 	@FXML var GridPane gridPane
 	@FXML var EditorStateModel editorState
 	var FXEntity entity
@@ -43,7 +43,7 @@ public class EntityEditorController implements IController, IObserver {
 		runLater [|
 			var i = 0
 			
-			for (IPropertyValue<?> value : entity.values) {
+			for (IPropertyValue<?,FXEntityReference> value : entity.values) {
 				val label = new Label(value.property.label + ': ')
 				
 				GridPane.setValignment(label, VPos.TOP)

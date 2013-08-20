@@ -40,14 +40,14 @@ import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
-import de.algorythm.jdoe.model.entity.impl.Entity;
+import de.algorythm.jdoe.model.entity.impl.AbstractEntity;
 import de.algorythm.jdoe.model.entity.impl.propertyValue.AbstractPropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.Schema;
 
 @Singleton
-public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPropertyValue<?>> implements IDAO<V>, IDAOVisitorContext {
+public class DAO<V extends IEntity<VREF>, VREF extends IEntityReference, P extends IPropertyValue<?,VREF>> implements IDAO<VREF,V>, IDAOVisitorContext<VREF> {
 	
 	static private final Logger LOG = LoggerFactory.getLogger(DAO.class);
 	
@@ -129,7 +129,7 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 	public VREF createEntityReference(final Vertex vertex) {
 		final String id = vertex.<String>getProperty(ID);
 		final EntityType type = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
-		final IPropertyValueVisitor visitor = new LoadVisitor(vertex, this);
+		final IPropertyValueVisitor<VREF> visitor = new LoadVisitor<>(vertex, this);
 		final Collection<Property> properties = type.getProperties();
 		final ArrayList<P> propertyValues = new ArrayList<>(properties.size());
 		
@@ -138,7 +138,7 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 				final P propertyValue = property.createPropertyValue(modelFactory);
 				
 				propertyValue.doWithValue(visitor);
-				((AbstractPropertyValue<?>) propertyValue).setChanged(false);
+				((AbstractPropertyValue<?,VREF>) propertyValue).setChanged(false);
 				
 				propertyValues.add(propertyValue);
 			}
@@ -150,7 +150,7 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 	private V createEntity(final Vertex vertex) {
 		final String id = vertex.<String>getProperty(ID);
 		final EntityType type = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
-		final IPropertyValueVisitor visitor = new LoadVisitor(vertex, this);
+		final IPropertyValueVisitor<VREF> visitor = new LoadVisitor<>(vertex, this);
 		final Collection<Property> properties = type.getProperties();
 		final ArrayList<P> propertyValues = new ArrayList<>(properties.size());
 		
@@ -158,7 +158,7 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 			final P propertyValue = property.createPropertyValue(modelFactory);
 			
 			propertyValue.doWithValue(visitor);
-			((AbstractPropertyValue<?>) propertyValue).setChanged(false);
+			((AbstractPropertyValue<?,VREF>) propertyValue).setChanged(false);
 			
 			propertyValues.add(propertyValue);
 		}
@@ -179,11 +179,11 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 	}
 	
 	@Override
-	public void save(final IEntity entity) {
+	public void save(final IEntity<VREF> entity) {
 		if (!entity.isChanged())
 			return;
 		
-		final LinkedList<IEntity> savedEntities = new LinkedList<>();
+		final LinkedList<IEntity<VREF>> savedEntities = new LinkedList<>();
 		
 		try {
 			saveInTransaction(entity, savedEntities);
@@ -195,18 +195,18 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 		}
 		
 		// set entity unchanged
-		for (IEntity savedEntity : savedEntities) {
-			((Entity) savedEntity).setTransientInstance(false);
+		for (IEntity<VREF> savedEntity : savedEntities) {
+			((AbstractEntity<VREF>) savedEntity).setTransientInstance(false);
 			
-			for (IPropertyValue<?> propertyValue : savedEntity.getValues())
-				((AbstractPropertyValue<?>) propertyValue).setChanged(false);
+			for (IPropertyValue<?,VREF> propertyValue : savedEntity.getValues())
+				((AbstractPropertyValue<?,VREF>) propertyValue).setChanged(false);
 		}
 		
 		notifyObservers();
 	}
 	
 	@Override
-	public Vertex saveInTransaction(final IEntity entity, final Collection<IEntity> savedEntities) {
+	public Vertex saveInTransaction(final IEntity<VREF> entity, final Collection<IEntity<VREF>> savedEntities) {
 		Vertex vertex = findVertex(entity);
 		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
 		final Set<String> oldIndexKeywords;
@@ -223,10 +223,10 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 		}
 		
 		final Set<String> indexKeywords = new HashSet<>();
-		final SaveVisitor visitor = new SaveVisitor(this, vertex, savedEntities, WORD_PATTERN, indexKeywords);
+		final SaveVisitor<VREF> visitor = new SaveVisitor<VREF>(this, vertex, savedEntities, WORD_PATTERN, indexKeywords);
 		
 		// assign values to vertex
-		for (IPropertyValue<?> propertyValue : entity.getValues())
+		for (IPropertyValue<?,VREF> propertyValue : entity.getValues())
 			propertyValue.doWithValue(visitor);
 		
 		// update vertex index if keyword changed
@@ -244,18 +244,18 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 		return vertex;
 	}
 	
-	private Set<String> createIndexKeywords(final IEntity entity) {
+	private Set<String> createIndexKeywords(final V entity) {
 		final Set<String> indexKeywords = new HashSet<>();
-		final IndexKeywordCollectingVisitor visitor = new IndexKeywordCollectingVisitor(WORD_PATTERN, indexKeywords);
+		final IndexKeywordCollectingVisitor<VREF> visitor = new IndexKeywordCollectingVisitor<>(WORD_PATTERN, indexKeywords);
 		
-		for (IPropertyValue<?> propertyValue : entity.getValues())
+		for (IPropertyValue<?,VREF> propertyValue : entity.getValues())
 			propertyValue.doWithValue(visitor);
 		
 		return indexKeywords;
 	}
 	
 	@Override
-	public void delete(final IEntity entity) {
+	public void delete(final IEntity<VREF> entity) {
 		try {
 			deleteInTransaction(entity);
 			graph.commit();
@@ -278,13 +278,13 @@ public class DAO<V extends IEntity, VREF extends IEntityReference, P extends IPr
 			return;
 		}
 		
-		final IEntity entity = createEntity(vertex);
+		final V entity = createEntity(vertex);
 		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
 		final Set<String> indexKeywords = new HashSet<>();
-		final DeleteVisitor visitor = new DeleteVisitor(this, WORD_PATTERN, indexKeywords);
+		final DeleteVisitor<VREF> visitor = new DeleteVisitor<>(this, WORD_PATTERN, indexKeywords);
 		
 		// delete containments and collect index
-		for (IPropertyValue<?> value : entity.getValues())
+		for (IPropertyValue<?,VREF> value : entity.getValues())
 			value.doWithValue(visitor);
 		
 		// remove vertex index

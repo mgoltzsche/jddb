@@ -1,10 +1,11 @@
 package de.algorythm.jdoe.model.entity.impl.propertyValue;
 
+import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
 
-public abstract class AbstractPropertyValue<V> implements IPropertyValue<V> {
+public abstract class AbstractPropertyValue<V,REF extends IEntityReference> implements IPropertyValue<V,REF> {
 
 	static private final long serialVersionUID = 3601500282325296848L;
 	static protected final String EMPTY = "";

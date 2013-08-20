@@ -42,7 +42,7 @@ public class CollectionType implements IPropertyType<Collection<IEntityReference
 	}
 
 	@Override
-	public <P extends IPropertyValue<?>> P createPropertyValue(final Property property, final IPropertyValueFactory<P> factory) {
+	public <E extends IEntityReference, P extends IPropertyValue<?,E>> P createPropertyValue(final Property property, final IPropertyValueFactory<E,P> factory) {
 		return factory.createAssociationsValue(property);
 	}
 	

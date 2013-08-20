@@ -16,12 +16,13 @@ import javafx.scene.control.ListView
 import javax.inject.Inject
 import org.slf4j.LoggerFactory
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 
 class TypeEditorController implements IController {
 
 	static val log = LoggerFactory.getLogger(typeof(TypeEditorController))
 	
-	@Inject extension IDAO<FXEntity> dao
+	@Inject extension IDAO<FXEntityReference,FXEntity> dao
 	@FXML var ListView<FXType> typeList
 	@FXML var ListView<Property> propertyList
 	@FXML var Button btnAddProperty

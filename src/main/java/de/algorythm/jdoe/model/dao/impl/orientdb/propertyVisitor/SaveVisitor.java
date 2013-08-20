@@ -17,13 +17,13 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class SaveVisitor extends IndexKeywordCollectingVisitor {
+public class SaveVisitor<E extends IEntityReference> extends IndexKeywordCollectingVisitor<E> {
 	
 	private final Vertex vertex;
-	private final Collection<IEntity> savedEntities;
-	private final IDAOVisitorContext dao;
+	private final Collection<IEntity<E>> savedEntities;
+	private final IDAOVisitorContext<E> dao;
 	
-	public SaveVisitor(final IDAOVisitorContext dao, final Vertex vertex, final Collection<IEntity> savedEntities, final Pattern wordPattern, final Set<String> indexKeywords) {
+	public SaveVisitor(final IDAOVisitorContext<E> dao, final Vertex vertex, final Collection<IEntity<E>> savedEntities, final Pattern wordPattern, final Set<String> indexKeywords) {
 		super(wordPattern, indexKeywords);
 		this.dao = dao;
 		this.vertex = vertex;
@@ -31,7 +31,7 @@ public class SaveVisitor extends IndexKeywordCollectingVisitor {
 	}
 	
 	@Override
-	public void doWithAssociations(final IPropertyValue<Collection<IEntityReference>> propertyValue) {
+	public void doWithAssociations(final IPropertyValue<Collection<E>,E> propertyValue) {
 		if (!propertyValue.isChanged())
 			return;
 		
@@ -42,9 +42,12 @@ public class SaveVisitor extends IndexKeywordCollectingVisitor {
 		for (Edge edge : vertex.getEdges(Direction.OUT, propertyName))
 			existingEdges.add(edge);
 		
-		for (IEntityReference entityRef : propertyValue.getValue()) {
-			if (entityRef.isTransientInstance()) // save new entity
-				dao.saveInTransaction(entityRef.getTransientInstance(), savedEntities);
+		for (E entityRef : propertyValue.getValue()) {
+			if (entityRef.isTransientInstance()) { // save new entity
+				@SuppressWarnings("unchecked")
+				final IEntity<E> newEntity = (IEntity<E>) entityRef.getTransientInstance();
+				dao.saveInTransaction(newEntity, savedEntities);
+			}
 			
 			// check existing edge
 			boolean edgeAlreadyExists = false;
@@ -72,18 +75,22 @@ public class SaveVisitor extends IndexKeywordCollectingVisitor {
 	}
 	
 	@Override
-	public void doWithAssociation(final IPropertyValue<IEntityReference> propertyValue) {
+	public void doWithAssociation(final IPropertyValue<E,E> propertyValue) {
 		if (!propertyValue.isChanged())
 			return;
 		
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
-		final IEntityReference entityRef = propertyValue.getValue();
+		final E entityRef = propertyValue.getValue();
 		Vertex refVertex = null;
 		
 		if (entityRef != null) {
-			if (entityRef.isTransientInstance())
-				refVertex = dao.saveInTransaction(entityRef.getTransientInstance(), savedEntities);
+			if (entityRef.isTransientInstance()) {
+				@SuppressWarnings("unchecked")
+				final IEntity<E> newEntity = (IEntity<E>) entityRef.getTransientInstance();
+				refVertex = dao.saveInTransaction(newEntity, savedEntities);
+			}
+			
 			try { // find associated vertex
 				refVertex = dao.findVertex(entityRef);
 			} catch(IllegalArgumentException e) { // create 
@@ -108,42 +115,42 @@ public class SaveVisitor extends IndexKeywordCollectingVisitor {
 	}
 	
 	@Override
-	public void doWithBoolean(final IPropertyValue<Boolean> propertyValue) {
+	public void doWithBoolean(final IPropertyValue<Boolean,?> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithBoolean(propertyValue);
 	}
 
 	@Override
-	public void doWithDecimal(final IPropertyValue<Long> propertyValue) {
+	public void doWithDecimal(final IPropertyValue<Long,?> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithDecimal(propertyValue);
 	}
 
 	@Override
-	public void doWithReal(final IPropertyValue<Double> propertyValue) {
+	public void doWithReal(final IPropertyValue<Double,?> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithReal(propertyValue);
 	}
 
 	@Override
-	public void doWithDate(final IPropertyValue<Date> propertyValue) {
+	public void doWithDate(final IPropertyValue<Date,?> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithDate(propertyValue);
 	}
 
 	@Override
-	public void doWithString(final IPropertyValue<String> propertyValue) {
+	public void doWithString(final IPropertyValue<String,?> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithString(propertyValue);
 	}
 
 	@Override
-	public void doWithText(final IPropertyValue<String> propertyValue) {
+	public void doWithText(final IPropertyValue<String,?> propertyValue) {
 		writeAttributeValue(propertyValue);
 		super.doWithText(propertyValue);
 	}
 	
-	private void writeAttributeValue(IPropertyValue<?> propertyValue) {
+	private void writeAttributeValue(IPropertyValue<?,?> propertyValue) {
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		final Object newValue = propertyValue.getValue();
