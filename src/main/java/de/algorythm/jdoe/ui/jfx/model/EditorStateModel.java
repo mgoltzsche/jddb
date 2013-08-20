@@ -5,17 +5,17 @@ import javafx.beans.property.SimpleBooleanProperty;
 
 public class EditorStateModel {
 
-	private BooleanProperty disable = new SimpleBooleanProperty();
+	private BooleanProperty busy = new SimpleBooleanProperty();
 
-	public Boolean getDisable() {
-		return disable.get();
+	public Boolean isBusy() {
+		return busy.get();
 	}
 
-	public void setDisable(Boolean disable) {
-		this.disable.set(disable);
+	public void setBusy(Boolean disable) {
+		this.busy.set(disable);
 	}
 	
-	public BooleanProperty disableProperty() {
-		return disable;
+	public BooleanProperty busyProperty() {
+		return busy;
 	}
 }

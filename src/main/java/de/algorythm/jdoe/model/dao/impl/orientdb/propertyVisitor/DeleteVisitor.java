@@ -8,26 +8,26 @@ import de.algorythm.jdoe.model.dao.impl.orientdb.IDAOVisitorContext;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 
-public class DeleteVisitor<E extends IEntityReference> extends IndexKeywordCollectingVisitor<E> {
+public class DeleteVisitor<REF extends IEntityReference, P extends IPropertyValue<?, REF>> extends IndexKeywordCollectingVisitor<REF> {
 	
-	private final IDAOVisitorContext<E> dao;
+	private final IDAOVisitorContext<REF,P> dao;
 	
-	public DeleteVisitor(final IDAOVisitorContext<E> dao, final Pattern wordPattern, final Set<String> indexKeywords) {
+	public DeleteVisitor(final IDAOVisitorContext<REF,P> dao, final Pattern wordPattern, final Set<String> indexKeywords) {
 		super(wordPattern, indexKeywords);
 		this.dao = dao;
 	}
 	
 	@Override
-	public void doWithAssociations(final IPropertyValue<Collection<E>,E> propertyValue) {
+	public void doWithAssociations(final IPropertyValue<Collection<REF>,REF> propertyValue) {
 		if (propertyValue.getProperty().isContainment())
-			for (E entityRef : propertyValue.getValue())
+			for (REF entityRef : propertyValue.getValue())
 				dao.deleteInTransaction(entityRef);
 	}
 	
 	@Override
-	public void doWithAssociation(final IPropertyValue<E,E> propertyValue) {
+	public void doWithAssociation(final IPropertyValue<REF,REF> propertyValue) {
 		if (propertyValue.getProperty().isContainment()) {
-			final E entityRef = propertyValue.getValue();
+			final REF entityRef = propertyValue.getValue();
 			
 			if (entityRef != null)
 				dao.deleteInTransaction(entityRef);

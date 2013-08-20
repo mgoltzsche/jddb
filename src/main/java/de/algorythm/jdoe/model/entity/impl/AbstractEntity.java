@@ -10,29 +10,29 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 
-public class AbstractEntity<REF extends IEntityReference> implements IEntity<REF> {
+public class AbstractEntity<REF extends IEntityReference, P extends IPropertyValue<?, REF>> implements IEntity<REF, P> {
 
 	static private final long serialVersionUID = 8803662114651751761L;
 	
 	private final String id;
 	private final EntityType type;
-	private final ArrayList<? extends IPropertyValue<?,REF>> values;
+	private final ArrayList<P> values;
 	private final Collection<REF> referencingEntities;
 	private transient boolean transientInstance;
 	
-	public AbstractEntity(final EntityType type, final ArrayList<? extends IPropertyValue<?,REF>> values) {
+	public AbstractEntity(final EntityType type, final ArrayList<P> values) {
 		this(UUID.randomUUID().toString(), type, values, new LinkedList<REF>());
 		transientInstance = true;
 	}
 	
-	public AbstractEntity(final String id, final EntityType type, final ArrayList<? extends IPropertyValue<?,REF>> values, final Collection<REF> referencingEntities) {
+	public AbstractEntity(final String id, final EntityType type, final ArrayList<P> values, final Collection<REF> referencingEntities) {
 		this.id = id;
 		this.type = type;
 		this.values = values;
 		this.referencingEntities = referencingEntities;
 	}
 	
-	public AbstractEntity(final String id, final EntityType type, final ArrayList<? extends IPropertyValue<?,REF>> values) {
+	public AbstractEntity(final String id, final EntityType type, final ArrayList<P> values) {
 		this.id = id;
 		this.type = type;
 		referencingEntities = null;
@@ -63,7 +63,7 @@ public class AbstractEntity<REF extends IEntityReference> implements IEntity<REF
 	}
 	
 	@Override
-	public Collection<? extends IPropertyValue<?,REF>> getValues() {
+	public Collection<P> getValues() {
 		return values;
 	}
 	
@@ -78,7 +78,7 @@ public class AbstractEntity<REF extends IEntityReference> implements IEntity<REF
 	}
 	
 	@Override
-	public IEntity<?> getTransientInstance() {
+	public IEntity<?,?> getTransientInstance() {
 		if (!transientInstance)
 			throw new IllegalStateException();
 		
@@ -121,7 +121,7 @@ public class AbstractEntity<REF extends IEntityReference> implements IEntity<REF
 		if (obj == null || getClass() != obj.getClass())
 			return false;
 		
-		final AbstractEntity<?> other = (AbstractEntity<?>) obj;
+		final AbstractEntity<?,?> other = (AbstractEntity<?,?>) obj;
 		
 		return id.equals(other.id);
 	}

@@ -17,13 +17,13 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class SaveVisitor<E extends IEntityReference> extends IndexKeywordCollectingVisitor<E> {
+public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<?, REF>> extends IndexKeywordCollectingVisitor<REF> {
 	
 	private final Vertex vertex;
-	private final Collection<IEntity<E>> savedEntities;
-	private final IDAOVisitorContext<E> dao;
+	private final Collection<IEntity<REF,P>> savedEntities;
+	private final IDAOVisitorContext<REF,P> dao;
 	
-	public SaveVisitor(final IDAOVisitorContext<E> dao, final Vertex vertex, final Collection<IEntity<E>> savedEntities, final Pattern wordPattern, final Set<String> indexKeywords) {
+	public SaveVisitor(final IDAOVisitorContext<REF,P> dao, final Vertex vertex, final Collection<IEntity<REF,P>> savedEntities, final Pattern wordPattern, final Set<String> indexKeywords) {
 		super(wordPattern, indexKeywords);
 		this.dao = dao;
 		this.vertex = vertex;
@@ -31,7 +31,7 @@ public class SaveVisitor<E extends IEntityReference> extends IndexKeywordCollect
 	}
 	
 	@Override
-	public void doWithAssociations(final IPropertyValue<Collection<E>,E> propertyValue) {
+	public void doWithAssociations(final IPropertyValue<Collection<REF>,REF> propertyValue) {
 		if (!propertyValue.isChanged())
 			return;
 		
@@ -42,10 +42,10 @@ public class SaveVisitor<E extends IEntityReference> extends IndexKeywordCollect
 		for (Edge edge : vertex.getEdges(Direction.OUT, propertyName))
 			existingEdges.add(edge);
 		
-		for (E entityRef : propertyValue.getValue()) {
+		for (REF entityRef : propertyValue.getValue()) {
 			if (entityRef.isTransientInstance()) { // save new entity
 				@SuppressWarnings("unchecked")
-				final IEntity<E> newEntity = (IEntity<E>) entityRef.getTransientInstance();
+				final IEntity<REF,P> newEntity = (IEntity<REF,P>) entityRef.getTransientInstance();
 				dao.saveInTransaction(newEntity, savedEntities);
 			}
 			
@@ -75,19 +75,19 @@ public class SaveVisitor<E extends IEntityReference> extends IndexKeywordCollect
 	}
 	
 	@Override
-	public void doWithAssociation(final IPropertyValue<E,E> propertyValue) {
+	public void doWithAssociation(final IPropertyValue<REF,REF> propertyValue) {
 		if (!propertyValue.isChanged())
 			return;
 		
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
-		final E entityRef = propertyValue.getValue();
+		final REF entityRef = propertyValue.getValue();
 		Vertex refVertex = null;
 		
 		if (entityRef != null) {
 			if (entityRef.isTransientInstance()) {
 				@SuppressWarnings("unchecked")
-				final IEntity<E> newEntity = (IEntity<E>) entityRef.getTransientInstance();
+				final IEntity<REF,P> newEntity = (IEntity<REF,P>) entityRef.getTransientInstance();
 				refVertex = dao.saveInTransaction(newEntity, savedEntities);
 			}
 			

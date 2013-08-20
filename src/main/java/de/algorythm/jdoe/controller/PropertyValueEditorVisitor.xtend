@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 
 class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityReference> {
 
@@ -43,7 +44,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityRefere
 	static val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
 	static val REAL_PATTERN = Pattern.compile('^\\d+((\\.|,)\\d+)?$')
 
-	@Inject extension IDAO<FXEntityReference,FXEntity> dao
+	@Inject extension IDAO<FXEntityReference,IFXPropertyValue<?>,FXEntity> dao
 	@Inject extension TaskQueue
 	@Inject extension IEntityEditorManager editorManager
 	@Inject Bundle bundle

@@ -6,4 +6,5 @@ import javafx.beans.property.ReadOnlyStringProperty;
 public interface FXEntityReference extends IEntityReference {
 
 	ReadOnlyStringProperty labelProperty();
+	void assign(final FXEntityReference entityRef);
 }

@@ -6,12 +6,12 @@ import com.tinkerpop.blueprints.Vertex;
 
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
+import de.algorythm.jdoe.model.entity.IPropertyValue;
 
-public interface IDAOVisitorContext<E extends IEntityReference> {
+public interface IDAOVisitorContext<REF extends IEntityReference, P extends IPropertyValue<?, REF>> {
 
-	//IEntity createEntity(Vertex vertex);
-	E createEntityReference(Vertex vertex);
+	REF createEntityReference(Vertex vertex);
 	Vertex findVertex(IEntityReference entityRef);
-	Vertex saveInTransaction(IEntity<E> entity, Collection<IEntity<E>> savedEntities);
+	Vertex saveInTransaction(IEntity<REF,P> entity, Collection<IEntity<REF,P>> savedEntities);
 	void deleteInTransaction(IEntityReference entity);
 }

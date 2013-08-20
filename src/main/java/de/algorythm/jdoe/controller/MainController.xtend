@@ -31,10 +31,11 @@ import javax.inject.Inject
 
 import static javafx.application.Platform.*
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 
 public class MainController implements IController, IObserver {
 	
-	@Inject extension IDAO<FXEntityReference,FXEntity> dao
+	@Inject extension IDAO<FXEntityReference,IFXPropertyValue<?>,FXEntity> dao
 	@Inject extension TaskQueue
 	@Inject extension JavaDbObjectEditorFacade facade
 	@Inject extension ViewRegistry

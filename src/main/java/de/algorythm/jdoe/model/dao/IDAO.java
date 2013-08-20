@@ -5,10 +5,11 @@ import java.util.Set;
 
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
+import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Schema;
 
-public interface IDAO<VREF extends IEntityReference, V extends IEntity<VREF>> {
+public interface IDAO<REF extends IEntityReference, P extends IPropertyValue<?, REF>, V extends IEntity<REF,P>> {
 	
 	void open() throws IOException;
 	void close() throws IOException;
@@ -20,7 +21,7 @@ public interface IDAO<VREF extends IEntityReference, V extends IEntity<VREF>> {
 	Set<V> list(EntityType type, String search);
 	V createEntity(EntityType type);
 	V find(IEntityReference entityRef);
-	void save(IEntity<VREF> entity);
-	void delete(IEntity<VREF> entity);
+	void save(IEntity<REF,P> entity);
+	void delete(IEntity<REF,P> entity);
 	boolean exists(IEntityReference entityRef);
 }

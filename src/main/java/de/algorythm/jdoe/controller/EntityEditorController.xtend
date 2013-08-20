@@ -3,12 +3,13 @@ package de.algorythm.jdoe.controller
 import com.google.inject.Injector
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
-import de.algorythm.jdoe.model.entity.IPropertyValue
 import de.algorythm.jdoe.taskQueue.TaskQueue
 import de.algorythm.jdoe.ui.jfx.model.EditorStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
+import java.util.HashMap
 import java.util.LinkedList
 import javafx.fxml.FXML
 import javafx.geometry.Insets
@@ -26,27 +27,28 @@ public class EntityEditorController implements IController, IObserver {
 	@Inject extension TaskQueue
 	@Inject extension IEntityEditorManager
 	@Inject extension Injector
-	@Inject extension IDAO<FXEntityReference, FXEntity> dao
+	@Inject extension IDAO<FXEntityReference,IFXPropertyValue<?>,FXEntity> dao
 	@FXML var GridPane gridPane
 	@FXML var EditorStateModel editorState
-	var FXEntity entity
+	var FXEntity transientEntity
 	var FXEntity savedEntity
 	val propertySaveCallbacks = new LinkedList<Procedure0>
 	val propertyUpdateCallbacks = new LinkedList<Procedure0>
 	var Procedure1<FXEntity> saveCallback
 	val createdContainedEntities = new LinkedList<FXEntity>
+	val visibleEntityMap = new HashMap<String,FXEntity>
 	
 	override init() {}
 	
 	def init(FXEntity entity, Procedure1<FXEntity> saveCallback) {
-		this.savedEntity = entity
-		this.entity = new FXEntity(entity)
+		savedEntity = entity
+		transientEntity = new FXEntity(entity)
 		this.saveCallback = saveCallback
 		
 		runLater [|
 			var i = 0
 			
-			for (IPropertyValue<?,FXEntityReference> value : entity.values) {
+			for (IFXPropertyValue<?> value : transientEntity.values) {
 				val label = new Label(value.property.label + ': ')
 				
 				GridPane.setValignment(label, VPos.TOP)
@@ -72,45 +74,58 @@ public class EntityEditorController implements IController, IObserver {
 		for (callback : propertySaveCallbacks)
 			callback.apply
 		
-		if (entity.isTransientInstance || saveCallback == null) {
-			editorState.disableProperty.value = true
+		if (transientEntity.isTransientInstance || saveCallback == null) {
+			editorState.busy = true
+			val saveEntity = new FXEntity(transientEntity)
 			
 			runTask('saving entity') [|
+				runLater [|
+					editorState.busy = true
+				]
+				
 				try {
-					entity.save
+					saveEntity.save
+					
+					runLater [|
+						assignSavedEntity(saveEntity)
+					]
 				} finally {
 					runLater [|
-						entity.applyPropertyValues
-						editorState.disableProperty.value = false
+						editorState.busy = false
 					]
 				}
 			]
 		} else {
-			saveCallback.apply(entity)
-			entity.applyPropertyValues
+			saveCallback.apply(transientEntity)
+			assignSavedEntity(transientEntity)
 		}
 	}
 	
 	def delete() {
-		editorState.disableProperty.value = true
+		editorState.busy = true
+		val deleteEntity = new FXEntity(transientEntity)
 		
 		runTask('deleting entity') [|
+			runLater [|
+				editorState.busy = true
+			]
+			
 			try {
-				entity.delete
+				deleteEntity.delete
 			} finally {
 				runLater [|
-					editorState.disableProperty.value = false
+					editorState.busy = false
 				]
 			}
 		]
 	}
 
 	override update() {
-		if (!entity.isTransientInstance || entity.exists)
+		if (!transientEntity.isTransientInstance || transientEntity.exists)
 			for (callback : propertyUpdateCallbacks)
 				callback.apply
 		else
-			entity.closeEntityEditor
+			transientEntity.closeEntityEditor
 	}
 	
 	def close() {
@@ -119,5 +134,10 @@ public class EntityEditorController implements IController, IObserver {
 		for (entity : createdContainedEntities)
 			if (!entity.isTransientInstance)
 				entity.closeEntityEditor
+	}
+	
+	def private void assignSavedEntity(FXEntity entity) {
+		savedEntity.assign(entity)
+		transientEntity.transientInstance = entity.isTransientInstance
 	}
 }

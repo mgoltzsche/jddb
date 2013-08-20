@@ -15,6 +15,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 
 @Singleton
 public class ViewRegistry implements IEntityEditorManager {
@@ -22,7 +23,7 @@ public class ViewRegistry implements IEntityEditorManager {
 	static val LOG = LoggerFactory.getLogger(typeof(ViewRegistry))
 
 	@Inject extension GuiceFxmlLoader
-	@Inject extension IDAO<FXEntityReference, FXEntity>
+	@Inject extension IDAO<FXEntityReference,IFXPropertyValue<?>,FXEntity>
 	val viewMap = new HashMap<String, ViewData>
 	var TabPane tabPane
 	
@@ -35,15 +36,17 @@ public class ViewRegistry implements IEntityEditorManager {
 	}
 	
 	override showEntityEditor(FXEntityReference entityRef, Procedure1<FXEntity> saveCallback) {
-		try {
-			val entity = entityRef.find
-			
-			runLater [|
-				entity.showEntityEditor(saveCallback)
-			]
-		} catch(IllegalArgumentException e) {
-			LOG.debug('''Cannot open entity editor for «entityRef»(«entityRef») because the entity does not exist''')
-		}
+		runTask [|
+			try {
+				val entity = entityRef.find
+				
+				runLater [|
+					entity.showEntityEditor(saveCallback)
+				]
+			} catch(IllegalArgumentException e) {
+				LOG.debug('''Cannot open entity editor for «entityRef»(«entityRef») because the entity does not exist''')
+			}
+		]
 	}
 	
 	override showEntityEditor(FXEntity entity, Procedure1<FXEntity> saveCallback) {

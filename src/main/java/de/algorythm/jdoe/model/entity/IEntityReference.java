@@ -9,6 +9,6 @@ public interface IEntityReference extends Serializable {
 	String getId();
 	EntityType getType();
 	boolean isTransientInstance();
-	IEntity<?> getTransientInstance();
+	IEntity<?,?> getTransientInstance();
 	void toString(StringBuilder sb);
 }

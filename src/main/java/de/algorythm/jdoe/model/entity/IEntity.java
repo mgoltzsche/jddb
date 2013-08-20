@@ -2,9 +2,9 @@ package de.algorythm.jdoe.model.entity;
 
 import java.util.Collection;
 
-public interface IEntity<E extends IEntityReference> extends IEntityReference {
+public interface IEntity<REF extends IEntityReference, P extends IPropertyValue<?,REF>> extends IEntityReference {
 
 	boolean isChanged();
-	Collection<? extends IPropertyValue<?,E>> getValues();
-	Iterable<E> getReferencingEntities();
+	Collection<P> getValues();
+	Iterable<REF> getReferencingEntities();
 }

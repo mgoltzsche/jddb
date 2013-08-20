@@ -16,25 +16,25 @@ import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class LoadVisitor<E extends IEntityReference> implements IPropertyValueVisitor<E> {
+public class LoadVisitor<REF extends IEntityReference, P extends IPropertyValue<?, REF>> implements IPropertyValueVisitor<REF> {
 	
 	static private final Logger LOG = LoggerFactory.getLogger(LoadVisitor.class);
 	
 	private final Vertex vertex;
-	private final IDAOVisitorContext<E> dao;
+	private final IDAOVisitorContext<REF,P> dao;
 	
-	public LoadVisitor(final Vertex vertex, final IDAOVisitorContext<E> dao) {
+	public LoadVisitor(final Vertex vertex, final IDAOVisitorContext<REF,P> dao) {
 		this.vertex = vertex;
 		this.dao = dao;
 	}
 	
 	@Override
-	public void doWithAssociation(final IPropertyValue<E,E> propertyValue) {
+	public void doWithAssociation(final IPropertyValue<REF,REF> propertyValue) {
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {
-			final E entityRef = dao.createEntityReference(referencingVertex);
+			final REF entityRef = dao.createEntityReference(referencingVertex);
 			
 			if (property.getType().isConform(entityRef.getType()))
 				propertyValue.setValue(entityRef);
@@ -42,13 +42,13 @@ public class LoadVisitor<E extends IEntityReference> implements IPropertyValueVi
 	}
 
 	@Override
-	public void doWithAssociations(final IPropertyValue<Collection<E>,E> propertyValue) {
-		final LinkedHashSet<E> associations = new LinkedHashSet<>();
+	public void doWithAssociations(final IPropertyValue<Collection<REF>,REF> propertyValue) {
+		final LinkedHashSet<REF> associations = new LinkedHashSet<>();
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {
-			final E entity = dao.createEntityReference(referencingVertex);
+			final REF entity = dao.createEntityReference(referencingVertex);
 			
 			if (property.getType().isConform(entity.getType()))
 				associations.add(entity);

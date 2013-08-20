@@ -2,15 +2,15 @@ package de.algorythm.jdoe.ui.jfx.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
-import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.impl.AbstractEntity;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
 
-public class FXEntity extends AbstractEntity<FXEntityReference> implements FXEntityReference {
+public class FXEntity extends AbstractEntity<FXEntityReference,IFXPropertyValue<?>> implements FXEntityReference {
 
 	static private final long serialVersionUID = -5386143358866304236L;
 	
@@ -59,6 +59,34 @@ public class FXEntity extends AbstractEntity<FXEntityReference> implements FXEnt
 	
 	public ReadOnlyStringProperty labelProperty() {
 		return label;
+	}
+	
+	@Override
+	public void assign(final FXEntityReference entityRef) {
+		if (!getId().equals(entityRef.getId()))
+				throw new IllegalArgumentException("Given entity reference has a different id");
+		
+		label.set(entityRef.labelProperty().get());
+	}
+	
+	public void assign(final FXEntity entity) {
+		if (!getId().equals(entity.getId()))
+				throw new IllegalArgumentException("Given entity has a different id");
+		
+		final Iterator<IFXPropertyValue<?>> iter = entity.getValues().iterator();
+		final Iterator<IFXPropertyValue<?>> otherIter = entity.getValues().iterator();
+		
+		while (iter.hasNext())
+			assignPropertyValue(iter.next(), otherIter.next());
+		
+		applyLabelValue();
+	}
+	
+	private <V> void assignPropertyValue(final IFXPropertyValue<V> propertyValue, IFXPropertyValue<?> other) {
+		@SuppressWarnings("unchecked")
+		final IFXPropertyValue<V> otherValue = (IFXPropertyValue<V>) other;
+		
+		propertyValue.setValue(otherValue.getValue());
 	}
 	
 	@Override
