@@ -7,4 +7,5 @@ import javafx.beans.property.ReadOnlyStringProperty;
 public interface IFXPropertyValue<V> extends IPropertyValue<V,FXEntityReference> {
 
 	ReadOnlyStringProperty labelProperty();
+	IFXPropertyValue<V> copy();
 }

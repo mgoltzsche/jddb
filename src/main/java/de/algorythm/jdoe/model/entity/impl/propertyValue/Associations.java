@@ -21,7 +21,7 @@ public class Associations extends AbstractPropertyValue<Collection<IEntityRefere
 
 	@Override
 	public void toString(final StringBuilder sb) {
-		sb.append(String.valueOf(value.size()));
+		sb.append(String.valueOf(getValue().size()));
 	}
 
 	@Override

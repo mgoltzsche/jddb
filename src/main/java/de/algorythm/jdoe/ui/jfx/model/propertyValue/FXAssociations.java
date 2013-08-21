@@ -1,5 +1,6 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
@@ -21,12 +22,21 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	
 	@Override
 	public void toString(final StringBuilder sb) {
-		sb.append(String.valueOf(value.size()));
+		sb.append(String.valueOf(getValue().size()));
 	}
 
 	@Override
 	protected boolean valueChanged(final Collection<FXEntityReference> oldValue,
 			final Collection<FXEntityReference> newValue) {
 		return !oldValue.containsAll(newValue) || !newValue.containsAll(oldValue);
+	}
+
+	@Override
+	public IFXPropertyValue<Collection<FXEntityReference>> copy() {
+		final FXAssociations copy = new FXAssociations(getProperty());
+		
+		copy.setValue(new ArrayList<>(copy.getValue()));
+		
+		return copy;
 	}
 }

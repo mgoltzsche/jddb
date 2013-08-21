@@ -23,6 +23,6 @@ public class AttributePropertyValue<V> extends AbstractPropertyValue<V,IEntityRe
 
 	@Override
 	public void toString(final StringBuilder sb) {
-		type.valueToString(value, sb);
+		type.valueToString(getValue(), sb);
 	}
 }

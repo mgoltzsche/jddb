@@ -19,6 +19,15 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> {
 
 	@Override
 	public void toString(StringBuilder sb) {
-		sb.append(value.labelProperty().get());
+		sb.append(getValue().labelProperty().get());
+	}
+	
+	@Override
+	public IFXPropertyValue<FXEntityReference> copy() {
+		final FXAssociation copy = new FXAssociation(getProperty());
+		
+		copy.setValue(getValue());
+		
+		return copy;
 	}
 }

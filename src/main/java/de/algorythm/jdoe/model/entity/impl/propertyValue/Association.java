@@ -19,8 +19,10 @@ public class Association extends AbstractPropertyValue<IEntityReference,IEntityR
 
 	@Override
 	public void toString(final StringBuilder sb) {
-		if (value != null)
-			value.toString(sb);
+		final IEntityReference ref = getValue();
+		
+		if (ref != null)
+			ref.toString(sb);
 	}
 
 }

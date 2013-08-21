@@ -23,6 +23,15 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> {
 
 	@Override
 	public void toString(final StringBuilder sb) {
-		type.valueToString(value, sb);
+		type.valueToString(getValue(), sb);
+	}
+
+	@Override
+	public IFXPropertyValue<V> copy() {
+		final FXAttribute<V> copy = new FXAttribute<>(getProperty(), type);
+		
+		copy.setValue(getValue());
+		
+		return copy;
 	}
 }

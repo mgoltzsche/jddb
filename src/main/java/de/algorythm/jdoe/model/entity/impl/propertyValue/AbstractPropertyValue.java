@@ -10,7 +10,7 @@ public abstract class AbstractPropertyValue<V,REF extends IEntityReference> impl
 	static private final long serialVersionUID = 3601500282325296848L;
 	static protected final String EMPTY = "";
 	
-	protected V value;
+	private V value;
 	private Property property;
 	protected IPropertyType<?> type;
 	protected transient boolean changed;
