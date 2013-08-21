@@ -35,7 +35,7 @@ public class EntityEditorController implements IController, IObserver {
 	val propertySaveCallbacks = new LinkedList<Procedure0>
 	val propertyUpdateCallbacks = new LinkedList<Procedure0>
 	var Procedure1<FXEntity> saveCallback
-	val createdContainedEntities = new LinkedList<FXEntity>
+	val createdContainedEntities = new LinkedList<FXEntityReference>
 	val visibleEntityMap = new HashMap<String,FXEntity>
 	
 	override init() {}

@@ -52,9 +52,9 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityRefere
 	var int row
 	var Collection<Procedure0> saveCallbacks
 	var Collection<Procedure0> updateCallbacks
-	var Collection<FXEntity> createdContainedEntities
+	var Collection<FXEntityReference> createdContainedEntities
 	
-	new(GridPane gridPane, int row, Collection<FXEntity> createdContainedEntities, Collection<Procedure0> saveCallbacks, Collection<Procedure0> updateCallbacks) {
+	new(GridPane gridPane, int row, Collection<FXEntityReference> createdContainedEntities, Collection<Procedure0> saveCallbacks, Collection<Procedure0> updateCallbacks) {
 		this.gridPane = gridPane
 		this.row = row
 		this.saveCallbacks = saveCallbacks
@@ -172,7 +172,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityRefere
 			removeButton.disable = true
 		
 		if (property.containment) {
-			val valueContainer = new ValueContainer<FXEntity>
+			val valueContainer = new ValueContainer<FXEntityReference>
 			val label = new Label
 			
 			if (entity != null) {
