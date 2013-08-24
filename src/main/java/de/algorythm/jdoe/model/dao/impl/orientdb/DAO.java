@@ -38,6 +38,7 @@ import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.LoadVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.SaveVisitor;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
+import de.algorythm.jdoe.model.entity.IChangedSetter;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.entity.impl.AbstractEntity;
@@ -138,7 +139,7 @@ public class DAO<V extends IEntity<REF,P>, REF extends IEntityReference, P exten
 				final P propertyValue = property.createPropertyValue(modelFactory);
 				
 				propertyValue.doWithValue(visitor);
-				((AbstractPropertyValue<?,REF>) propertyValue).setChanged(false);
+				((IChangedSetter) propertyValue).setChanged(false);
 				
 				propertyValues.add(propertyValue);
 			}
@@ -158,7 +159,7 @@ public class DAO<V extends IEntity<REF,P>, REF extends IEntityReference, P exten
 			final P propertyValue = property.createPropertyValue(modelFactory);
 			
 			propertyValue.doWithValue(visitor);
-			((AbstractPropertyValue<?,REF>) propertyValue).setChanged(false);
+			((IChangedSetter) propertyValue).setChanged(false);
 			
 			propertyValues.add(propertyValue);
 		}

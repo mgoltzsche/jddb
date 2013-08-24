@@ -2,7 +2,6 @@ package de.algorythm.jdoe.controller
 
 import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.model.dao.IDAO
-import de.algorythm.jdoe.model.entity.IEntityReference
 import de.algorythm.jdoe.model.entity.IPropertyValue
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor
 import de.algorythm.jdoe.model.meta.EntityType
@@ -11,7 +10,9 @@ import de.algorythm.jdoe.taskQueue.TaskQueue
 import de.algorythm.jdoe.ui.jfx.cell.AssociationContainmentCell
 import de.algorythm.jdoe.ui.jfx.controls.EntityField
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.ValueContainer
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.text.NumberFormat
 import java.text.ParseException
@@ -34,8 +35,6 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
-import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 
 class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityReference> {
 

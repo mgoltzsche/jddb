@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import de.algorythm.jdoe.model.dao.IPropertyValueFactory;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 
 public class EntityType extends AbstractLabeledElement implements IPropertyType<IEntityReference>, Serializable {
 

@@ -1,23 +1,33 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 
-public class FXAttribute<V> extends AbstractFXPropertyValue<V> {
+public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements ChangeListener<V> {
 
 	static private final long serialVersionUID = 4112630308772125334L;
 	
 	private final AbstractAttributeType<V> type;
+	private final SimpleObjectProperty<V> observableValue = new SimpleObjectProperty<>();
 	
 	public FXAttribute(final Property property, final AbstractAttributeType<V> type) {
 		super(property);
 		this.type = type;
+		observableValue.addListener(this);
 	}
 	
 	@Override
 	public void doWithValue(final IPropertyValueVisitor<FXEntityReference> visitor) {
+		type.doWithPropertyValue(this, visitor);
+	}
+	
+	@Override
+	public void doWithObservableValue(final IFXPropertyValueVisitor visitor) {
 		type.doWithPropertyValue(this, visitor);
 	}
 
@@ -33,5 +43,25 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> {
 		copy.setValue(getValue());
 		
 		return copy;
+	}
+	
+	@Override
+	public V getValue() {
+		return observableValue.get();
+	}
+
+	@Override
+	public void setValue(final V value) {
+		observableValue.set(value);
+	}
+	
+	@Override
+	public void changed(ObservableValue<? extends V> valueContainer, V oldValue, V newValue) {
+		setChanged(true);
+		applyLabelValue();
+	}
+	
+	public ObservableValue<V> observableValueProperty() {
+		return observableValue;
 	}
 }

@@ -1,9 +1,9 @@
 package de.algorythm.jdoe.model.meta.propertyTypes;
 
-import de.algorythm.jdoe.model.dao.IPropertyValueFactory;
 import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 import de.algorythm.jdoe.model.meta.Property;
 
 public class TText extends AbstractAttributeType<String> {

@@ -1,9 +1,10 @@
 package de.algorythm.jdoe.model.entity;
 
 import java.util.Collection;
+import java.util.Date;
 
-public interface IPropertyValueVisitor<E extends IEntityReference> extends IAttributeValueVisitor {
+public interface IPropertyValueVisitor<REF extends IEntityReference> extends IAttributeValueVisitor {
 
-	void doWithAssociation(IPropertyValue<E,E> propertyValue);
-	void doWithAssociations(IPropertyValue<Collection<E>,E> propertyValue);
+	void doWithAssociation(IPropertyValue<REF,REF> propertyValue);
+	void doWithAssociations(IPropertyValue<Collection<REF>,REF> propertyValue);
 }

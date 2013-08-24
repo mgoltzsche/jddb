@@ -1,11 +1,9 @@
-package de.algorythm.jdoe.model.dao;
+package de.algorythm.jdoe.model.entity;
 
-import de.algorythm.jdoe.model.entity.IEntityReference;
-import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
 
-public interface IPropertyValueFactory<E extends IEntityReference, P extends IPropertyValue<?,E>> {
+public interface IPropertyValueFactory<REF extends IEntityReference, P extends IPropertyValue<?,REF>> {
 
 	P createAssociationValue(Property property);
 	P createAssociationsValue(Property property);

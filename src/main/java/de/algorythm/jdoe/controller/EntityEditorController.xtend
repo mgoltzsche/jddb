@@ -9,7 +9,6 @@ import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
-import java.util.HashMap
 import java.util.LinkedList
 import javafx.fxml.FXML
 import javafx.geometry.Insets
@@ -36,7 +35,6 @@ public class EntityEditorController implements IController, IObserver {
 	val propertyUpdateCallbacks = new LinkedList<Procedure0>
 	var Procedure1<FXEntity> saveCallback
 	val createdContainedEntities = new LinkedList<FXEntityReference>
-	val visibleEntityMap = new HashMap<String,FXEntity>
 	
 	override init() {}
 	

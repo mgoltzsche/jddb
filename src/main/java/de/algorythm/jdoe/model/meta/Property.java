@@ -1,8 +1,8 @@
 package de.algorythm.jdoe.model.meta;
 
-import de.algorythm.jdoe.model.dao.IPropertyValueFactory;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 import de.algorythm.jdoe.model.meta.propertyTypes.TString;
 
 public class Property extends AbstractLabeledElement {
@@ -42,7 +42,7 @@ public class Property extends AbstractLabeledElement {
 		this.searchable = searchable;
 	}
 	
-	public <E extends IEntityReference, P extends IPropertyValue<?,E>> P createPropertyValue(final IPropertyValueFactory<E,P> factory) {
+	public <REF extends IEntityReference, P extends IPropertyValue<?,REF>> P createPropertyValue(final IPropertyValueFactory<REF,P> factory) {
 		return type.createPropertyValue(this, factory);
 	}
 	

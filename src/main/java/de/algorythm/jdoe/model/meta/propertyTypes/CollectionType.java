@@ -3,9 +3,9 @@ package de.algorythm.jdoe.model.meta.propertyTypes;
 import java.io.Serializable;
 import java.util.Collection;
 
-import de.algorythm.jdoe.model.dao.IPropertyValueFactory;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
