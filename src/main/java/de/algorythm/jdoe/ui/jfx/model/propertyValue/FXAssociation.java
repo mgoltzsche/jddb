@@ -62,8 +62,7 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 	@Override
 	public void changed(final ObservableValue<? extends FXEntityReference> refContainer,
 			FXEntityReference oldRef, FXEntityReference newRef) {
-		setChanged(true);
-		applyLabelValue();
+		changed();
 	}
 	
 	public ObservableValue<FXEntityReference> observableValueProperty() {

@@ -40,7 +40,6 @@ import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.DeleteVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.IndexKeywordCollectingVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.LoadVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.SaveVisitor;
-import de.algorythm.jdoe.model.entity.IChangedSetter;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
@@ -66,7 +65,7 @@ public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF 
 	private final HashSet<IObserver> observers = new HashSet<>();
 	private final HashMap<String, Index<Vertex>> searchIndices = new HashMap<>();
 	
-	public DAO(IModelFactory<V, P, REF> modelFactory) {
+	public DAO(final IModelFactory<V, P, REF> modelFactory) {
 		this.modelFactory = modelFactory;
 		
 		final Representer representer = new Representer();
@@ -145,8 +144,6 @@ public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF 
 				final P propertyValue = property.createPropertyValue(modelFactory);
 				
 				propertyValue.doWithValue(visitor);
-				((IChangedSetter) propertyValue).setChanged(false);
-				
 				propertyValues.add(propertyValue);
 			}
 		}
@@ -165,8 +162,6 @@ public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF 
 			final P propertyValue = property.createPropertyValue(modelFactory);
 			
 			propertyValue.doWithValue(visitor);
-			((IChangedSetter) propertyValue).setChanged(false);
-			
 			propertyValues.add(propertyValue);
 		}
 		

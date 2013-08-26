@@ -62,7 +62,6 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 
 	@Override
 	public void onChanged(final Change<? extends FXEntityReference> change) {
-		setChanged(true);
-		applyLabelValue();
+		changed();
 	}
 }

@@ -11,5 +11,6 @@ public interface IPropertyValue<V,REF extends IEntityReference> extends Serializ
 	void doWithValue(IPropertyValueVisitor<REF> visitor);
 	V getValue();
 	void setValue(V v);
+	void setChangeHandler(IPropertyValueChangeHandler changeHandler);
 	void toString(StringBuilder sb);
 }

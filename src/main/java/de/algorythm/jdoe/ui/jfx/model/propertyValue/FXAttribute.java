@@ -58,7 +58,6 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 	
 	@Override
 	public void changed(final ObservableValue<? extends V> valueContainer, V oldValue, V newValue) {
-		setChanged(true);
-		applyLabelValue();
+		changed();
 	}
 }

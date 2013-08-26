@@ -27,28 +27,22 @@ public class FXEntity extends AbstractEntity<FXEntityReference,IFXPropertyValue<
 	}
 	
 	
-	private final ArrayList<IFXPropertyValue<?>> values;
 	private final SimpleStringProperty label = new SimpleStringProperty();
 	
 	public FXEntity(final EntityType type, final ArrayList<IFXPropertyValue<?>> values) {
 		super(type, values);
-		this.values = values;
 		
 		applyLabelValue();
 	}
 	
 	public FXEntity(final String id, final EntityType type, final ArrayList<IFXPropertyValue<?>> values) {
 		super(id, type, values);
-		this.values = values;
-		observeValues();
 		
 		applyLabelValue();
 	}
 	
 	public FXEntity(final String id, final EntityType type, final ArrayList<IFXPropertyValue<?>> values, final Collection<FXEntityReference> referringEntities) {
 		super(id, type, values, referringEntities);
-		this.values = values;
-		observeValues();
 		
 		applyLabelValue();
 	}
@@ -57,19 +51,21 @@ public class FXEntity extends AbstractEntity<FXEntityReference,IFXPropertyValue<
 		this(entity.getId(), entity.getType(), copyPropertyValues(entity));
 	}
 	
-	private void observeValues() {
-		for (IFXPropertyValue<?> value : values)
-			value.registerOwner(this);
-	}
-	
 	public void applyLabelValue() {
 		final StringBuilder sb = new StringBuilder();
 		
-		for (IFXPropertyValue<?> value : values)
-			if (value.getProperty().getType().isUserDefined())
-				sb.append(value.labelProperty().get());
+		for (IFXPropertyValue<?> value : values) {
+			if (!value.getProperty().getType().isUserDefined()) {
+				final String propertyValueStr = value.labelProperty().get();
+				
+				if (sb.length() > 0 && !propertyValueStr.isEmpty())
+					sb.append(", ");
+				
+				sb.append(propertyValueStr);
+			}
+		}
 		
-		label.setValue(sb.toString());
+		label.set(sb.toString());
 	}
 	
 	public IFXPropertyValue<?> getValue(int index) {
@@ -106,6 +102,16 @@ public class FXEntity extends AbstractEntity<FXEntityReference,IFXPropertyValue<
 		final IFXPropertyValue<V> otherValue = (IFXPropertyValue<V>) other;
 		
 		propertyValue.setValue(otherValue.getValue());
+	}
+	
+	@Override
+	public boolean changed(final boolean changed) {
+		final boolean result = super.changed(changed);
+		
+		if (changed)
+			applyLabelValue();
+		
+		return result;
 	}
 	
 	@Override

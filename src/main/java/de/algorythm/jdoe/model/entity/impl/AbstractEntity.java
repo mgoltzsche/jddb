@@ -8,15 +8,16 @@ import java.util.UUID;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueChangeHandler;
 import de.algorythm.jdoe.model.meta.EntityType;
 
-public class AbstractEntity<REF extends IEntityReference, P extends IPropertyValue<?, REF>> implements IEntity<REF, P> {
+public class AbstractEntity<REF extends IEntityReference, P extends IPropertyValue<?, REF>> implements IEntity<REF, P>, IPropertyValueChangeHandler {
 
 	static private final long serialVersionUID = 8803662114651751761L;
 	
 	private final String id;
 	private final EntityType type;
-	private final ArrayList<P> values;
+	protected final ArrayList<P> values;
 	private final Collection<REF> referencingEntities;
 	
 	public AbstractEntity(final EntityType type, final ArrayList<P> values) {
@@ -28,6 +29,7 @@ public class AbstractEntity<REF extends IEntityReference, P extends IPropertyVal
 		this.type = type;
 		this.values = values;
 		this.referencingEntities = referencingEntities;
+		registerAsPropertyValueChangeHandler();
 	}
 	
 	public AbstractEntity(final String id, final EntityType type, final ArrayList<P> values) {
@@ -35,6 +37,7 @@ public class AbstractEntity<REF extends IEntityReference, P extends IPropertyVal
 		this.type = type;
 		referencingEntities = null;
 		this.values = values;
+		registerAsPropertyValueChangeHandler();
 	}
 	
 	@Override
@@ -64,6 +67,16 @@ public class AbstractEntity<REF extends IEntityReference, P extends IPropertyVal
 	@Override
 	public Iterable<REF> getReferencingEntities() {
 		return referencingEntities;
+	}
+	
+	private void registerAsPropertyValueChangeHandler() {
+		for (P value : values)
+			value.setChangeHandler(this);
+	}
+	
+	@Override
+	public boolean changed(final boolean changed) {
+		return changed;
 	}
 	
 	@Override
