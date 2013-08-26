@@ -1,7 +1,6 @@
 package de.algorythm.jdoe.ui.jfx.util;
 
 import de.algorythm.jdoe.controller.EntityEditorController
-import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.ViewData
@@ -12,18 +11,11 @@ import javafx.scene.control.TabPane
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
-import org.slf4j.LoggerFactory
-
-import static javafx.application.Platform.*
-import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 
 @Singleton
 public class ViewRegistry implements IEntityEditorManager {
-
-	static val LOG = LoggerFactory.getLogger(typeof(ViewRegistry))
-
+	
 	@Inject extension GuiceFxmlLoader
-	@Inject extension IDAO<FXEntityReference,IFXPropertyValue<?>,FXEntity>
 	val viewMap = new HashMap<String, ViewData>
 	var TabPane tabPane
 	
@@ -31,44 +23,28 @@ public class ViewRegistry implements IEntityEditorManager {
 		this.tabPane = tabPane
 	}
 	
-	override showEntityEditor(FXEntity entity) {
-		showEntityEditor(entity, null)
+	override showEntityEditor(FXEntityReference entityRef) {
+		showEntityEditor(entityRef, null)
 	}
 	
 	override showEntityEditor(FXEntityReference entityRef, Procedure1<FXEntity> saveCallback) {
-		runTask [|
-			try {
-				val entity = entityRef.find
-				
-				runLater [|
-					entity.showEntityEditor(saveCallback)
-				]
-			} catch(IllegalArgumentException e) {
-				LOG.debug('''Cannot open entity editor for «entityRef»(«entityRef») because the entity does not exist''')
-			}
-		]
-	}
-	
-	override showEntityEditor(FXEntity entity, Procedure1<FXEntity> saveCallback) {
-		val entityId = entity.id
+		val entityId = entityRef.id
 		val existingViewData = viewMap.get(entityId)
 		
 		if (existingViewData == null) { // create tab
 			val loaderResult = <Node, EntityEditorController>load('/fxml/entity_editor.fxml')
 			
-			loaderResult.controller.init(entity, saveCallback)
-			
 			val tab = new Tab
+			
+			loaderResult.controller.init(tab.textProperty, entityRef, saveCallback)
 			
 			tab.content = loaderResult.node
 			
 			tabPane.tabs += tab
 			
-			val viewData = new ViewData(tab, entity, loaderResult.controller)
+			val viewData = new ViewData(tab, entityRef, loaderResult.controller)
 			
 			viewMap.put(entityId, viewData)
-			
-			tab.textProperty.bind(entity.labelProperty)
 			
 			tab.setOnClosed [
 				viewMap.remove(entityId)

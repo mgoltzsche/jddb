@@ -14,7 +14,7 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociations;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAttribute;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
 
-public class FXModelFactory implements IModelFactory<FXEntity, FXEntityReference, IFXPropertyValue<?>> {
+public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 
 	@Override
 	public FXEntity createTransientEntity(EntityType type,

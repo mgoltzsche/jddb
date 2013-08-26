@@ -9,7 +9,8 @@ import com.google.inject.Guice;
 
 public class JavaDbObjectEditor extends Application {
 
-	@Inject private JavaDbObjectEditorFacade facade;
+	@Inject
+	private JavaDbObjectEditorFacade facade;
 
 	public static void main(final String[] args) {
 		launch(args);
@@ -22,7 +23,7 @@ public class JavaDbObjectEditor extends Application {
 
 		facade.startApplication(primaryStage);
 	}
-	
+
 	@Override
 	public void stop() throws Exception {
 		facade.stopApplication();

@@ -11,6 +11,8 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
+
 import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.entity.IEntity;
@@ -65,15 +67,15 @@ public class DAO implements IDAO {
 		//db.setSchema(schema);
 	}
 
-	@Override
+/*	@Override
 	public void save(IEntity entity) {
 		db.getEntities().add(entity);
 	}
 
 	@Override
-	public void delete(IEntity entity) {
-		db.getEntities().remove(entity);
-	}
+	public void delete(IEntityReference entityRef) {
+		db.getEntities().remove(entityRef);
+	}*/
 
 	@Override
 	public IEntity createEntity(EntityType type) {
@@ -115,5 +117,11 @@ public class DAO implements IDAO {
 	public boolean exists(IEntityReference entityRef) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public void transaction(Procedure1 transaction) {
+		// TODO Auto-generated method stub
+		
 	}
 }

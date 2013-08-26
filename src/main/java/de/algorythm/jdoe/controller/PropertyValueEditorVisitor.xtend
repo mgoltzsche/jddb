@@ -3,7 +3,6 @@ package de.algorythm.jdoe.controller
 import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.entity.IPropertyValue
-import de.algorythm.jdoe.model.entity.IPropertyValueVisitor
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
 import de.algorythm.jdoe.taskQueue.TaskQueue
@@ -11,8 +10,10 @@ import de.algorythm.jdoe.ui.jfx.cell.AssociationContainmentCell
 import de.algorythm.jdoe.ui.jfx.controls.EntityField
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
-import de.algorythm.jdoe.ui.jfx.model.ValueContainer
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociation
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociations
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValueVisitor
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.text.NumberFormat
 import java.text.ParseException
@@ -33,35 +34,34 @@ import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.slf4j.LoggerFactory
+import javafx.beans.property.StringProperty
 
-import static javafx.application.Platform.*
-
-class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityReference> {
+class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
 	static val LOG = LoggerFactory.getLogger(typeof(PropertyValueEditorVisitor))
 	static val FIELD_ERROR_STYLE_CLASS = 'field-error'
 	static val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
 	static val REAL_PATTERN = Pattern.compile('^\\d+((\\.|,)\\d+)?$')
 
-	@Inject extension IDAO<FXEntityReference,IFXPropertyValue<?>,FXEntity> dao
+	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension TaskQueue
 	@Inject extension IEntityEditorManager editorManager
 	@Inject Bundle bundle
 	var GridPane gridPane
 	var int row
-	var Collection<Procedure0> saveCallbacks
 	var Collection<Procedure0> updateCallbacks
 	var Collection<FXEntityReference> createdContainedEntities
+	var FXEntity entity
 	
-	new(GridPane gridPane, int row, Collection<FXEntityReference> createdContainedEntities, Collection<Procedure0> saveCallbacks, Collection<Procedure0> updateCallbacks) {
+	new(GridPane gridPane, int row, FXEntity entity, Collection<FXEntityReference> createdContainedEntities, Collection<Procedure0> updateCallbacks) {
 		this.gridPane = gridPane
 		this.row = row
-		this.saveCallbacks = saveCallbacks
+		this.entity = entity
 		this.updateCallbacks = updateCallbacks
 		this.createdContainedEntities = createdContainedEntities
 	}
 
-	override doWithAssociations(IPropertyValue<Collection<FXEntityReference>,FXEntityReference> propertyValue) {
+	override doWithAssociations(FXAssociations propertyValue) {
 		val property = propertyValue.property
 		val collectionType = property.type as CollectionType
 		val entityType = collectionType.itemType
@@ -71,7 +71,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityRefere
 		val vBoxChildren = vBox.children
 		
 		selectedEntities.cellFactory = AssociationContainmentCell.FACTORY
-		selectedEntities.items.all = propertyValue.value
+		selectedEntities.itemsProperty.bindBidirectional(propertyValue.valueProperty);
 		
 		if (property.containment) {
 			vBoxChildren += selectedEntities
@@ -98,7 +98,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityRefere
 			val hBoxChildren = hBox.children
 			val createButton = new Button(bundle.create)
 			val addEntityField = new EntityField [searchPhrase,it|
-				runReplacedTask('search-associations') [|
+				runReplacedTask('''search-«entity.id»-«property.name»''') [|
 					all = entityType.list(searchPhrase)
 				]
 			]
@@ -124,8 +124,7 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityRefere
 			]
 			
 			createButton.setOnAction [
-				entityType.createEntity.showEntityEditor [
-					save
+				entityType.createEntity.showEntityEditor [FXEntity it|
 					selectedEntities.items += it
 				]
 			]
@@ -148,92 +147,58 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityRefere
 		}
 		
 		gridPane.add(vBox, 1, row)
-		
-		saveCallbacks += [|
-			propertyValue.value = selectedEntities.items
-		]
 	}
 	
-	override doWithAssociation(IPropertyValue<FXEntityReference,FXEntityReference> propertyValue) {
+	override doWithAssociation(FXAssociation propertyValue) {
 		val property = propertyValue.property
 		val entityType = property.type as EntityType
-		val entity = propertyValue.value
+		val noRef = propertyValue.value == null
 		val HBox hBox = new HBox
 		val hBoxChildren = hBox.children
 		val removeButton = new Button(bundle.remove)
-		val editButtonLabel = if (entity == null)
+		val editButtonLabel = if (noRef) {
+				removeButton.disable = true
+				bundle.create
+			} else
+				bundle.edit
+		val editButton = new Button(editButtonLabel)
+		
+		removeButton.setOnAction [
+			if (property.containment)
+				propertyValue.value.closeEntityEditor
+			
+			propertyValue.value = null
+		]
+		
+		propertyValue.valueProperty.addListener [c,o,value|
+			val isNull = value == null
+			removeButton.disable = isNull
+			editButton.text = if (isNull)
 					bundle.create
 				else
 					bundle.edit
-		val editButton = new Button(editButtonLabel)
-		
-		if (entity == null)
-			removeButton.disable = true
+		]
 		
 		if (property.containment) {
-			val valueContainer = new ValueContainer<FXEntityReference>
 			val label = new Label
 			
-			if (entity != null) {
-				valueContainer.value = entity
-				label.textProperty.bind(valueContainer.value.labelProperty)
-			}
+			label.textProperty.bind(propertyValue.labelProperty)
 			
 			hBoxChildren += label
 			hBoxChildren += editButton
 			hBoxChildren += removeButton
 			
 			editButton.setOnAction [
-				var value = valueContainer.value
-				
-				if (value == null) {
-					value = entityType.createEntity
-					valueContainer.value = value
-					editButton.text = bundle.edit
-					removeButton.disable = false
-					createdContainedEntities += value
+				if (propertyValue.value == null) { 
+					propertyValue.value = entityType.createEntity
+					createdContainedEntities += propertyValue.value
 				}
 				
-				label.textProperty.bind(value.labelProperty)
-				
-				value.showEntityEditor []
-			]
-			
-			removeButton.setOnAction [
-				val containedEntity = valueContainer.value
-				valueContainer.value = null
-				label.textProperty.unbind
-				label.text = ''
-				editButton.text = bundle.create
-				containedEntity.closeEntityEditor
-				removeButton.disable = true
-			]
-			
-			saveCallbacks += [|
-				propertyValue.value = valueContainer.value
-			]
-			
-			updateCallbacks += [|
-				val containerValue = valueContainer.value
-				
-				if (containerValue != null) {
-					if (containerValue.update) {
-						runLater [|
-							containerValue.applyPropertyValues
-						]
-					} else {
-						runLater [|
-							label.textProperty.unbind
-							label.text = ''
-							valueContainer.value = null
-							editButton.text = bundle.create
-						]
-					}
-				}
+				propertyValue.value.showEntityEditor []
 			]
 		} else {
 			val entityField = new EntityField [searchPhrase,it|
-				runReplacedTask('search-association') [|
+				runReplacedTask('''search-«entity.id»-«property.name»''') [|
 					all = entityType.list(searchPhrase)
 				]
 			]
@@ -242,56 +207,18 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityRefere
 			hBoxChildren += editButton
 			hBoxChildren += removeButton
 			
-			entityField.value = propertyValue.value
-			
-			entityField.valueProperty.addListener [
-				removeButton.disable = entityField.value == null
-				editButton.text = if (removeButton.disable)
-						bundle.create
-					else
-						bundle.create
-			]
+			entityField.valueProperty.bindBidirectional(propertyValue.valueProperty)
 			
 			editButton.setOnAction [
 				val selectedEntity = entityField.value
 				
 				if (selectedEntity == null) {
 					entityType.createEntity.showEntityEditor [
-						save
-						entityField.value = it
-						removeButton.disable = false
+						propertyValue.value = it
 					]
 				} else {
 					selectedEntity.showEntityEditor
 				}
-			]
-			
-			removeButton.setOnAction [
-				entityField.value = null
-				removeButton.disable = true
-			]
-			
-			saveCallbacks += [|
-				propertyValue.value = entityField.value
-			]
-			
-			updateCallbacks += [|
-				val selectedEntity = entityField.value
-				
-				if (selectedEntity != null) {
-					if (selectedEntity.update) {
-						runLater [|
-							selectedEntity.applyPropertyValues
-						]
-					} else {
-						runLater [|
-							entityField.value = null
-							removeButton.disable = true
-						]
-					}
-				}
-				
-				entityField.update
 			]
 		}
 		
@@ -308,24 +235,26 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityRefere
 		]
 		
 		gridPane.add(checkBox, 1, row)
-		
-		saveCallbacks += [|
-			propertyValue.value = checkBox.selected
-		]
 	}
 
 	override doWithDecimal(IPropertyValue<Long,?> propertyValue) {
 		val textField = new TextField(propertyValue.toString)
 		
-		textField.validate [
-			empty || DECIMAL_PATTERN.matcher(it).matches
+		textField.assign [
+			var Long value = null
+			
+			val valid = if (empty || DECIMAL_PATTERN.matcher(it).matches) {
+				value = textField.text.asLong
+				true
+			} else
+				false
+			
+			propertyValue.value = value
+			
+			valid
 		]
 		
 		gridPane.add(textField, 1, row)
-		
-		saveCallbacks += [|
-			propertyValue.value = textField.text.asLong
-		]
 	}
 	
 	def private asLong(String txt) {
@@ -337,120 +266,103 @@ class PropertyValueEditorVisitor implements IPropertyValueVisitor<FXEntityRefere
 			}
 		}
 		
-		return null
+		null
 	}
 
 	override doWithReal(IPropertyValue<Double,?> propertyValue) {
 		val textField = new TextField(propertyValue.toString)
 		
-		gridPane.add(textField, 1, row)
-		
-		textField.validate [
-			if (empty)
+		textField.assign [
+			var Double value = null
+			val valid = if (empty)
 				true
-			else
-				try {
-					asNumber
-					REAL_PATTERN.matcher(it).matches
-				} catch(ParseException e) {
-					false
-				}
+			else {
+				val no = asNumber
+				val matchesPattern = REAL_PATTERN.matcher(it).matches
+				
+				if (matchesPattern && no != null)
+					value = no.doubleValue
+				
+				matchesPattern
+			}
+			
+			propertyValue.value = value
+			
+			valid
 		]
 		
-		saveCallbacks += [|
-			try {
-				val number = textField.text.asNumber
-				
-				propertyValue.value = if (number == null)	
-						null
-					else
-						number.doubleValue
-			} catch(ParseException e) {
-				propertyValue.value = null
-				LOG.warn('Invalid real format: ' + textField.text)
-			}
-		]
+		gridPane.add(textField, 1, row)
 	}
 	
 	def private asNumber(String dbl) {
 		var txt = dbl
 		
-		return if (txt != null && !txt.empty)
-				NumberFormat.instance.parse(txt)
-			else
-				null
+		if (txt != null && !txt.empty) {
+			try {
+				return NumberFormat.instance.parse(txt)
+			} catch(ParseException e) {
+				LOG.warn('Invalid real format: ' + txt)
+			}
+		}
+		
+		null
 	}
 
 	override doWithDate(IPropertyValue<Date,?> propertyValue) {
 		val format = new SimpleDateFormat
 		val textField = new TextField(propertyValue.toString)
 		
-		textField.validate [
-			if (empty) {
+		textField.assign [
+			var Date value = null
+			val valid = if (empty) {
 				true
 			} else {
 				try {
-					format.parse(it)
+					value = format.parse(it)
 					true
 				} catch(ParseException e) {
+					LOG.warn('Invalid date format: ' + it)
 					false
 				}
 			}
+			
+			propertyValue.value = value
+			
+			valid
 		]
 		
 		gridPane.add(textField, 1, row)
-		
-		saveCallbacks += [|
-			val txt = textField.text
-			
-			propertyValue.value = if (txt == null || txt.empty)
-					null
-				else
-					try {
-						format.parse(txt)
-					} catch(ParseException e) {
-						LOG.warn('Invalid date format: ' + txt)
-						null
-					}
-		]
 	}
 
 	override doWithString(IPropertyValue<String,?> propertyValue) {
-		val textField = new TextField(propertyValue.value)
+		val textField = new TextField
 		
+		propertyValue.bindStringProperty(textField.textProperty)
 		gridPane.add(textField, 1, row)
-		
-		saveCallbacks += [|
-			val txt = textField.text
-			
-			propertyValue.value = if (txt == null || txt.empty)
-					null
-				else
-					txt
-		]
 	}
 
 	override doWithText(IPropertyValue<String,?> propertyValue) {
-		val textArea = new TextArea(propertyValue.value)
+		val textArea = new TextArea
 		
+		propertyValue.bindStringProperty(textArea.textProperty)
 		gridPane.add(textArea, 1, row)
-		
-		saveCallbacks += [|
-			val txt = textArea.text
-			
-			propertyValue.value = if (txt == null || txt.empty)
-					null
-				else
-					txt
+	}
+	
+	def private void bindStringProperty(IPropertyValue<String,?> propertyValue, StringProperty textProperty) {
+		textProperty.addListener [c,o,value|
+			propertyValue.value = if (value.empty)
+				null
+			else
+				value
 		]
 	}
 	
-	def private void validate(TextField field, Function1<String, Boolean> validator) {
+	def private void assign(TextField field, Function1<String, Boolean> validator) {
 		field.textProperty.addListener [c,o,newValue|
-			if (!validator.apply(newValue))
-				field.styleClass += FIELD_ERROR_STYLE_CLASS
-			else
+			if (validator.apply(newValue))
 				field.styleClass -= FIELD_ERROR_STYLE_CLASS
+			else
+				field.styleClass += FIELD_ERROR_STYLE_CLASS
 		]
 	}
 }

@@ -35,7 +35,7 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 
 public class MainController implements IController, IObserver {
 	
-	@Inject extension IDAO<FXEntityReference,IFXPropertyValue<?>,FXEntity> dao
+	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension TaskQueue
 	@Inject extension JavaDbObjectEditorFacade facade
 	@Inject extension ViewRegistry

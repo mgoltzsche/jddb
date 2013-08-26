@@ -12,6 +12,7 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 
 	static private final long serialVersionUID = 4112630308772125334L;
 	
+	
 	private final AbstractAttributeType<V> type;
 	private final SimpleObjectProperty<V> observableValue = new SimpleObjectProperty<>();
 	
@@ -27,7 +28,7 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 	}
 	
 	@Override
-	public void doWithObservableValue(final IFXPropertyValueVisitor visitor) {
+	public void doWithValue(final IFXPropertyValueVisitor visitor) {
 		type.doWithPropertyValue(this, visitor);
 	}
 
@@ -56,12 +57,8 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 	}
 	
 	@Override
-	public void changed(ObservableValue<? extends V> valueContainer, V oldValue, V newValue) {
+	public void changed(final ObservableValue<? extends V> valueContainer, V oldValue, V newValue) {
 		setChanged(true);
 		applyLabelValue();
-	}
-	
-	public ObservableValue<V> observableValueProperty() {
-		return observableValue;
 	}
 }

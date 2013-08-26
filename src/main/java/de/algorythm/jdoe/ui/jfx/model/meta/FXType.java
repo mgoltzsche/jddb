@@ -1,6 +1,6 @@
 package de.algorythm.jdoe.ui.jfx.model.meta;
 
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.ILabeledElement;
 
@@ -21,7 +21,15 @@ public class FXType extends FXPropertyType<EntityType> implements ILabeledElemen
 		labelProperty.setValue(label);
 	}
 	
-	public StringProperty labelProperty() {
+	public ReadOnlyStringProperty labelProperty() {
 		return labelProperty;
+	}
+	
+	public boolean isEmbedded() {
+		return businessModel.isEmbedded();
+	}
+	
+	public void setEmbedded(final boolean embedded) {
+		businessModel.setEmbedded(embedded);
 	}
 }

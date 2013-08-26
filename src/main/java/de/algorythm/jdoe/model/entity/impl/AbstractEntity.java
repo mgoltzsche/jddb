@@ -18,11 +18,9 @@ public class AbstractEntity<REF extends IEntityReference, P extends IPropertyVal
 	private final EntityType type;
 	private final ArrayList<P> values;
 	private final Collection<REF> referencingEntities;
-	private transient boolean transientInstance;
 	
 	public AbstractEntity(final EntityType type, final ArrayList<P> values) {
 		this(UUID.randomUUID().toString(), type, values, new LinkedList<REF>());
-		transientInstance = true;
 	}
 	
 	public AbstractEntity(final String id, final EntityType type, final ArrayList<P> values, final Collection<REF> referencingEntities) {
@@ -42,10 +40,6 @@ public class AbstractEntity<REF extends IEntityReference, P extends IPropertyVal
 	@Override
 	public String getId() {
 		return id;
-	}
-	
-	public void setTransientInstance(final boolean transientInstance) {
-		this.transientInstance = transientInstance;
 	}
 	
 	@Override
@@ -70,19 +64,6 @@ public class AbstractEntity<REF extends IEntityReference, P extends IPropertyVal
 	@Override
 	public Iterable<REF> getReferencingEntities() {
 		return referencingEntities;
-	}
-	
-	@Override
-	public boolean isTransientInstance() {
-		return transientInstance;
-	}
-	
-	@Override
-	public IEntity<?,?> getTransientInstance() {
-		if (!transientInstance)
-			throw new IllegalStateException();
-		
-		return this;
 	}
 	
 	@Override

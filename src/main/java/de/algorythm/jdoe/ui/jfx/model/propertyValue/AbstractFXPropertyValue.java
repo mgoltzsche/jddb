@@ -4,6 +4,7 @@ import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import de.algorythm.jdoe.model.entity.IChangedSetter;
 import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.ui.jfx.model.FXEntity;
 
 public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V>, IChangedSetter {
 
@@ -13,6 +14,7 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V>,
 	private final Property property;
 	private final SimpleStringProperty label = new SimpleStringProperty(EMPTY);
 	private boolean changed;
+	private FXEntity owner;
 	
 	public AbstractFXPropertyValue(final Property property) {
 		this.property = property;
@@ -31,11 +33,19 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V>,
 	@Override
 	public void setChanged(final boolean changed) {
 		this.changed = changed;
+		
+		if (changed)
+			owner.applyLabelValue();
 	}
 
 	@Override
 	public ReadOnlyStringProperty labelProperty() {
 		return label;
+	}
+	
+	@Override
+	public void registerOwner(final FXEntity owner) {
+		this.owner = owner;
 	}
 	
 	protected void applyLabelValue() {

@@ -12,15 +12,18 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.inject.Singleton;
 
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.representer.Representer;
 
 import com.tinkerpop.blueprints.CloseableIterable;
 import com.tinkerpop.blueprints.Direction;
@@ -30,25 +33,24 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import de.algorythm.jdoe.model.dao.IDAO;
+import de.algorythm.jdoe.model.dao.IDAOTransactionContext;
 import de.algorythm.jdoe.model.dao.IModelFactory;
 import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.DeleteVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.IndexKeywordCollectingVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.LoadVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.SaveVisitor;
+import de.algorythm.jdoe.model.entity.IChangedSetter;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
-import de.algorythm.jdoe.model.entity.IChangedSetter;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
-import de.algorythm.jdoe.model.entity.impl.AbstractEntity;
-import de.algorythm.jdoe.model.entity.impl.propertyValue.AbstractPropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.Schema;
 
 @Singleton
-public class DAO<V extends IEntity<REF,P>, REF extends IEntityReference, P extends IPropertyValue<?,REF>> implements IDAO<REF,P,V>, IDAOVisitorContext<REF,P> {
+public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> implements IDAO<V,P,REF>, IDAOVisitorContext<REF,P>, IDAOTransactionContext<REF,P> {
 	
 	static private final Logger LOG = LoggerFactory.getLogger(DAO.class);
 	
@@ -57,15 +59,19 @@ public class DAO<V extends IEntity<REF,P>, REF extends IEntityReference, P exten
 	static private final String SEARCH_INDEX = "searchIndex";
 	static private final Pattern WORD_PATTERN = Pattern.compile("[\\w]+");
 	
-	private final IModelFactory<V, REF, P> modelFactory;
-	private final Yaml yaml = new Yaml();
+	private final IModelFactory<V, P, REF> modelFactory;
+	private final Yaml yaml;
 	private Schema schema;
 	private OrientGraph graph;
 	private final HashSet<IObserver> observers = new HashSet<>();
 	private final HashMap<String, Index<Vertex>> searchIndices = new HashMap<>();
 	
-	public DAO(IModelFactory<V, REF, P> modelFactory) {
+	public DAO(IModelFactory<V, P, REF> modelFactory) {
 		this.modelFactory = modelFactory;
+		
+		final Representer representer = new Representer();
+        representer.getPropertyUtils().setSkipMissingProperties(true);
+        yaml = new Yaml(representer);
 	}
 	
 	public void open() throws IOException {
@@ -181,38 +187,20 @@ public class DAO<V extends IEntity<REF,P>, REF extends IEntityReference, P exten
 	
 	@Override
 	public void save(final IEntity<REF,P> entity) {
-		if (!entity.isChanged())
-			return;
-		
-		final LinkedList<IEntity<REF,P>> savedEntities = new LinkedList<>();
-		
-		try {
-			saveInTransaction(entity, savedEntities);
-			graph.commit();
-		} catch(Throwable e) {
-			graph.rollback();
-			
-			throw e;
-		}
-		
-		// set entity unchanged
-		for (IEntity<REF,P> savedEntity : savedEntities) {
-			((AbstractEntity<REF,P>) savedEntity).setTransientInstance(false);
-			
-			for (IPropertyValue<?,REF> propertyValue : savedEntity.getValues())
-				((AbstractPropertyValue<?,REF>) propertyValue).setChanged(false);
-		}
-		
-		notifyObservers();
+		if (entity.isChanged())
+			save(entity, new HashMap<IEntity<REF,P>, Vertex>());
 	}
 	
 	@Override
-	public Vertex saveInTransaction(final IEntity<REF,P> entity, final Collection<IEntity<REF,P>> savedEntities) {
-		Vertex vertex = findVertex(entity);
+	public Vertex save(final IEntity<REF,P> entity, final Map<IEntity<REF,P>, Vertex> savedEntities) {
+		Vertex vertex = savedEntities.get(entity);
+		
+		if (vertex != null)
+			return vertex;
+		
+		vertex = findVertex(entity);
 		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
 		final Set<String> oldIndexKeywords;
-		
-		savedEntities.add(entity);
 		
 		if (vertex == null) { // create new vertex
 			vertex = graph.addVertex(null);
@@ -222,6 +210,8 @@ public class DAO<V extends IEntity<REF,P>, REF extends IEntityReference, P exten
 		} else {
 			oldIndexKeywords = createIndexKeywords(createEntity(vertex));
 		}
+		
+		savedEntities.put(entity, vertex);
 		
 		final Set<String> indexKeywords = new HashSet<>();
 		final SaveVisitor<REF,P> visitor = new SaveVisitor<>(this, vertex, savedEntities, WORD_PATTERN, indexKeywords);
@@ -256,20 +246,7 @@ public class DAO<V extends IEntity<REF,P>, REF extends IEntityReference, P exten
 	}
 	
 	@Override
-	public void delete(final IEntity<REF,P> entity) {
-		try {
-			deleteInTransaction(entity);
-			graph.commit();
-		} catch(Throwable e) {
-			graph.rollback();
-			throw e;
-		}
-		
-		notifyObservers();
-	}
-	
-	@Override
-	public void deleteInTransaction(final IEntityReference entityRef) {
+	public void delete(final IEntityReference entityRef) {
 		final Vertex vertex;
 		
 		try {
@@ -298,11 +275,6 @@ public class DAO<V extends IEntity<REF,P>, REF extends IEntityReference, P exten
 		
 		// remove vertex
 		vertex.remove();
-	}
-	
-	private void notifyObservers() {
-		for (IObserver observer : new LinkedList<IObserver>(observers))
-			observer.update();
 	}
 	
 	@Override
@@ -407,5 +379,24 @@ public class DAO<V extends IEntity<REF,P>, REF extends IEntityReference, P exten
 		} catch(IllegalArgumentException e) {
 			return false;
 		}
+	}
+
+	@Override
+	public void transaction(Procedure1<IDAOTransactionContext<REF, P>> transaction) {
+		try {
+			transaction.apply(this);
+			graph.commit();
+		} catch(Throwable e) {
+			graph.rollback();
+			
+			throw e;
+		}
+		
+		notifyObservers();
+	}
+	
+	private void notifyObservers() {
+		for (IObserver observer : new LinkedList<IObserver>(observers))
+			observer.update();
 	}
 }

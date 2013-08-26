@@ -14,6 +14,7 @@ public class EntityType extends AbstractLabeledElement implements IPropertyType<
 	static public final EntityType ALL = new EntityType("All");
 	
 	private Collection<Property> properties = new LinkedList<>();
+	private boolean embedded;
 
 	public EntityType() {
 		setLabel("New type");
@@ -29,6 +30,14 @@ public class EntityType extends AbstractLabeledElement implements IPropertyType<
 	
 	public void setProperties(final Collection<Property> properties) {
 		this.properties = properties;
+	}
+	
+	public boolean isEmbedded() {
+		return embedded;
+	}
+	
+	public void setEmbedded(final boolean embedded) {
+		this.embedded = embedded;
 	}
 	
 	@Override

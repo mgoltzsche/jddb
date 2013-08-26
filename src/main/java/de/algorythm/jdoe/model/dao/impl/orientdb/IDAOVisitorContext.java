@@ -1,6 +1,6 @@
 package de.algorythm.jdoe.model.dao.impl.orientdb;
 
-import java.util.Collection;
+import java.util.Map;
 
 import com.tinkerpop.blueprints.Vertex;
 
@@ -12,6 +12,6 @@ public interface IDAOVisitorContext<REF extends IEntityReference, P extends IPro
 
 	REF createEntityReference(Vertex vertex);
 	Vertex findVertex(IEntityReference entityRef);
-	Vertex saveInTransaction(IEntity<REF,P> entity, Collection<IEntity<REF,P>> savedEntities);
-	void deleteInTransaction(IEntityReference entity);
+	Vertex save(IEntity<REF,P> entity, Map<IEntity<REF,P>, Vertex> savedEntities);
+	void delete(IEntityReference entity);
 }

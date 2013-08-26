@@ -18,6 +18,7 @@ import javafx.scene.input.KeyCode
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2
 
 import static javafx.application.Platform.*
+import javafx.beans.property.ObjectProperty
 
 public class EntityField extends TextField implements ChangeListener<String> {
 	
@@ -99,7 +100,7 @@ public class EntityField extends TextField implements ChangeListener<String> {
 		error = false
 	}
 	
-	def ObservableValue<FXEntityReference> valueProperty() {
+	def ObjectProperty<FXEntityReference> valueProperty() {
 		value
 	}
 	

@@ -21,7 +21,7 @@ public class DeleteVisitor<REF extends IEntityReference, P extends IPropertyValu
 	public void doWithAssociations(final IPropertyValue<Collection<REF>,REF> propertyValue) {
 		if (propertyValue.getProperty().isContainment())
 			for (REF entityRef : propertyValue.getValue())
-				dao.deleteInTransaction(entityRef);
+				dao.delete(entityRef);
 	}
 	
 	@Override
@@ -30,7 +30,7 @@ public class DeleteVisitor<REF extends IEntityReference, P extends IPropertyValu
 			final REF entityRef = propertyValue.getValue();
 			
 			if (entityRef != null)
-				dao.deleteInTransaction(entityRef);
+				dao.delete(entityRef);
 		}
 	}
 }

@@ -13,8 +13,7 @@ public interface IEntityEditorManager {
 	 * @param saveCallback is called instead of saving the entity if not null 
 	 * @return the view ID
 	 */
-	void showEntityEditor(FXEntity entity, Procedure1<FXEntity> saveCallback);
-	void showEntityEditor(FXEntityReference entity, Procedure1<FXEntity> saveCallback);
-	void showEntityEditor(FXEntity entity);
-	void closeEntityEditor(FXEntityReference entity);
+	void showEntityEditor(FXEntityReference entityRef, Procedure1<FXEntity> saveCallback);
+	void showEntityEditor(FXEntityReference entityRef);
+	void closeEntityEditor(FXEntityReference entityRef);
 }

@@ -1,7 +1,7 @@
 package de.algorythm.jdoe.ui.jfx.model.meta;
 
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 
 public class FXPropertyType<V extends IPropertyType<?>> {
@@ -18,7 +18,7 @@ public class FXPropertyType<V extends IPropertyType<?>> {
 		return businessModel;
 	}
 	
-	public StringProperty labelProperty() {
+	public ReadOnlyStringProperty labelProperty() {
 		return labelProperty;
 	}
 

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -20,10 +21,10 @@ import de.algorythm.jdoe.model.meta.Property;
 public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<?, REF>> extends IndexKeywordCollectingVisitor<REF> {
 	
 	private final Vertex vertex;
-	private final Collection<IEntity<REF,P>> savedEntities;
+	private final Map<IEntity<REF,P>, Vertex> savedEntities;
 	private final IDAOVisitorContext<REF,P> dao;
 	
-	public SaveVisitor(final IDAOVisitorContext<REF,P> dao, final Vertex vertex, final Collection<IEntity<REF,P>> savedEntities, final Pattern wordPattern, final Set<String> indexKeywords) {
+	public SaveVisitor(final IDAOVisitorContext<REF,P> dao, final Vertex vertex, final Map<IEntity<REF,P>, Vertex> savedEntities, final Pattern wordPattern, final Set<String> indexKeywords) {
 		super(wordPattern, indexKeywords);
 		this.dao = dao;
 		this.vertex = vertex;
@@ -31,6 +32,7 @@ public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void doWithAssociations(final IPropertyValue<Collection<REF>,REF> propertyValue) {
 		if (!propertyValue.isChanged())
 			return;
@@ -43,30 +45,43 @@ public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<
 			existingEdges.add(edge);
 		
 		for (REF entityRef : propertyValue.getValue()) {
-			if (entityRef.isTransientInstance()) { // save new entity
-				@SuppressWarnings("unchecked")
-				final IEntity<REF,P> newEntity = (IEntity<REF,P>) entityRef.getTransientInstance();
-				dao.saveInTransaction(newEntity, savedEntities);
-			}
+			Vertex refVertex;
 			
-			// check existing edge
-			boolean edgeAlreadyExists = false;
-			
-			final Vertex refVertex = dao.findVertex(entityRef);
-			final Iterator<Edge> existingEdgeIter = existingEdges.iterator();
-			
-			while (existingEdgeIter.hasNext()) {
-				final Edge edge = existingEdgeIter.next();
+			try {
+				// associate existing entity
+				refVertex = dao.findVertex(entityRef);
 				
-				if (edge.getVertex(Direction.IN).equals(refVertex)) {
-					edgeAlreadyExists = true;
-					existingEdgeIter.remove();
-					break;
+				// check existing edge
+				boolean edgeAlreadyExists = false;
+				
+				final Iterator<Edge> existingEdgeIter = existingEdges.iterator();
+				
+				while (existingEdgeIter.hasNext()) {
+					final Edge edge = existingEdgeIter.next();
+					
+					if (edge.getVertex(Direction.IN).equals(refVertex)) {
+						edgeAlreadyExists = true;
+						existingEdgeIter.remove();
+						break;
+					}
 				}
-			}
-			
-			if (!edgeAlreadyExists) // save new edge
+				
+				if (!edgeAlreadyExists) // add new edge
+					vertex.addEdge(propertyName, refVertex);
+			} catch(IllegalArgumentException e) {
+				// save and associate new entity
+				final IEntity<REF,P> newEntity;
+				
+				try {
+					newEntity = (IEntity<REF,P>) entityRef;
+				} catch(ClassCastException cce) {
+					throw new IllegalArgumentException("referred entity " + entityRef + "(" + entityRef.getId() + ") does not exist and cannot be created since the referred entity does not implement " + IEntity.class);
+				}
+				
+				refVertex = dao.save(newEntity, savedEntities);
+				
 				vertex.addEdge(propertyName, refVertex);
+			}
 		}
 		
 		// remove invalid edges
@@ -75,6 +90,7 @@ public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void doWithAssociation(final IPropertyValue<REF,REF> propertyValue) {
 		if (!propertyValue.isChanged())
 			return;
@@ -85,16 +101,20 @@ public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<
 		Vertex refVertex = null;
 		
 		if (entityRef != null) {
-			if (entityRef.isTransientInstance()) {
-				@SuppressWarnings("unchecked")
-				final IEntity<REF,P> newEntity = (IEntity<REF,P>) entityRef.getTransientInstance();
-				refVertex = dao.saveInTransaction(newEntity, savedEntities);
-			}
-			
-			try { // find associated vertex
+			try {
+				// associate existing entity
 				refVertex = dao.findVertex(entityRef);
-			} catch(IllegalArgumentException e) { // create 
+			} catch(IllegalArgumentException e) {
+				// save and associate new entity
+				final IEntity<REF,P> newEntity;
 				
+				try {
+					newEntity = (IEntity<REF,P>) entityRef;
+				} catch(ClassCastException cce) {
+					throw new IllegalArgumentException("referred entity " + entityRef + "(" + entityRef.getId() + ") does not exist and cannot be created since the referred entity does not implement " + IEntity.class);
+				}
+				
+				refVertex = dao.save(newEntity, savedEntities);
 			}
 		}
 		
@@ -172,7 +192,7 @@ public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<
 			final IEntityReference referredEntity = dao.createEntityReference(referredVertex);
 			
 			if (property.getType().isConform(referredEntity.getType()))
-				dao.deleteInTransaction(referredEntity);
+				dao.delete(referredEntity);
 		}
 	}
 }

@@ -21,7 +21,7 @@ public class JavaDbObjectEditorFacade {
 
 	@Inject TaskQueue taskQueue
 	@Inject Bundle bundle
-	@Inject IDAO<FXEntityReference,IFXPropertyValue<?>,FXEntity> dao
+	@Inject IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension GuiceFxmlLoader
 	
 	def startApplication(Stage primaryStage) throws IOException {

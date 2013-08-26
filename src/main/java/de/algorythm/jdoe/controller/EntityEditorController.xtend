@@ -10,6 +10,8 @@ import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.util.LinkedList
+import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.StringProperty
 import javafx.fxml.FXML
 import javafx.geometry.Insets
 import javafx.geometry.VPos
@@ -21,29 +23,41 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
 
+import static extension de.algorythm.jdoe.ui.jfx.model.util.ContainmentCollector.*
+
 public class EntityEditorController implements IController, IObserver {
 	
 	@Inject extension TaskQueue
 	@Inject extension IEntityEditorManager
 	@Inject extension Injector
-	@Inject extension IDAO<FXEntityReference,IFXPropertyValue<?>,FXEntity> dao
+	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@FXML var GridPane gridPane
 	@FXML var EditorStateModel editorState
 	var FXEntity transientEntity
-	var FXEntity savedEntity
-	val propertySaveCallbacks = new LinkedList<Procedure0>
 	val propertyUpdateCallbacks = new LinkedList<Procedure0>
 	var Procedure1<FXEntity> saveCallback
 	val createdContainedEntities = new LinkedList<FXEntityReference>
+	val SimpleStringProperty editorTitle = new SimpleStringProperty()
 	
 	override init() {}
 	
-	def init(FXEntity entity, Procedure1<FXEntity> saveCallback) {
-		savedEntity = entity
-		transientEntity = new FXEntity(entity)
+	def init(StringProperty titleProperty, FXEntityReference entityRef, Procedure1<FXEntity> saveCallback) {
 		this.saveCallback = saveCallback
 		
+		editorTitle.set(entityRef.labelProperty.value)
+		titleProperty.bind(editorTitle)
+		
+		runTask('open-editor-' + entityRef.id) [|
+			entityRef.find.initView
+		]
+	}
+	
+	def private initView(FXEntity entity) {
+		transientEntity = entity
+		
 		runLater [|
+			editorTitle.bind(transientEntity.labelProperty)
+			
 			var i = 0
 			
 			for (IFXPropertyValue<?> value : transientEntity.values) {
@@ -54,7 +68,7 @@ public class EntityEditorController implements IController, IObserver {
 				
 				gridPane.add(label, 0, i)
 				
-				val visitor = new PropertyValueEditorVisitor(gridPane, i, createdContainedEntities, propertySaveCallbacks, propertyUpdateCallbacks)
+				val visitor = new PropertyValueEditorVisitor(gridPane, i, transientEntity, createdContainedEntities, propertyUpdateCallbacks)
 				
 				visitor.injectMembers
 				
@@ -69,23 +83,22 @@ public class EntityEditorController implements IController, IObserver {
 	}
 	
 	def save() {
-		for (callback : propertySaveCallbacks)
-			callback.apply
-		
-		if (transientEntity.isTransientInstance || saveCallback == null) {
+		if (transientEntity.type.embedded && transientEntity.exists) {
 			editorState.busy = true
 			val saveEntity = new FXEntity(transientEntity)
+			val containments = transientEntity.allContainments
 			
-			runTask('saving entity') [|
+			runTask('save-entity-' + saveEntity.id) [|
 				runLater [|
 					editorState.busy = true
 				]
 				
 				try {
-					saveEntity.save
-					
-					runLater [|
-						assignSavedEntity(saveEntity)
+					transaction [
+						for (newContainment : containments.filter[e|!e.exists])
+							save(newContainment)
+						
+						save(saveEntity)
 					]
 				} finally {
 					runLater [|
@@ -93,9 +106,11 @@ public class EntityEditorController implements IController, IObserver {
 					]
 				}
 			]
-		} else {
+		}
+		
+		if (saveCallback != null) {
 			saveCallback.apply(transientEntity)
-			assignSavedEntity(transientEntity)
+			saveCallback = null
 		}
 	}
 	
@@ -103,13 +118,15 @@ public class EntityEditorController implements IController, IObserver {
 		editorState.busy = true
 		val deleteEntity = new FXEntity(transientEntity)
 		
-		runTask('deleting entity') [|
+		runTask('delete-entity-' + deleteEntity.id) [|
 			runLater [|
 				editorState.busy = true
 			]
 			
 			try {
-				deleteEntity.delete
+				transaction [
+					delete(deleteEntity)
+				]
 			} finally {
 				runLater [|
 					editorState.busy = false
@@ -119,7 +136,7 @@ public class EntityEditorController implements IController, IObserver {
 	}
 
 	override update() {
-		if (!transientEntity.isTransientInstance || transientEntity.exists)
+		if (transientEntity.exists)
 			for (callback : propertyUpdateCallbacks)
 				callback.apply
 		else
@@ -130,12 +147,7 @@ public class EntityEditorController implements IController, IObserver {
 		removeObserver(this)
 		
 		for (entity : createdContainedEntities)
-			if (!entity.isTransientInstance)
+			if (!entity.exists)
 				entity.closeEntityEditor
-	}
-	
-	def private void assignSavedEntity(FXEntity entity) {
-		savedEntity.assign(entity)
-		transientEntity.transientInstance = entity.isTransientInstance
 	}
 }

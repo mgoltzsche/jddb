@@ -3,13 +3,15 @@ package de.algorythm.jdoe.model.dao;
 import java.io.IOException;
 import java.util.Set;
 
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
+
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Schema;
 
-public interface IDAO<REF extends IEntityReference, P extends IPropertyValue<?, REF>, V extends IEntity<REF,P>> {
+public interface IDAO<V extends IEntity<REF,P>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> {
 	
 	void open() throws IOException;
 	void close() throws IOException;
@@ -21,7 +23,6 @@ public interface IDAO<REF extends IEntityReference, P extends IPropertyValue<?, 
 	Set<V> list(EntityType type, String search);
 	V createEntity(EntityType type);
 	V find(IEntityReference entityRef);
-	void save(IEntity<REF,P> entity);
-	void delete(IEntity<REF,P> entity);
 	boolean exists(IEntityReference entityRef);
+	void transaction(Procedure1<IDAOTransactionContext<REF,P>> transaction);
 }

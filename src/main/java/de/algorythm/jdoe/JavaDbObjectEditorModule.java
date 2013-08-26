@@ -1,6 +1,7 @@
 package de.algorythm.jdoe;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.TypeLiteral;
 
 import de.algorythm.jdoe.bundle.Bundle;
 import de.algorythm.jdoe.model.dao.IDAO;
@@ -17,11 +18,10 @@ public class JavaDbObjectEditorModule extends AbstractModule {
 	
 	@Override
 	protected void configure() {
-		final IModelFactory<FXEntity, FXEntityReference, IFXPropertyValue<?>> modelFactory = new FXModelFactory();
+		final IModelFactory<FXEntity, IFXPropertyValue<?>, FXEntityReference> modelFactory = new FXModelFactory();
 		
-		bind(IDAO.class).to(DAO.class);
 		bind(IEntityEditorManager.class).to(ViewRegistry.class);
 		bind(Bundle.class).toInstance(Bundle.getInstance());
-		bind(IDAO.class).toInstance(new DAO<>(modelFactory));
+		bind(new TypeLiteral<IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference>>() {}).toInstance(new DAO<FXEntity,IFXPropertyValue<?>,FXEntityReference>(modelFactory));
 	}
 }

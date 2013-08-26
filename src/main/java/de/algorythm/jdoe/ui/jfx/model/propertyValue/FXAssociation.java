@@ -1,5 +1,6 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -18,13 +19,13 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 	}
 
 	@Override
-	public void doWithValue(IPropertyValueVisitor<FXEntityReference> visitor) {
+	public void doWithValue(final IPropertyValueVisitor<FXEntityReference> visitor) {
 		visitor.doWithAssociation(this);
 	}
 	
 	@Override
-	public void doWithObservableValue(IFXPropertyValueVisitor visitor) {
-		visitor.doWithAssociation(getProperty(), observableValue);
+	public void doWithValue(final IFXPropertyValueVisitor visitor) {
+		visitor.doWithAssociation(this);
 	}
 
 	@Override
@@ -53,9 +54,13 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 	public void setValue(final FXEntityReference value) {
 		observableValue.set(value);
 	}
+	
+	public ObjectProperty<FXEntityReference> valueProperty() {
+		return observableValue;
+	}
 
 	@Override
-	public void changed(ObservableValue<? extends FXEntityReference> refContainer,
+	public void changed(final ObservableValue<? extends FXEntityReference> refContainer,
 			FXEntityReference oldRef, FXEntityReference newRef) {
 		setChanged(true);
 		applyLabelValue();

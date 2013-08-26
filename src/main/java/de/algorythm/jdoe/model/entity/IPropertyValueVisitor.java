@@ -1,7 +1,6 @@
 package de.algorythm.jdoe.model.entity;
 
 import java.util.Collection;
-import java.util.Date;
 
 public interface IPropertyValueVisitor<REF extends IEntityReference> extends IAttributeValueVisitor {
 

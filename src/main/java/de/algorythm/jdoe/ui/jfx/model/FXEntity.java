@@ -40,6 +40,7 @@ public class FXEntity extends AbstractEntity<FXEntityReference,IFXPropertyValue<
 	public FXEntity(final String id, final EntityType type, final ArrayList<IFXPropertyValue<?>> values) {
 		super(id, type, values);
 		this.values = values;
+		observeValues();
 		
 		applyLabelValue();
 	}
@@ -47,16 +48,21 @@ public class FXEntity extends AbstractEntity<FXEntityReference,IFXPropertyValue<
 	public FXEntity(final String id, final EntityType type, final ArrayList<IFXPropertyValue<?>> values, final Collection<FXEntityReference> referringEntities) {
 		super(id, type, values, referringEntities);
 		this.values = values;
+		observeValues();
 		
 		applyLabelValue();
 	}
 	
 	public FXEntity(final FXEntity entity) {
 		this(entity.getId(), entity.getType(), copyPropertyValues(entity));
-		setTransientInstance(entity.isTransientInstance());
 	}
 	
-	private void applyLabelValue() {
+	private void observeValues() {
+		for (IFXPropertyValue<?> value : values)
+			value.registerOwner(this);
+	}
+	
+	public void applyLabelValue() {
 		final StringBuilder sb = new StringBuilder();
 		
 		for (IFXPropertyValue<?> value : values)

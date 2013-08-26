@@ -23,7 +23,7 @@ class TypeEditorController implements IController {
 
 	static val log = LoggerFactory.getLogger(typeof(TypeEditorController))
 	
-	@Inject extension IDAO<FXEntityReference,IFXPropertyValue<?>,FXEntity> dao
+	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@FXML var ListView<FXType> typeList
 	@FXML var ListView<Property> propertyList
 	@FXML var Button btnAddProperty

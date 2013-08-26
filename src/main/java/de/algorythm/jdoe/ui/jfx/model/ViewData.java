@@ -1,17 +1,17 @@
 package de.algorythm.jdoe.ui.jfx.model;
 
-import de.algorythm.jdoe.controller.EntityEditorController;
 import javafx.scene.control.Tab;
+import de.algorythm.jdoe.controller.EntityEditorController;
 
 public class ViewData {
 
 	private final Tab tab;
-	private final FXEntity entity;
+	private final FXEntityReference entityRef;
 	private final EntityEditorController controller;
 	
-	public ViewData(final Tab tab, final FXEntity entity, final EntityEditorController controller) {
+	public ViewData(final Tab tab, final FXEntityReference entityRef, final EntityEditorController controller) {
 		this.tab = tab;
-		this.entity = entity;
+		this.entityRef = entityRef;
 		this.controller = controller;
 	}
 	
@@ -19,8 +19,8 @@ public class ViewData {
 		return tab;
 	}
 	
-	public FXEntityReference getEntity() {
-		return entity;
+	public FXEntityReference getEntityRef() {
+		return entityRef;
 	}
 	
 	public EntityEditorController getController() {

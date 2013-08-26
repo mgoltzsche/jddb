@@ -3,9 +3,9 @@ package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
@@ -15,9 +15,9 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	static private final long serialVersionUID = -2428408831904938958L;
 	
 	
-	private final ObservableList<FXEntityReference> observableValue = new SimpleListProperty<>();
+	private final ListProperty<FXEntityReference> observableValue = new SimpleListProperty<>();
 
-	public FXAssociations(Property property) {
+	public FXAssociations(final Property property) {
 		super(property);
 		observableValue.addListener(this);
 	}
@@ -28,8 +28,8 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	}
 	
 	@Override
-	public void doWithObservableValue(IFXPropertyValueVisitor visitor) {
-		visitor.doWithAssociations(getProperty(), observableValue);
+	public void doWithValue(final IFXPropertyValueVisitor visitor) {
+		visitor.doWithAssociations(this);
 	}
 	
 	@Override
@@ -52,12 +52,16 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	}
 
 	@Override
-	public void setValue(Collection<FXEntityReference> value) {
+	public void setValue(final Collection<FXEntityReference> value) {
 		observableValue.setAll(value);
+	}
+	
+	public ListProperty<FXEntityReference> valueProperty() {
+		return observableValue;
 	}
 
 	@Override
-	public void onChanged(Change<? extends FXEntityReference> change) {
+	public void onChanged(final Change<? extends FXEntityReference> change) {
 		setChanged(true);
 		applyLabelValue();
 	}
