@@ -204,6 +204,7 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 			vertex = findVertex(entity);
 			oldIndexKeywords = createIndexKeywords(createEntity(vertex));
 		} catch(IllegalArgumentException e) {
+			change.setAdded(true);
 			vertex = graph.addVertex(null);
 			vertex.setProperty(ID, entity.getId());
 			vertex.setProperty(TYPE_FIELD, entity.getType().getName());

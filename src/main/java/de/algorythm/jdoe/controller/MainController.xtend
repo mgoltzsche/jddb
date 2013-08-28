@@ -4,6 +4,7 @@ import de.algorythm.jdoe.JavaDbObjectEditorFacade
 import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
+import de.algorythm.jdoe.model.dao.ModelChange
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.model.meta.Schema
@@ -13,9 +14,10 @@ import de.algorythm.jdoe.ui.jfx.cell.EntityRow
 import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.PropertyCellValueFactory
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.util.ViewRegistry
 import java.io.IOException
-import java.util.Collection
 import java.util.LinkedList
 import javafx.beans.property.SimpleStringProperty
 import javafx.fxml.FXML
@@ -30,9 +32,6 @@ import javafx.scene.control.TextField
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
-import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
-import de.algorythm.jdoe.model.dao.ModelChange
 
 public class MainController implements IController, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -55,6 +54,10 @@ public class MainController implements IController, IObserver<FXEntity, IFXPrope
 		tabPane = tabs
 		
 		schema = dao.schema
+		
+		entityList.items.addListener [
+			listTab.text = '''«bundle.results» («entityList.items.size»)'''
+		]
 		
 		searchField.textProperty.addListener [
 			searchPhrase = searchField.text
@@ -157,13 +160,34 @@ public class MainController implements IController, IObserver<FXEntity, IFXPrope
 		val entities = dao.list(selectedType, searchPhrase)
 		
 		runLater [|
-			entities.updateTableData
+			entityList.items.all = entities
 			entityList.columns.all = columns
 		]
 	}
 	
 	override update(ModelChange<FXEntity, IFXPropertyValue<?>, FXEntityReference> change) {
-		search
+		runLater [|
+			val iter = entityList.items.iterator
+			var i = 0
+			
+			while(iter.hasNext) {
+				val item = iter.next
+				
+				if (change.deleted.contains(item))
+					iter.remove
+				else {
+					val savedEntity = change.saved.get(item.id)
+					
+					if (savedEntity != null) {
+						item.assign(savedEntity)
+						i = i + 1
+					}
+				}
+			}
+			
+			if (i < change.saved.size)
+				search
+		]
 	}
 	
 	def private void search() {
@@ -171,14 +195,9 @@ public class MainController implements IController, IObserver<FXEntity, IFXPrope
 			val entities = dao.list(selectedType, searchPhrase)
 			
 			runLater [|
-				entities.updateTableData
+				entityList.items.all = entities
 			]
 		]
-	}
-	
-	def private updateTableData(Collection<FXEntity> entities) {
-		entityList.items.all = entities
-		listTab.text = '''«bundle.results» («entities.size»)'''
 	}
 	
 	def openDatabase() {

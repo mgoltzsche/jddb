@@ -86,7 +86,7 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 	def save() {
 		if (!transientEntity.type.embedded || transientEntity.exists) {
 			editorState.busy = true
-			val saveEntity = new FXEntity(transientEntity)
+			val saveEntity = new FXEntity(transientEntity) // TODO: also copy associations
 			
 			runTask('save-entity-' + saveEntity.id) [|
 				runLater [|
@@ -139,14 +139,18 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 
 	override update(ModelChange<FXEntity, IFXPropertyValue<?>, FXEntityReference> change) {
 		if (change.deleted.contains(transientEntity))
-			transientEntity.closeEntityEditor
+			runLater [|
+				transientEntity.closeEntityEditor
+			]
 		else {
 			val visitor = new AssociationUpdateVisitor(change)
 			
-			for (propertyValue : transientEntity.values)
-				propertyValue.doWithValue(visitor)
-//			for (callback : propertyUpdateCallbacks)
-//				callback.apply
+			runLater [|
+				for (propertyValue : transientEntity.values)
+					propertyValue.doWithValue(visitor)
+//				for (callback : propertyUpdateCallbacks)
+//					callback.apply
+			]
 		}
 	}
 	
