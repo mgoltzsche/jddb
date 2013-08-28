@@ -35,6 +35,7 @@ import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.slf4j.LoggerFactory
 import javafx.beans.property.StringProperty
+import javafx.geometry.Insets
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -83,7 +84,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				createdContainedEntities += newEntity
 				selectedEntities.items += newEntity
 				
-				newEntity.showEntityEditor []
+				newEntity.showEntityEditor
 			]
 			
 			updateCallbacks += [| // update selected entities
@@ -183,6 +184,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			val label = new Label
 			
 			label.textProperty.bind(propertyValue.labelProperty)
+			HBox.setMargin(label, new Insets(3, 10, 0, 0))
 			
 			hBoxChildren += label
 			hBoxChildren += editButton
@@ -194,7 +196,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 					createdContainedEntities += propertyValue.value
 				}
 				
-				propertyValue.value.showEntityEditor []
+				propertyValue.value.showEntityEditor
 			]
 		} else {
 			val entityField = new EntityField [searchPhrase,it|

@@ -5,6 +5,7 @@ import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.dao.ModelChange
 import de.algorythm.jdoe.taskQueue.TaskQueue
+import de.algorythm.jdoe.ui.jfx.cell.ReferringEntityCell
 import de.algorythm.jdoe.ui.jfx.model.EditorStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
@@ -17,6 +18,7 @@ import javafx.fxml.FXML
 import javafx.geometry.Insets
 import javafx.geometry.VPos
 import javafx.scene.control.Label
+import javafx.scene.control.ListView
 import javafx.scene.layout.GridPane
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
@@ -31,6 +33,7 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 	@Inject extension Injector
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@FXML var GridPane gridPane
+	@FXML var ListView<FXEntityReference> referringEntities
 	@FXML var EditorStateModel editorState
 	var FXEntity transientEntity
 	val propertyUpdateCallbacks = new LinkedList<Procedure0>
@@ -78,6 +81,9 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 				
 				i = i + 1
 			}
+			
+			referringEntities.cellFactory = ReferringEntityCell.FACTORY
+			referringEntities.itemsProperty.value.all = entity.referencingEntities
 			
 			addObserver(this)
 		]

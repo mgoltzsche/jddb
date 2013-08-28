@@ -9,6 +9,8 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.SplitPane?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
 		fx:controller="de.algorythm.jdoe.controller.EntityEditorController"
@@ -24,13 +26,16 @@
 		</ToolBar>
 	</top>
 	<center>
-		<ScrollPane>
-			<GridPane fx:id="gridPane" vgap="20" hgap="20">
-				<padding>
-					<Insets bottom="20" left="20" right="20" top="20"/>
-				</padding>
-			</GridPane>
-		</ScrollPane>
+		<SplitPane dividerPositions="0.7,0.3">
+			<ScrollPane>
+				<GridPane fx:id="gridPane" vgap="20" hgap="20">
+					<padding>
+						<Insets bottom="20" left="20" right="20" top="20"/>
+					</padding>
+				</GridPane>
+			</ScrollPane>
+			<ListView fx:id="referringEntities" />
+		</SplitPane>
 	</center>
 	<bottom>
 		<Button text="%save" onAction="#save"/>

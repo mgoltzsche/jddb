@@ -118,7 +118,7 @@ public class MainController implements IController, IObserver<FXEntity, IFXPrope
 	def private void setupNewEntityButton() {
 		val menuItems = new LinkedList<MenuItem>
 		
-		for (type : schema.types) {
+		for (type : schema.types.filter[t|!t.embedded]) {
 			val menuItem = new MenuItem
 			
 			menuItem.text = type.label

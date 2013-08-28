@@ -53,6 +53,11 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		changed = entity.changed;
 	}
 	
+	@Override
+	public FXEntityReference copy() {
+		return new FXEntity(this); // TODO: do not copy entity that has already been copied
+	}
+	
 	private void applyLabelValue() {
 		final StringBuilder sb = new StringBuilder();
 		

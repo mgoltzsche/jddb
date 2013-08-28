@@ -9,12 +9,12 @@ import de.algorythm.jdoe.model.meta.Property;
 public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> {
 	
 	static private final long serialVersionUID = -8869779848370884103L;
-	static private final String EMPTY = "";
+	static protected final String EMPTY = "";
 	
 	private final Property property;
-	private final SimpleStringProperty label = new SimpleStringProperty(EMPTY);
+	protected final SimpleStringProperty label = new SimpleStringProperty(EMPTY);
 	protected boolean changed;
-	private IPropertyValueChangeHandler changeHandler = DefaultPropertyValueChangeHandler.INSTANCE;
+	protected IPropertyValueChangeHandler changeHandler = DefaultPropertyValueChangeHandler.INSTANCE;
 	
 	public AbstractFXPropertyValue(final Property property) {
 		this.property = property;
