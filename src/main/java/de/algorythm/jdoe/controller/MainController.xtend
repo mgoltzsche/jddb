@@ -32,8 +32,9 @@ import javax.inject.Inject
 import static javafx.application.Platform.*
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
+import de.algorythm.jdoe.model.dao.ModelChange
 
-public class MainController implements IController, IObserver {
+public class MainController implements IController, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension TaskQueue
@@ -57,11 +58,8 @@ public class MainController implements IController, IObserver {
 		
 		searchField.textProperty.addListener [
 			searchPhrase = searchField.text
-			
-			runReplacedTask('searching') [|
-				showListTab
-				update
-			]
+			showListTab
+			search
 		]
 		
 		entityList.setRowFactory(new EntityRow.Factory [
@@ -152,6 +150,7 @@ public class MainController implements IController, IObserver {
 				
 				column.cellValueFactory = new PropertyCellValueFactory(i)
 				columns += column
+				i = i + 1
 			}
 		}
 		
@@ -163,11 +162,17 @@ public class MainController implements IController, IObserver {
 		]
 	}
 	
-	override update() {
-		val entities = dao.list(selectedType, searchPhrase)
-		
-		runLater [|
-			entities.updateTableData
+	override update(ModelChange<FXEntity, IFXPropertyValue<?>, FXEntityReference> change) {
+		search
+	}
+	
+	def private void search() {
+		runReplacedTask('searching') [|
+			val entities = dao.list(selectedType, searchPhrase)
+			
+			runLater [|
+				entities.updateTableData
+			]
 		]
 	}
 	

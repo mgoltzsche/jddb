@@ -11,12 +11,12 @@ import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Schema;
 
-public interface IDAO<V extends IEntity<REF,P>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> {
+public interface IDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> {
 	
 	void open() throws IOException;
 	void close() throws IOException;
-	void addObserver(IObserver observer);
-	void removeObserver(IObserver observer);
+	void addObserver(IObserver<V,P,REF> observer);
+	void removeObserver(IObserver<V,P,REF> observer);
 	Schema getSchema();
 	void setSchema(Schema schema) throws IOException;
 	Set<V> list(EntityType type);
@@ -24,5 +24,5 @@ public interface IDAO<V extends IEntity<REF,P>, P extends IPropertyValue<?, REF>
 	V createEntity(EntityType type);
 	V find(IEntityReference entityRef);
 	boolean exists(IEntityReference entityRef);
-	void transaction(Procedure1<IDAOTransactionContext<REF,P>> transaction);
+	void transaction(Procedure1<IDAOTransactionContext<V,P,REF>> transaction);
 }

@@ -10,7 +10,7 @@ import de.algorythm.jdoe.model.entity.impl.AbstractEntity;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
 
-public class FXEntity extends AbstractEntity<FXEntityReference,IFXPropertyValue<?>> implements FXEntityReference {
+public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityReference> implements FXEntityReference {
 
 	static private final long serialVersionUID = -5386143358866304236L;
 	
@@ -18,10 +18,9 @@ public class FXEntity extends AbstractEntity<FXEntityReference,IFXPropertyValue<
 		final Collection<IFXPropertyValue<?>> otherValues = entity.getValues();
 		final int count = otherValues.size();
 		final ArrayList<IFXPropertyValue<?>> values = new ArrayList<>(count);
-		int i = 0;
 		
 		for (IFXPropertyValue<?> propertyValue : otherValues)
-			values.set(i++, propertyValue.copy());
+			values.add(propertyValue.copy());
 		
 		return values;
 	}
@@ -49,19 +48,23 @@ public class FXEntity extends AbstractEntity<FXEntityReference,IFXPropertyValue<
 	
 	public FXEntity(final FXEntity entity) {
 		this(entity.getId(), entity.getType(), copyPropertyValues(entity));
+		
+		changed = entity.changed;
 	}
 	
-	public void applyLabelValue() {
+	private void applyLabelValue() {
 		final StringBuilder sb = new StringBuilder();
 		
 		for (IFXPropertyValue<?> value : values) {
-			if (!value.getProperty().getType().isUserDefined()) {
-				final String propertyValueStr = value.labelProperty().get();
+			if (!value.getProperty().getType().isUserDefined()) { // attrs only
+				final String valueStr = value.labelProperty().get();
 				
-				if (sb.length() > 0 && !propertyValueStr.isEmpty())
-					sb.append(", ");
-				
-				sb.append(propertyValueStr);
+				if (!valueStr.isEmpty()) {
+					if (sb.length() > 0)
+						sb.append(", ");
+					
+					sb.append(valueStr);
+				}
 			}
 		}
 		
@@ -105,28 +108,15 @@ public class FXEntity extends AbstractEntity<FXEntityReference,IFXPropertyValue<
 	}
 	
 	@Override
-	public boolean changed(final boolean changed) {
-		final boolean result = super.changed(changed);
+	public boolean changed() {
+		super.changed();
+		applyLabelValue();
 		
-		if (changed)
-			applyLabelValue();
-		
-		return result;
+		return true;
 	}
 	
 	@Override
 	public void toString(final StringBuilder sb) {
-		for (IFXPropertyValue<?> value : values) {
-			if (!value.getProperty().getType().isUserDefined()) { // attrs only
-				final String valueStr = value.labelProperty().get();
-				
-				if (!valueStr.isEmpty()) {
-					if (sb.length() > 0)
-						sb.append(", ");
-					
-					sb.append(valueStr);
-				}
-			}
-		}
+		sb.append(label.get());
 	}
 }

@@ -18,6 +18,7 @@ public class Bundle {
 	public final String types;
 	public final String type;
 	public final String properties;
+	public final String embedded;
 	public final String searchable;
 	public final String contained;
 	public final String add;
@@ -52,6 +53,7 @@ public class Bundle {
 		types = b.getString("types");
 		type = b.getString("type");
 		properties = b.getString("properties");
+		embedded = b.getString("embedded");
 		searchable = b.getString("searchable");
 		contained = b.getString("contained");
 		add = b.getString("add");

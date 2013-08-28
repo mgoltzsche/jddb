@@ -8,10 +8,10 @@ import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 
-public interface IDAOVisitorContext<REF extends IEntityReference, P extends IPropertyValue<?, REF>> {
+public interface IDAOVisitorContext<V extends IEntity<P, REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> {
 
 	REF createEntityReference(Vertex vertex);
 	Vertex findVertex(IEntityReference entityRef);
-	Vertex save(IEntity<REF,P> entity, Map<IEntity<REF,P>, Vertex> savedEntities);
-	void delete(IEntityReference entity);
+	Vertex save(V entity, Map<V, Vertex> savedEntities);
+	void delete(REF entityRef);
 }

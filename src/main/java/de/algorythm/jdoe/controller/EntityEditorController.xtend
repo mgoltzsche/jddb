@@ -3,6 +3,7 @@ package de.algorythm.jdoe.controller
 import com.google.inject.Injector
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
+import de.algorythm.jdoe.model.dao.ModelChange
 import de.algorythm.jdoe.taskQueue.TaskQueue
 import de.algorythm.jdoe.ui.jfx.model.EditorStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
@@ -23,9 +24,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
 
-import static extension de.algorythm.jdoe.ui.jfx.model.util.ContainmentCollector.*
-
-public class EntityEditorController implements IController, IObserver {
+public class EntityEditorController implements IController, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
 	@Inject extension TaskQueue
 	@Inject extension IEntityEditorManager
@@ -48,7 +47,10 @@ public class EntityEditorController implements IController, IObserver {
 		titleProperty.bind(editorTitle)
 		
 		runTask('open-editor-' + entityRef.id) [|
-			entityRef.find.initView
+			if (entityRef.exists)
+				entityRef.find.initView
+			else
+				initView(entityRef as FXEntity)
 		]
 	}
 	
@@ -78,15 +80,13 @@ public class EntityEditorController implements IController, IObserver {
 			}
 			
 			addObserver(this)
-			update
 		]
 	}
 	
 	def save() {
-		if (transientEntity.type.embedded && transientEntity.exists) {
+		if (!transientEntity.type.embedded || transientEntity.exists) {
 			editorState.busy = true
 			val saveEntity = new FXEntity(transientEntity)
-			val containments = transientEntity.allContainments
 			
 			runTask('save-entity-' + saveEntity.id) [|
 				runLater [|
@@ -95,9 +95,6 @@ public class EntityEditorController implements IController, IObserver {
 				
 				try {
 					transaction [
-						for (newContainment : containments.filter[e|!e.exists])
-							save(newContainment)
-						
 						save(saveEntity)
 					]
 				} finally {
@@ -105,9 +102,14 @@ public class EntityEditorController implements IController, IObserver {
 						editorState.busy = false
 					]
 				}
+				
+				applySaveCallback
 			]
-		}
-		
+		} else
+			applySaveCallback 
+	}
+	
+	def private applySaveCallback() {
 		if (saveCallback != null) {
 			saveCallback.apply(transientEntity)
 			saveCallback = null
@@ -135,12 +137,17 @@ public class EntityEditorController implements IController, IObserver {
 		]
 	}
 
-	override update() {
-		if (transientEntity.exists)
-			for (callback : propertyUpdateCallbacks)
-				callback.apply
-		else
+	override update(ModelChange<FXEntity, IFXPropertyValue<?>, FXEntityReference> change) {
+		if (change.deleted.contains(transientEntity))
 			transientEntity.closeEntityEditor
+		else {
+			val visitor = new AssociationUpdateVisitor(change)
+			
+			for (propertyValue : transientEntity.values)
+				propertyValue.doWithValue(visitor)
+//			for (callback : propertyUpdateCallbacks)
+//				callback.apply
+		}
 	}
 	
 	def close() {

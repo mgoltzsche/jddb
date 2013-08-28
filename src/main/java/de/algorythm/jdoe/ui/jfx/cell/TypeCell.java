@@ -15,7 +15,7 @@ import javafx.util.Callback;
 import de.algorythm.jdoe.bundle.Bundle;
 import de.algorythm.jdoe.ui.jfx.model.meta.FXType;
 
-public class TypeCell extends AbstractLabeledListCell<FXType> {
+public class TypeCell extends AbstractLabeledListCell<FXType> implements ChangeListener<Boolean> {
 	
 	static private final Bundle bundle = Bundle.getInstance();
 	
@@ -29,7 +29,7 @@ public class TypeCell extends AbstractLabeledListCell<FXType> {
 	
 	
 	private VBox vBox = new VBox();
-	private CheckBox embedded = new CheckBox();
+	private CheckBox embedded = new CheckBox(bundle.embedded);
 	private Button deleteButton = new Button(bundle.delete);
 	
 	public TypeCell() {
@@ -47,23 +47,24 @@ public class TypeCell extends AbstractLabeledListCell<FXType> {
 				getListView().getItems().remove(object);
 			}
 		});
-		
-		embedded.selectedProperty().addListener(new ChangeListener<Boolean>() {
-			@Override
-			public void changed(ObservableValue<? extends Boolean> valueContainer,
-					Boolean oldValue, Boolean newValue) {
-				if (object != null)
-					object.setEmbedded(newValue);
-			}
-		});
+	}
+	
+	@Override
+	public void changed(ObservableValue<? extends Boolean> valueContainer,
+			Boolean oldValue, Boolean newValue) {
+		if (object != null)
+			object.setEmbedded(newValue);
 	}
 	
 	@Override
 	public void updateItem(FXType type, boolean empty) {
-		super.updateItem(object, empty);
+		super.updateItem(type, empty);
 		
-		if (type != null)
+		if (type != null) {
+			embedded.selectedProperty().removeListener(this);
 			embedded.selectedProperty().set(type.isEmbedded());
+			embedded.selectedProperty().addListener(this);
+		}
 	}
 	
 	protected void showEditor() {

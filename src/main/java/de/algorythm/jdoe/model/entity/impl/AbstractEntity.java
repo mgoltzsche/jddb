@@ -11,7 +11,7 @@ import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueChangeHandler;
 import de.algorythm.jdoe.model.meta.EntityType;
 
-public class AbstractEntity<REF extends IEntityReference, P extends IPropertyValue<?, REF>> implements IEntity<REF, P>, IPropertyValueChangeHandler {
+public class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntityReference> implements IEntity<P, REF>, IPropertyValueChangeHandler {
 
 	static private final long serialVersionUID = 8803662114651751761L;
 	
@@ -19,6 +19,7 @@ public class AbstractEntity<REF extends IEntityReference, P extends IPropertyVal
 	private final EntityType type;
 	protected final ArrayList<P> values;
 	private final Collection<REF> referencingEntities;
+	protected transient boolean changed;
 	
 	public AbstractEntity(final EntityType type, final ArrayList<P> values) {
 		this(UUID.randomUUID().toString(), type, values, new LinkedList<REF>());
@@ -47,11 +48,20 @@ public class AbstractEntity<REF extends IEntityReference, P extends IPropertyVal
 	
 	@Override
 	public boolean isChanged() {
-		for (IPropertyValue<?,REF> value : values)
-			if (value.isChanged())
-				return true;
+		return changed;
+	}
+	
+	@Override
+	public void pristine() {
+		changed = false;
 		
-		return false;
+		for (IPropertyValue<?,REF> value : values)
+			value.pristine();
+	}
+	
+	@Override
+	public boolean changed() {
+		return changed = true;
 	}
 	
 	@Override
@@ -72,11 +82,6 @@ public class AbstractEntity<REF extends IEntityReference, P extends IPropertyVal
 	private void registerAsPropertyValueChangeHandler() {
 		for (P value : values)
 			value.setChangeHandler(this);
-	}
-	
-	@Override
-	public boolean changed(final boolean changed) {
-		return changed;
 	}
 	
 	@Override

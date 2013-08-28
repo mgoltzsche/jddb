@@ -1,6 +1,5 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 import javafx.beans.property.ListProperty;
@@ -41,7 +40,8 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	public IFXPropertyValue<Collection<FXEntityReference>> copy() {
 		final FXAssociations copy = new FXAssociations(getProperty());
 		
-		copy.setValue(new ArrayList<>(copy.getValue()));
+		copy.setValue(getValue());
+		copy.changed = changed;
 		
 		return copy;
 	}

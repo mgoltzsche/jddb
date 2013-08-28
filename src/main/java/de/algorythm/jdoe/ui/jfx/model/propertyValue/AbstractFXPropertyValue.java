@@ -13,7 +13,7 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	
 	private final Property property;
 	private final SimpleStringProperty label = new SimpleStringProperty(EMPTY);
-	private boolean changed;
+	protected boolean changed;
 	private IPropertyValueChangeHandler changeHandler = DefaultPropertyValueChangeHandler.INSTANCE;
 	
 	public AbstractFXPropertyValue(final Property property) {
@@ -29,14 +29,15 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	public boolean isChanged() {
 		return changed;
 	}
-	
-	protected void setChanged(final boolean changed) {
-		this.changed = changeHandler.changed(changed);
-	}
 
+	@Override
+	public void pristine() {
+		changed = false;
+	}
+	
 	protected void changed() {
 		applyLabelValue();
-		setChanged(true);
+		changed = changeHandler.changed();
 	}
 	
 	@Override

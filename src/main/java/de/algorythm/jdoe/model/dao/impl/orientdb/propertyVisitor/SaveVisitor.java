@@ -18,13 +18,13 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<?, REF>> extends IndexKeywordCollectingVisitor<REF> {
+public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> extends IndexKeywordCollectingVisitor<REF> {
 	
 	private final Vertex vertex;
-	private final Map<IEntity<REF,P>, Vertex> savedEntities;
-	private final IDAOVisitorContext<REF,P> dao;
+	private final Map<V, Vertex> savedEntities;
+	private final IDAOVisitorContext<V,P,REF> dao;
 	
-	public SaveVisitor(final IDAOVisitorContext<REF,P> dao, final Vertex vertex, final Map<IEntity<REF,P>, Vertex> savedEntities, final Pattern wordPattern, final Set<String> indexKeywords) {
+	public SaveVisitor(final IDAOVisitorContext<V,P,REF> dao, final Vertex vertex, final Map<V, Vertex> savedEntities, final Pattern wordPattern, final Set<String> indexKeywords) {
 		super(wordPattern, indexKeywords);
 		this.dao = dao;
 		this.vertex = vertex;
@@ -70,12 +70,12 @@ public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<
 					vertex.addEdge(propertyName, refVertex);
 			} catch(IllegalArgumentException e) {
 				// save and associate new entity
-				final IEntity<REF,P> newEntity;
+				final V newEntity;
 				
 				try {
-					newEntity = (IEntity<REF,P>) entityRef;
+					newEntity = (V) entityRef;
 				} catch(ClassCastException cce) {
-					throw new IllegalArgumentException("referred entity " + entityRef + "(" + entityRef.getId() + ") does not exist and cannot be created since the referred entity does not implement " + IEntity.class);
+					throw new IllegalArgumentException("referred entity " + entityRef + "(" + entityRef.getId() + ") does not exist and cannot be created since the referred entity does not implement the entity type interface V extending " + IEntity.class);
 				}
 				
 				refVertex = dao.save(newEntity, savedEntities);
@@ -106,12 +106,12 @@ public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<
 				refVertex = dao.findVertex(entityRef);
 			} catch(IllegalArgumentException e) {
 				// save and associate new entity
-				final IEntity<REF,P> newEntity;
+				final V newEntity;
 				
 				try {
-					newEntity = (IEntity<REF,P>) entityRef;
+					newEntity = (V) entityRef;
 				} catch(ClassCastException cce) {
-					throw new IllegalArgumentException("referred entity " + entityRef + "(" + entityRef.getId() + ") does not exist and cannot be created since the referred entity does not implement " + IEntity.class);
+					throw new IllegalArgumentException("referred entity " + entityRef + "(" + entityRef.getId() + ") does not exist and cannot be created since the referred entity does not implement the entity type interface V extending " + IEntity.class);
 				}
 				
 				refVertex = dao.save(newEntity, savedEntities);
@@ -171,6 +171,9 @@ public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<
 	}
 	
 	private void writeAttributeValue(IPropertyValue<?,?> propertyValue) {
+		if (!propertyValue.isChanged())
+			return;
+		
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		final Object newValue = propertyValue.getValue();
@@ -189,7 +192,7 @@ public class SaveVisitor<REF extends IEntityReference, P extends IPropertyValue<
 		edge.remove();
 		
 		if (property.isContainment()) {
-			final IEntityReference referredEntity = dao.createEntityReference(referredVertex);
+			final REF referredEntity = dao.createEntityReference(referredVertex);
 			
 			if (property.getType().isConform(referredEntity.getType()))
 				dao.delete(referredEntity);

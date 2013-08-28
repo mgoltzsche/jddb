@@ -36,6 +36,7 @@ import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.IDAOTransactionContext;
 import de.algorythm.jdoe.model.dao.IModelFactory;
 import de.algorythm.jdoe.model.dao.IObserver;
+import de.algorythm.jdoe.model.dao.ModelChange;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.DeleteVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.IndexKeywordCollectingVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.LoadVisitor;
@@ -49,7 +50,7 @@ import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.Schema;
 
 @Singleton
-public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> implements IDAO<V,P,REF>, IDAOVisitorContext<REF,P>, IDAOTransactionContext<REF,P> {
+public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> implements IDAO<V,P,REF>, IDAOVisitorContext<V,P,REF>, IDAOTransactionContext<V,P,REF> {
 	
 	static private final Logger LOG = LoggerFactory.getLogger(DAO.class);
 	
@@ -62,8 +63,9 @@ public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF 
 	private final Yaml yaml;
 	private Schema schema;
 	private OrientGraph graph;
-	private final HashSet<IObserver> observers = new HashSet<>();
+	private final HashSet<IObserver<V,P,REF>> observers = new HashSet<>();
 	private final HashMap<String, Index<Vertex>> searchIndices = new HashMap<>();
+	private ModelChange<V,P,REF> change;
 	
 	public DAO(final IModelFactory<V, P, REF> modelFactory) {
 		this.modelFactory = modelFactory;
@@ -135,7 +137,7 @@ public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF 
 	public REF createEntityReference(final Vertex vertex) {
 		final String id = vertex.<String>getProperty(ID);
 		final EntityType type = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
-		final IPropertyValueVisitor<REF> visitor = new LoadVisitor<>(vertex, this);
+		final LoadVisitor<V,P,REF> visitor = new LoadVisitor<>(vertex, this);
 		final Collection<Property> properties = type.getProperties();
 		final ArrayList<P> propertyValues = new ArrayList<>(properties.size());
 		
@@ -181,35 +183,37 @@ public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF 
 	}
 	
 	@Override
-	public void save(final IEntity<REF,P> entity) {
+	public void save(final V entity) {
 		if (entity.isChanged())
-			save(entity, new HashMap<IEntity<REF,P>, Vertex>());
+			save(entity, new HashMap<V, Vertex>());
 	}
 	
 	@Override
-	public Vertex save(final IEntity<REF,P> entity, final Map<IEntity<REF,P>, Vertex> savedEntities) {
+	public Vertex save(final V entity, final Map<V, Vertex> savedEntities) {
+		change.getSaved().put(entity.getId(), entity);
+		
 		Vertex vertex = savedEntities.get(entity);
 		
 		if (vertex != null)
 			return vertex;
 		
-		vertex = findVertex(entity);
 		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
-		final Set<String> oldIndexKeywords;
+		Set<String> oldIndexKeywords;
 		
-		if (vertex == null) { // create new vertex
+		try {
+			vertex = findVertex(entity);
+			oldIndexKeywords = createIndexKeywords(createEntity(vertex));
+		} catch(IllegalArgumentException e) {
 			vertex = graph.addVertex(null);
 			vertex.setProperty(ID, entity.getId());
 			vertex.setProperty(TYPE_FIELD, entity.getType().getName());
 			oldIndexKeywords = new HashSet<>();
-		} else {
-			oldIndexKeywords = createIndexKeywords(createEntity(vertex));
 		}
 		
 		savedEntities.put(entity, vertex);
 		
 		final Set<String> indexKeywords = new HashSet<>();
-		final SaveVisitor<REF,P> visitor = new SaveVisitor<>(this, vertex, savedEntities, WORD_PATTERN, indexKeywords);
+		final SaveVisitor<V,P,REF> visitor = new SaveVisitor<>(this, vertex, savedEntities, WORD_PATTERN, indexKeywords);
 		
 		// assign values to vertex
 		for (IPropertyValue<?,REF> propertyValue : entity.getValues())
@@ -241,7 +245,9 @@ public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF 
 	}
 	
 	@Override
-	public void delete(final IEntityReference entityRef) {
+	public void delete(final REF entityRef) {
+		change.getDeleted().add(entityRef);
+		
 		final Vertex vertex;
 		
 		try {
@@ -254,7 +260,7 @@ public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF 
 		final V entity = createEntity(vertex);
 		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
 		final Set<String> indexKeywords = new HashSet<>();
-		final DeleteVisitor<REF,P> visitor = new DeleteVisitor<>(this, WORD_PATTERN, indexKeywords);
+		final DeleteVisitor<V,P,REF> visitor = new DeleteVisitor<>(this, WORD_PATTERN, indexKeywords);
 		
 		// delete containments and collect index
 		for (IPropertyValue<?,REF> value : entity.getValues())
@@ -342,12 +348,12 @@ public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF 
 	}
 
 	@Override
-	public void addObserver(final IObserver observer) {
+	public void addObserver(final IObserver<V,P,REF> observer) {
 		observers.add(observer);
 	}
 
 	@Override
-	public void removeObserver(final IObserver observer) {
+	public void removeObserver(final IObserver<V,P,REF> observer) {
 		observers.remove(observer);
 	}
 
@@ -377,7 +383,9 @@ public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF 
 	}
 
 	@Override
-	public void transaction(Procedure1<IDAOTransactionContext<REF, P>> transaction) {
+	public void transaction(Procedure1<IDAOTransactionContext<V,P,REF>> transaction) {
+		change = new ModelChange<>();
+		
 		try {
 			transaction.apply(this);
 			graph.commit();
@@ -391,7 +399,7 @@ public class DAO<V extends IEntity<REF,P>, P extends IPropertyValue<?,REF>, REF 
 	}
 	
 	private void notifyObservers() {
-		for (IObserver observer : new LinkedList<IObserver>(observers))
-			observer.update();
+		for (IObserver<V,P,REF> observer : new LinkedList<>(observers))
+			observer.update(change);
 	}
 }

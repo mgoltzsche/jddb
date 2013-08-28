@@ -7,7 +7,7 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 
-public class Entity extends AbstractEntity<IEntityReference,IPropertyValue<?,IEntityReference>> {
+public class Entity extends AbstractEntity<IPropertyValue<?,IEntityReference>,IEntityReference> {
 
 	static private final long serialVersionUID = -4116231309999192319L;
 	

@@ -10,7 +10,7 @@ public class DefaultPropertyValueChangeHandler implements IPropertyValueChangeHa
 	private DefaultPropertyValueChangeHandler() {}
 	
 	@Override
-	public boolean changed(final boolean changed) {
+	public boolean changed() {
 		return false;
 	}
 

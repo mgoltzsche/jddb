@@ -38,8 +38,9 @@ public abstract class AbstractPropertyValue<V,REF extends IEntityReference> impl
 		return changed;
 	}
 	
-	protected void setChanged(final boolean changed) {
-		this.changed = changeHandler.changed(changed);
+	@Override
+	public void pristine() {
+		changed = false;
 	}
 	
 	@Override
@@ -51,7 +52,7 @@ public abstract class AbstractPropertyValue<V,REF extends IEntityReference> impl
 	public void setValue(final V value) {
 		if (valueChanged(this.value, value)) {
 			this.value = value;
-			changed = true;
+			changed = changeHandler.changed();
 		}
 	}
 	

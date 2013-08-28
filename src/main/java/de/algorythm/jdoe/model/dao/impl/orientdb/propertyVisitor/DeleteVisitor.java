@@ -5,14 +5,15 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import de.algorythm.jdoe.model.dao.impl.orientdb.IDAOVisitorContext;
+import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 
-public class DeleteVisitor<REF extends IEntityReference, P extends IPropertyValue<?, REF>> extends IndexKeywordCollectingVisitor<REF> {
+public class DeleteVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> extends IndexKeywordCollectingVisitor<REF> {
 	
-	private final IDAOVisitorContext<REF,P> dao;
+	private final IDAOVisitorContext<V,P,REF> dao;
 	
-	public DeleteVisitor(final IDAOVisitorContext<REF,P> dao, final Pattern wordPattern, final Set<String> indexKeywords) {
+	public DeleteVisitor(final IDAOVisitorContext<V,P,REF> dao, final Pattern wordPattern, final Set<String> indexKeywords) {
 		super(wordPattern, indexKeywords);
 		this.dao = dao;
 	}

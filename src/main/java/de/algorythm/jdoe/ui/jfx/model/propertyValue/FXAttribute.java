@@ -42,6 +42,7 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 		final FXAttribute<V> copy = new FXAttribute<>(getProperty(), type);
 		
 		copy.setValue(getValue());
+		copy.changed = changed;
 		
 		return copy;
 	}

@@ -41,6 +41,7 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 		final FXAssociation copy = new FXAssociation(getProperty());
 		
 		copy.setValue(getValue());
+		copy.changed = changed;
 		
 		return copy;
 	}
