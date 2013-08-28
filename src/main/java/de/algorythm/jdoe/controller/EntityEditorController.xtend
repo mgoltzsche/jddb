@@ -92,7 +92,7 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 	def save() {
 		if (!transientEntity.type.embedded || transientEntity.exists) {
 			editorState.busy = true
-			val saveEntity = new FXEntity(transientEntity) // TODO: also copy associations
+			val saveEntity = transientEntity.copy
 			
 			runTask('save-entity-' + saveEntity.id) [|
 				runLater [|
@@ -124,7 +124,7 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 	
 	def delete() {
 		editorState.busy = true
-		val deleteEntity = new FXEntity(transientEntity)
+		val deleteEntity = transientEntity.copy
 		
 		runTask('delete-entity-' + deleteEntity.id) [|
 			runLater [|

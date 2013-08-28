@@ -2,7 +2,9 @@ package de.algorythm.jdoe.ui.jfx.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -14,17 +16,6 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
 public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityReference> implements FXEntityReference {
 
 	static private final long serialVersionUID = -5386143358866304236L;
-	
-	static private ArrayList<IFXPropertyValue<?>> copyPropertyValues(final FXEntity entity) {
-		final Collection<IFXPropertyValue<?>> otherValues = entity.getValues();
-		final int count = otherValues.size();
-		final ArrayList<IFXPropertyValue<?>> values = new ArrayList<>(count);
-		
-		for (IFXPropertyValue<?> propertyValue : otherValues)
-			values.add(propertyValue.copy());
-		
-		return values;
-	}
 	
 	
 	private final SimpleStringProperty label = new SimpleStringProperty();
@@ -47,15 +38,31 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		applyLabelValue();
 	}
 	
-	public FXEntity(final FXEntity entity) {
-		this(entity.getId(), entity.getType(), copyPropertyValues(entity));
-		
-		changed = entity.changed;
+	@Override
+	public FXEntity copy() {
+		// TODO: do not copy entity that has already been copied
+		return copy(new HashMap<String,FXEntityReference>());
 	}
 	
 	@Override
-	public FXEntityReference copy() {
-		return new FXEntity(this); // TODO: do not copy entity that has already been copied
+	public FXEntity copy(final Map<String,FXEntityReference> copiedEntities) {
+		// TODO: add copy to copiedEntities before copying properties
+		final FXEntity copy = new FXEntity(getId(), getType(), copiedPropertyValues(copiedEntities));
+		
+		copy.changed = changed;
+		
+		return copy;
+	}
+	
+	private ArrayList<IFXPropertyValue<?>> copiedPropertyValues(final Map<String, FXEntityReference> copiedEntities) {
+		final Collection<IFXPropertyValue<?>> values = getValues();
+		final int count = values.size();
+		final ArrayList<IFXPropertyValue<?>> copiedValues = new ArrayList<>(count);
+		
+		for (IFXPropertyValue<?> propertyValue : values)
+			copiedValues.add(propertyValue.copy(copiedEntities));
+		
+		return copiedValues;
 	}
 	
 	private void applyLabelValue() {

@@ -1,5 +1,7 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
+import java.util.Map;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -38,7 +40,7 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 	}
 
 	@Override
-	public IFXPropertyValue<V> copy() {
+	public IFXPropertyValue<V> copy(final Map<String, FXEntityReference> copiedEntities) {
 		final FXAttribute<V> copy = new FXAttribute<>(getProperty(), type);
 		
 		copy.setValue(getValue());

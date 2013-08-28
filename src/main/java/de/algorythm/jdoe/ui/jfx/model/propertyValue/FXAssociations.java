@@ -2,6 +2,7 @@ package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
@@ -38,12 +39,21 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	}
 
 	@Override
-	public IFXPropertyValue<Collection<FXEntityReference>> copy() {
+	public IFXPropertyValue<Collection<FXEntityReference>> copy(final Map<String, FXEntityReference> copiedEntities) {
 		final FXAssociations copy = new FXAssociations(getProperty());
 		final LinkedList<FXEntityReference> entityRefs = new LinkedList<>();
 		
-		for (FXEntityReference entityRef : getValue())
-			entityRefs.add(entityRef.copy());
+		for (FXEntityReference entityRef : getValue()) {
+			final String id = entityRef.getId();
+			FXEntityReference copiedRef = copiedEntities.get(id);
+			
+			if (copiedRef == null) {
+				copiedRef = entityRef.copy();
+				copiedEntities.put(id, copiedRef);
+			}
+			
+			entityRefs.add(copiedRef);
+		}
 		
 		copy.setValue(entityRefs);
 		copy.changed = changed;

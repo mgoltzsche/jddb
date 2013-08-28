@@ -1,5 +1,7 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
+import java.util.Map;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -37,12 +39,21 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 	}
 	
 	@Override
-	public IFXPropertyValue<FXEntityReference> copy() {
+	public IFXPropertyValue<FXEntityReference> copy(final Map<String, FXEntityReference> copiedEntities) {
 		final FXAssociation copy = new FXAssociation(getProperty());
 		final FXEntityReference entityRef = getValue();
 		
-		if (entityRef != null)
-			copy.setValue(entityRef.copy());
+		if (entityRef != null) {
+			final String id = entityRef.getId();
+			FXEntityReference copiedRef = copiedEntities.get(id);
+			
+			if (copiedRef == null) {
+				copiedRef = entityRef.copy();
+				copiedEntities.put(id, copiedRef);
+			}
+			
+			copy.setValue(copiedRef);
+		}
 		
 		copy.changed = changed;
 		
