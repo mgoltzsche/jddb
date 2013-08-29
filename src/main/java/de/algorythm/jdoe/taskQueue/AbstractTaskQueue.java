@@ -33,7 +33,7 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 						log.debug(THREAD_NAME + " interrupted");
 					}
 				} else {
-					currentTask.setState(TaskState.RUNNING);
+					onTaskStarted(currentTask);
 					final String taskLabel = currentTask.getLabel();
 					log.debug("run task: " + taskLabel);
 					try {
@@ -57,9 +57,8 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 	
 	private void finishTask(final TaskState state) {
 		synchronized(runnable) {
-			currentTask.setState(state);
 			taskMap.remove(currentTask.getId());
-			onTaskFinished(currentTask);
+			onTaskFinished(currentTask, state);
 		}
 	}
 	
@@ -80,5 +79,12 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 	}
 	
 	protected abstract void onTaskQueued(T task);
-	protected abstract void onTaskFinished(T task);
+	
+	protected void onTaskStarted(final T task) {
+		task.setState(TaskState.RUNNING);
+	}
+	
+	protected void onTaskFinished(final T task, final TaskState state) {
+		task.setState(state);
+	}
 }

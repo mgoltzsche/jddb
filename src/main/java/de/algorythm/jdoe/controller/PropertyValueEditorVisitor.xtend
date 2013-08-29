@@ -6,7 +6,6 @@ import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.entity.IPropertyValue
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
-import de.algorythm.jdoe.ui.jfx.cell.AssociationContainmentCell
 import de.algorythm.jdoe.ui.jfx.controls.EntityField
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
@@ -37,6 +36,7 @@ import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.slf4j.LoggerFactory
 import javafx.scene.layout.Priority
+import de.algorythm.jdoe.ui.jfx.cell.AssociationCell
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -75,7 +75,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		val vBoxChildren = vBox.children
 		
 		selectedEntities.setMinSize(MIN_FIELD_WIDTH, 75)
-		selectedEntities.cellFactory = AssociationContainmentCell.FACTORY
+		selectedEntities.cellFactory = new AssociationCell.Factory(facade)
 		selectedEntities.itemsProperty.bindBidirectional(propertyValue.valueProperty);
 		
 		if (property.containment) {

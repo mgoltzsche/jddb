@@ -1,23 +1,21 @@
 package de.algorythm.jdoe.controller;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
-import javax.inject.Inject;
-
-import de.algorythm.jdoe.ui.jfx.taskQueue.FXTask;
-import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue;
+import javafx.beans.property.ReadOnlyListProperty;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
+import de.algorythm.jdoe.ui.jfx.cell.TaskCell;
+import de.algorythm.jdoe.ui.jfx.taskQueue.FXTask;
 
-public class TaskListController implements Initializable {
+public class TaskListController {
 
-	@Inject private FXTaskQueue taskQueue;
-	@FXML private ListView<FXTask> taskList;
+	@FXML private ListView<FXTask> taskQueuedList;
+	@FXML private ListView<FXTask> taskFailedList;
 	
-	@Override
-	public void initialize(URL url, ResourceBundle resourceBundle) {
-		//taskList.setCellFactory(arg0); // TODO: continue
+	public void init(final ReadOnlyListProperty<FXTask> pendingTasks, final ReadOnlyListProperty<FXTask> failedTasks) {
+		taskQueuedList.setCellFactory(TaskCell.FACTORY);
+		taskFailedList.setCellFactory(TaskCell.FACTORY);
+		
+		taskQueuedList.itemsProperty().bind(pendingTasks);
+		taskFailedList.itemsProperty().bind(failedTasks);
 	}
 }

@@ -22,57 +22,73 @@ import javafx.stage.Stage
 import javafx.scene.Scene
 import javafx.collections.ListChangeListener.Change
 import javafx.scene.input.MouseEvent
-import java.beans.EventHandler
-import javafx.event.EventType
+import javafx.scene.layout.StackPane
+import javafx.event.EventHandler
 
 class StatusController implements Initializable, ListChangeListener<FXTask> {
 	
 	@Inject extension FXTaskQueue
 	@Inject extension GuiceFxmlLoader
 	@Inject Bundle bundle
+	@FXML StackPane statusPane
 	@FXML Label status
 	@FXML ProgressBar progress
 	val failedTasks = new SimpleListProperty(FXCollections.observableList(new LinkedList<FXTask>))
+	var taskCount = 0
+	var taskFinishedCount = 0
 	
 	override initialize(URL url, ResourceBundle resourceBundle) {
-		progress.addEventHandler(MouseEvent.MOUSE_CLICKED) [
-			showDetails
+		val EventHandler<MouseEvent> statusClickListener = [
+			showTaskDetails
 		]
 		
+		statusPane.addEventHandler(MouseEvent.MOUSE_CLICKED, statusClickListener)
+		progress.addEventHandler(MouseEvent.MOUSE_CLICKED, statusClickListener) 
+		
 		taskListProperty.addListener(this)
+		
+		status.text = bundle.stateReady
 	}
 	
-	def private showDetails() {
-		showTaskList(bundle.tasksQueued)
-	}
-	
-	def private showErrors() {
-		showTaskList(bundle.tasksFailed)
-	}
-	
-	def showTaskList(String title) {
-		val FxmlLoaderResult<Parent, Object> loaderResult = load('/fxml/task_list.fxml')
+	def private showTaskDetails() {
+		val FxmlLoaderResult<Parent, TaskListController> loaderResult = load('/fxml/task_list.fxml')
 		val stage = new Stage
 		
-		stage.title = title
+		loaderResult.controller.init(taskListProperty, failedTasks)
+		
+		stage.title = bundle.taskDetails
 		stage.scene = new Scene(loaderResult.node, 500, 300)
 		stage.show
 	}
 	
 	override onChanged(Change<? extends FXTask> change) {
-		while (change.next)
-			for (failedTask : change.removed.filter[t|t.state == TaskState.FAILED])
-				failedTasks += failedTask
+		while (change.next) {
+			taskCount = taskCount + change.addedSize
+			
+			for (task : change.removed) {
+				if (task.state == TaskState.FAILED)
+					failedTasks += task
+				
+				taskFinishedCount = taskFinishedCount + 1
+			}
+		}
 		
 		val tasks = taskListProperty.value
 		
 		if (tasks.empty) {
-			progress.visible = false
 			status.text = bundle.stateReady
+			
+			// reset progress
+			taskCount = 0
+			taskFinishedCount = 0
 		} else {
-			progress.visible = true
 			status.text = tasks.head.label
 		}
+		 
+		progress.progress = if (taskCount == 0)
+			1
+		else
+			taskFinishedCount / taskCount as double
 	}
 	
 }

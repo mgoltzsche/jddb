@@ -9,6 +9,7 @@ import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.taskQueue.TaskState
 
 @Singleton
 class FXTaskQueue extends AbstractTaskQueue<FXTask> {
@@ -27,8 +28,17 @@ class FXTaskQueue extends AbstractTaskQueue<FXTask> {
 		updateTasks
 	}
 
-	override onTaskFinished(FXTask task) {
-		updateTasks
+	override onTaskStarted(FXTask task) {
+		runLater [|
+			super.onTaskStarted(task)
+		]
+	}
+	
+	override onTaskFinished(FXTask task, TaskState state) {
+		runLater [|
+			super.onTaskFinished(task, state)
+			updateTasks
+		]
 	}
 	
 	def private updateTasks() {

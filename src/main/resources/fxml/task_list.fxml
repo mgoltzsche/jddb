@@ -4,10 +4,18 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
+<TabPane xmlns:fx="http://javafx.com/fxml"
 	fx:controller="de.algorythm.jdoe.controller.TaskListController">
-	<center>
-		<ListView fx:id="taskList"/>
-	</center>
-</BorderPane>
+	<tabs>
+		<Tab text="%tasksQueued" closable="false">
+			<ListView fx:id="taskQueuedList"/>
+		</Tab>
+		<Tab text="%tasksFailed" closable="false">
+			<ListView fx:id="taskFailedList"/>
+		</Tab>
+	</tabs>
+</TabPane>

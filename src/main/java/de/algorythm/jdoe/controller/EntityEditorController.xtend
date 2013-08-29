@@ -90,11 +90,11 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	}
 	
 	def save() {
-		if (!transientEntity.type.embedded || transientEntity.exists) {
-			editorState.busy = true
-			val saveEntity = transientEntity.copy
-			
-			runTask('save-entity-' + saveEntity.id, '''«bundle.taskSave»: «saveEntity» («saveEntity.type.label»)''') [|
+		editorState.busy = true
+		val saveEntity = transientEntity.copy
+		
+		runTask('save-entity-' + saveEntity.id, '''«bundle.taskSave»: «saveEntity» («saveEntity.type.label»)''') [|
+			if (!transientEntity.type.embedded || transientEntity.exists) {
 				runLater [|
 					editorState.busy = true
 				]
@@ -108,11 +108,10 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 						editorState.busy = false
 					]
 				}
-				
-				applySaveCallback
-			]
-		} else
-			applySaveCallback 
+			}
+			
+			applySaveCallback
+		] 
 	}
 	
 	def private applySaveCallback() {

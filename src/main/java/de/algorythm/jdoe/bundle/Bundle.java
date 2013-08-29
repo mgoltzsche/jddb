@@ -43,8 +43,6 @@ public class Bundle {
 	public final String stateRunning;
 	public final String stateCompleted;
 	public final String stateFailed;
-	public final String tasksQueued;
-	public final String tasksFailed;
 	public final String taskOpenDB;
 	public final String taskCloseDB;
 	public final String taskSearch;
@@ -52,6 +50,9 @@ public class Bundle {
 	public final String taskLoad;
 	public final String taskSave;
 	public final String taskDelete;
+	public final String taskDetails;
+	public final String tasksQueued;
+	public final String tasksFailed;
 	
 	private Bundle() {
 		ResourceBundle b;
@@ -91,8 +92,6 @@ public class Bundle {
 		stateRunning = b.getString("stateRunning");
 		stateCompleted = b.getString("stateCompleted");
 		stateFailed = b.getString("stateFailed");
-		tasksQueued = b.getString("tasksQueued");
-		tasksFailed = b.getString("tasksFailed");
 		taskOpenDB = b.getString("taskOpenDB");
 		taskCloseDB = b.getString("taskCloseDB");
 		taskSearch = b.getString("taskSearch");
@@ -100,5 +99,8 @@ public class Bundle {
 		taskLoad = b.getString("taskLoad");
 		taskSave = b.getString("taskSave");
 		taskDelete = b.getString("taskDelete");
+		tasksQueued = b.getString("tasksQueued");
+		tasksFailed = b.getString("tasksFailed");
+		taskDetails = b.getString("taskDetails");
 	}
 }
