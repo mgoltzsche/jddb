@@ -1,5 +1,6 @@
 package de.algorythm.jdoe.controller
 
+import de.algorythm.jdoe.JavaDbObjectEditorFacade
 import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.entity.IPropertyValue
@@ -14,7 +15,6 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociations
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValueVisitor
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
-import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -36,6 +36,7 @@ import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.slf4j.LoggerFactory
+import javafx.scene.layout.Priority
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -48,7 +49,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension FXTaskQueue
-	@Inject extension IEntityEditorManager editorManager
+	@Inject extension JavaDbObjectEditorFacade facade
 	@Inject Bundle bundle
 	var GridPane gridPane
 	var int row
@@ -106,6 +107,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 					all = entityType.list(searchPhrase)
 				]
 			]
+			HBox.setHgrow(addEntityField, Priority.ALWAYS)
 			val selectionChangeListener = [|
 				addButton.disable = addEntityField.value == null ||
 					selectedEntities.items.contains(addEntityField.value)
@@ -150,6 +152,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			]
 		}
 		
+		GridPane.setHgrow(vBox, Priority.ALWAYS)
 		gridPane.add(vBox, 1, row)
 	}
 	
@@ -207,6 +210,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 					all = entityType.list(searchPhrase)
 				]
 			]
+			HBox.setHgrow(entityField, Priority.ALWAYS)
 			
 			hBoxChildren += entityField
 			hBoxChildren += editButton
@@ -227,6 +231,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			]
 		}
 		
+		GridPane.setHgrow(hBox, Priority.ALWAYS)
 		gridPane.add(hBox, 1, row)
 	}
 
@@ -261,6 +266,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			valid
 		]
 		
+		GridPane.setHgrow(textField, Priority.ALWAYS)
 		gridPane.add(textField, 1, row)
 	}
 	
@@ -300,6 +306,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			valid
 		]
 		
+		GridPane.setHgrow(textField, Priority.ALWAYS)
 		gridPane.add(textField, 1, row)
 	}
 	
@@ -342,6 +349,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			valid
 		]
 		
+		GridPane.setHgrow(textField, Priority.ALWAYS)
 		gridPane.add(textField, 1, row)
 	}
 
@@ -351,6 +359,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		textField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
 		
 		propertyValue.bindStringProperty(textField.textProperty)
+		GridPane.setHgrow(textField, Priority.ALWAYS)
 		gridPane.add(textField, 1, row)
 	}
 
@@ -360,6 +369,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		textArea.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
 		
 		propertyValue.bindStringProperty(textArea.textProperty)
+		GridPane.setHgrow(textArea, Priority.ALWAYS)
 		gridPane.add(textArea, 1, row)
 	}
 	

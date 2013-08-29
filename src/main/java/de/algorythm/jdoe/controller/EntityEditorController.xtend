@@ -1,6 +1,8 @@
 package de.algorythm.jdoe.controller
 
 import com.google.inject.Injector
+import de.algorythm.jdoe.JavaDbObjectEditorFacade
+import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.dao.ModelChange
@@ -10,7 +12,6 @@ import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
-import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.util.LinkedList
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.property.StringProperty
@@ -25,14 +26,13 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.bundle.Bundle
 
 public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
 	@Inject extension FXTaskQueue
-	@Inject extension IEntityEditorManager editorManager
 	@Inject extension Injector
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
+	@Inject extension JavaDbObjectEditorFacade facade
 	@Inject Bundle bundle
 	@FXML GridPane gridPane
 	@FXML ListView<FXEntityReference> referringEntities
@@ -49,7 +49,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 		editorTitle.set(entityRef.labelProperty.value)
 		titleProperty.bind(editorTitle)
 		
-		runTask('open-editor-' + entityRef.id, '''«bundle.taskLoad»: «entityRef» («entityRef.type.label»)''') [|
+		runTask('load-' + entityRef.id, '''«bundle.taskLoad»: «entityRef» («entityRef.type.label»)''') [|
 			if (entityRef.exists)
 				entityRef.find.initView
 			else
@@ -82,7 +82,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 				i = i + 1
 			}
 			
-			referringEntities.cellFactory = new ReferringEntityCell.Factory(editorManager)
+			referringEntities.cellFactory = new ReferringEntityCell.Factory(facade)
 			referringEntities.itemsProperty.value.all = entity.referringEntities
 			
 			addObserver(this)
@@ -117,8 +117,13 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	
 	def private applySaveCallback() {
 		if (saveCallback != null) {
-			saveCallback.apply(transientEntity)
+			val callback = saveCallback
+			
 			saveCallback = null
+			
+			runLater [|
+				callback.apply(transientEntity)
+			]
 		}
 	}
 	

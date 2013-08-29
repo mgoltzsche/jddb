@@ -13,6 +13,7 @@ import de.algorythm.jdoe.model.meta.Schema;
 
 public interface IDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> {
 	
+	boolean isOpened();
 	void open() throws IOException;
 	void close() throws IOException;
 	void addObserver(IObserver<V,P,REF> observer);

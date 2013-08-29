@@ -124,4 +124,10 @@ public class DAO implements IDAO {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public boolean isOpened() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

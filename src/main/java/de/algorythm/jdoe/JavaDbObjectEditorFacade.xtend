@@ -8,41 +8,72 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.util.FxmlLoaderResult
 import de.algorythm.jdoe.ui.jfx.util.GuiceFxmlLoader
+import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.io.IOException
 import javafx.application.Platform
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Stage
 import javax.inject.Inject
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+
+import static javafx.application.Platform.*
 
 public class JavaDbObjectEditorFacade {
 
-	@Inject FXTaskQueue taskQueue
+	@Inject extension FXTaskQueue taskQueue
+	@Inject extension GuiceFxmlLoader
+	@Inject IEntityEditorManager editorManager
 	@Inject Bundle bundle
 	@Inject IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
-	@Inject extension GuiceFxmlLoader
 	
 	def startApplication(Stage primaryStage) throws IOException {
-		taskQueue.runTask('open-db', bundle.taskOpenDB) [|
+		Platform.runLater [|
+			val FxmlLoaderResult<Parent, Object> loaderResult = load('/fxml/entity_list.fxml')
+			
+			primaryStage.title = 'jDOE'
+			primaryStage.scene = new Scene(loaderResult.node, 600, 500)
+			primaryStage.minWidth = 300
+			primaryStage.minHeight = 400
+			primaryStage.show
+		]
+	}
+	
+	def showEntityEditor(FXEntityReference entityRef) {
+		editorManager.showEntityEditor(entityRef)
+	}
+	
+	def showEntityEditor(FXEntityReference entityRef, Procedure1<FXEntity> firstSaveCallback) {
+		editorManager.showEntityEditor(entityRef, firstSaveCallback)
+	}
+	
+	def closeEntityEditor(FXEntityReference entityRef) {
+		editorManager.closeEntityEditor(entityRef)
+	}
+	
+	def openDB(Procedure0 callback) {
+		closeDB	
+		runTask('open-db', bundle.taskOpenDB) [|
 			dao.open
 			
-			Platform.runLater [|
-				val FxmlLoaderResult<Parent, Object> loaderResult = load('/fxml/entity_list.fxml')
-				
-				primaryStage.title = 'jDOE'
-				primaryStage.scene = new Scene(loaderResult.node, 600, 500)
-				primaryStage.minWidth = 300
-				primaryStage.minHeight = 400
-				primaryStage.show
+			runLater [|
+				callback.apply
 			]
 		]
 	}
 	
+	def closeDB() {
+		if (dao.opened) {
+			runTask('close-db', bundle.taskCloseDB) [|
+				dao.close
+			]
+		}
+	}
+	
 	def stopApplication() throws IOException {
-		taskQueue.runTask('close-db', bundle.taskCloseDB) [|
-			dao.close
-			taskQueue.close
-		]
+		closeDB
+		taskQueue.close
 	}
 	
 	def showTypeEditor() throws IOException {

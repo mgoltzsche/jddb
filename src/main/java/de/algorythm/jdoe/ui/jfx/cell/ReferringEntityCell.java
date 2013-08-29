@@ -5,34 +5,34 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
+import de.algorythm.jdoe.JavaDbObjectEditorFacade;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
-import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager;
 
 public class ReferringEntityCell extends ListCell<FXEntityReference> {
 	
 	static public class Factory implements Callback<ListView<FXEntityReference>, ListCell<FXEntityReference>> {
 		
-		private final IEntityEditorManager editorManager;
+		private final JavaDbObjectEditorFacade facade;
 		
-		public Factory(final IEntityEditorManager editorManager) {
-			this.editorManager = editorManager;
+		public Factory(final JavaDbObjectEditorFacade facade) {
+			this.facade = facade;
 		}
 		
 		@Override
 		public ListCell<FXEntityReference> call(final ListView<FXEntityReference> view) {
-			return new ReferringEntityCell(editorManager);
+			return new ReferringEntityCell(facade);
 		}
 	};
 	
 	
 	private FXEntityReference entityRef;
 	
-	private ReferringEntityCell(final IEntityEditorManager editorManager) {
+	private ReferringEntityCell(final JavaDbObjectEditorFacade facade) {
 		setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(final MouseEvent evt) {
 				if (entityRef != null)
-					editorManager.showEntityEditor(entityRef);
+					facade.showEntityEditor(entityRef);
 			}
 		});
 	}

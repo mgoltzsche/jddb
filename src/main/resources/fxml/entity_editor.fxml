@@ -11,37 +11,50 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.control.Label?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
+<SplitPane xmlns:fx="http://javafx.com/fxml"
 		fx:controller="de.algorythm.jdoe.controller.EntityEditorController"
 		stylesheets="/styles/formstate.css"
-		disable="${editorState.disable}">
+		dividerPositions="0.1,0.8,0.1">
 	<fx:define>
 		<EditorStateModel fx:id="editorState" />
 	</fx:define>
-	<top>
-		<ToolBar>
-			<Button text="%delete" onAction="#delete"/>
-			<Button text="%save" onAction="#save"/>
-		</ToolBar>
-	</top>
-	<center>
-		<SplitPane dividerPositions="0.7,0.3">
-			<ScrollPane fitToWidth="true" fitToHeight="true">
-				<GridPane fx:id="gridPane" vgap="20" hgap="20">
-					<padding>
-						<Insets bottom="20" left="20" right="20" top="20"/>
-					</padding>
-				</GridPane>
-			</ScrollPane>
-			<ListView fx:id="referringEntities" />
-		</SplitPane>
-	</center>
-	<bottom>
-		<Button text="%save" onAction="#save">
-			<BorderPane.margin>
-				<Insets top="2" right="2" bottom="2" left="2"/>
-			</BorderPane.margin>
-		</Button>
-	</bottom>
-</BorderPane>
+	<VBox>
+		<Label text="Association tree:">
+			<VBox.margin>
+				<Insets top="10" right="10" bottom="10" left="10"/>
+			</VBox.margin>
+		</Label>
+		<TreeView VBox.vgrow="ALWAYS"/>
+	</VBox>
+	<VBox fillWidth="true">
+		<ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" fitToHeight="true">
+			<GridPane fx:id="gridPane" vgap="20" hgap="20">
+				<padding>
+					<Insets bottom="20" left="20" right="20" top="20"/>
+				</padding>
+			</GridPane>
+		</ScrollPane>
+		<HBox alignment="CENTER" spacing="10">
+			<padding>
+				<Insets top="10" right="10" bottom="10" left="10"/>
+			</padding>
+			<children>
+				<Button text="%delete" onAction="#delete"/>
+				<Button text="%save" onAction="#save"/>
+			</children>
+		</HBox>
+	</VBox>
+	<VBox>
+		<Label text="Referring entities:">
+			<VBox.margin>
+				<Insets top="10" right="10" bottom="10" left="10"/>
+			</VBox.margin>
+		</Label>
+		<ListView fx:id="referringEntities" VBox.vgrow="ALWAYS"/>
+	</VBox>
+</SplitPane>

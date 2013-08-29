@@ -75,6 +75,10 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
         yaml = new Yaml(representer);
 	}
 	
+	public boolean isOpened() {
+		return graph != null;
+	}
+	
 	public void open() throws IOException {
 		loadSchema();
 		graph = new OrientGraph("local:graph.db");
@@ -99,8 +103,7 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 	}
 	
 	public void close() {
-		if (graph != null)
-			graph.shutdown();
+		graph.shutdown();
 	}
 	
 	private void loadSchema() throws IOException {

@@ -56,8 +56,6 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	override initialize(URL url, ResourceBundle resourceBundle) {
 		tabPane = tabs
 		
-		schema = dao.schema
-		
 		entityList.items.addListener [
 			listTab.text = '''«bundle.results» («entityList.items.size»)'''
 		]
@@ -76,14 +74,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			setSelectedType(typeComboBox.value)
 		]
 		
-		setupTypeSelection
-		setupNewEntityButton
-		
 		addObserver(this)
-		
-		runLater [|
-			searchField.requestFocus
-		]
 	}
 	
 	def SimpleStringProperty searchValueProperty() {
@@ -194,17 +185,26 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def private void search() {
-		runTask('search', '''«bundle.taskSearch»: «searchPhrase» («selectedType.label»)''') [|
-			val entities = dao.list(selectedType, searchPhrase)
-			
-			runLater [|
-				entityList.items.all = entities
+		if (dao.opened) {
+			runTask('search', '''«bundle.taskSearch»: «searchPhrase» («selectedType.label»)''') [|
+				val entities = dao.list(selectedType, searchPhrase)
+				
+				runLater [|
+					entityList.items.all = entities
+				]
 			]
-		]
+		}
 	}
 	
 	def openDatabase() {
-		// TODO
+		entityList.items.clear
+		
+		facade.openDB [|
+			schema = dao.schema
+			setupTypeSelection
+			setupNewEntityButton
+			searchField.requestFocus
+		]
 	}
 	
 	def showTypeEditor() throws IOException {

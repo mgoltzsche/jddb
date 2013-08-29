@@ -17,20 +17,25 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Separator?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-	fx:controller="de.algorythm.jdoe.controller.MainController">
+	fx:controller="de.algorythm.jdoe.controller.MainController"
+	stylesheets="/styles/color.css">
 	<top>
+		<!-- <ToolBar maxWidth="Infinity"> -->
 		<ToolBar>
-			<Label fx:id="currentDatabaseLabel" />
-			<Button text="%open" onAction="#openDatabase" />
-			<Button text="%configure" onAction="#showTypeEditor" />
-			<Region prefWidth="50" />
+			<Label fx:id="currentDatabaseLabel"/>
+			<Button text="%open" onAction="#openDatabase"/>
+			<Button text="%configure" onAction="#showTypeEditor"/>
+			<Region HBox.hgrow="ALWAYS"/>
 			<TextField fx:id="searchField" promptText="%search"
-				prefWidth="200" />
-			<ComboBox fx:id="typeComboBox" />
+				prefWidth="200"/>
+			<ComboBox fx:id="typeComboBox"/>
+			<Region HBox.hgrow="ALWAYS"/>
 			<MenuButton fx:id="newEntityButton" text="%newEntity"/>
 		</ToolBar>
+		<!-- </ToolBar> -->
 	</top>
 	<center>
 		<TabPane fx:id="tabs">
