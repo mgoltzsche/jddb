@@ -38,6 +38,20 @@ public class Bundle {
 	public final String results;
 	public final String entity;
 	
+	public final String stateReady;
+	public final String stateQueued;
+	public final String stateRunning;
+	public final String stateCompleted;
+	public final String stateFailed;
+	
+	public final String taskOpenDB;
+	public final String taskCloseDB;
+	public final String taskSearch;
+	public final String taskSwitchSearchType;
+	public final String taskLoad;
+	public final String taskSave;
+	public final String taskDelete;
+	
 	private Bundle() {
 		ResourceBundle b;
 		
@@ -71,5 +85,17 @@ public class Bundle {
 		entity = b.getString("entity");
 		yes = b.getString("yes");
 		no = b.getString("no");
+		stateReady = b.getString("stateReady");
+		stateQueued = b.getString("stateQueued");
+		stateRunning = b.getString("stateRunning");
+		stateCompleted = b.getString("stateCompleted");
+		stateFailed = b.getString("stateFailed");
+		taskOpenDB = b.getString("taskOpenDB");
+		taskCloseDB = b.getString("taskCloseDB");
+		taskSearch = b.getString("taskSearch");
+		taskSwitchSearchType = b.getString("taskSwitchSearchType");
+		taskLoad = b.getString("taskLoad");
+		taskSave = b.getString("taskSave");
+		taskDelete = b.getString("taskDelete");
 	}
 }

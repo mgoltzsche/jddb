@@ -8,7 +8,6 @@ import de.algorythm.jdoe.model.dao.ModelChange
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.model.meta.Schema
-import de.algorythm.jdoe.taskQueue.TaskQueue
 import de.algorythm.jdoe.ui.jfx.cell.EntityCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.EntityRow
 import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
@@ -16,6 +15,7 @@ import de.algorythm.jdoe.ui.jfx.cell.PropertyCellValueFactory
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
+import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.util.ViewRegistry
 import java.io.IOException
 import java.util.LinkedList
@@ -32,11 +32,14 @@ import javafx.scene.control.TextField
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
+import javafx.fxml.Initializable
+import java.util.ResourceBundle
+import java.net.URL
 
-public class MainController implements IController, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
+public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
-	@Inject extension TaskQueue
+	@Inject extension FXTaskQueue
 	@Inject extension JavaDbObjectEditorFacade facade
 	@Inject extension ViewRegistry
 	@Inject var Bundle bundle
@@ -50,7 +53,7 @@ public class MainController implements IController, IObserver<FXEntity, IFXPrope
 	var selectedType = EntityType.ALL
 	var String searchPhrase
 	
-	override init() {
+	override initialize(URL url, ResourceBundle resourceBundle) {
 		tabPane = tabs
 		
 		schema = dao.schema
@@ -93,7 +96,7 @@ public class MainController implements IController, IObserver<FXEntity, IFXPrope
 			else
 				type
 		
-		runReplacedTask('load results for selected type') [|
+		runTask('switch-search-type', '''«bundle.taskSwitchSearchType»: «selectedType.label»''') [|
 			updateTableColumns
 			
 			runLater [|
@@ -191,7 +194,7 @@ public class MainController implements IController, IObserver<FXEntity, IFXPrope
 	}
 	
 	def private void search() {
-		runReplacedTask('searching') [|
+		runTask('search', '''«bundle.taskSearch»: «searchPhrase» («selectedType.label»)''') [|
 			val entities = dao.list(selectedType, searchPhrase)
 			
 			runLater [|

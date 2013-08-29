@@ -5,7 +5,6 @@ import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.entity.IPropertyValue
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
-import de.algorythm.jdoe.taskQueue.TaskQueue
 import de.algorythm.jdoe.ui.jfx.cell.AssociationContainmentCell
 import de.algorythm.jdoe.ui.jfx.controls.EntityField
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
@@ -14,6 +13,7 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociation
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociations
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValueVisitor
+import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.text.NumberFormat
 import java.text.ParseException
@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat
 import java.util.Collection
 import java.util.Date
 import java.util.regex.Pattern
+import javafx.beans.property.StringProperty
+import javafx.geometry.Insets
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
 import javafx.scene.control.Label
@@ -34,8 +36,6 @@ import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.slf4j.LoggerFactory
-import javafx.beans.property.StringProperty
-import javafx.geometry.Insets
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -45,7 +45,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	static val REAL_PATTERN = Pattern.compile('^\\d+((\\.|,)\\d+)?$')
 
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
-	@Inject extension TaskQueue
+	@Inject extension FXTaskQueue
 	@Inject extension IEntityEditorManager editorManager
 	@Inject Bundle bundle
 	var GridPane gridPane
@@ -99,7 +99,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			val hBoxChildren = hBox.children
 			val createButton = new Button(bundle.create)
 			val addEntityField = new EntityField [searchPhrase,it|
-				runReplacedTask('''search-«entity.id»-«property.name»''') [|
+				runTask('''search-«entity.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''') [|
 					all = entityType.list(searchPhrase)
 				]
 			]
@@ -200,7 +200,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			]
 		} else {
 			val entityField = new EntityField [searchPhrase,it|
-				runReplacedTask('''search-«entity.id»-«property.name»''') [|
+				runTask('''search-«entity.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''') [|
 					all = entityType.list(searchPhrase)
 				]
 			]

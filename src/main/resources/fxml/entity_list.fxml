@@ -15,6 +15,8 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.HBox?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
 	fx:controller="de.algorythm.jdoe.controller.MainController">
@@ -39,4 +41,7 @@
 			</tabs>
 		</TabPane>
 	</center>
+	<bottom>
+		<fx:include source="/fxml/status.fxml"/>
+	</bottom>
 </BorderPane>

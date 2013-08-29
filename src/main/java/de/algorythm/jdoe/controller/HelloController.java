@@ -7,7 +7,7 @@ import javafx.scene.control.TextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HelloController implements IController {
+public class HelloController {
 	private static final Logger log = LoggerFactory
 			.getLogger(HelloController.class);
 
@@ -17,9 +17,6 @@ public class HelloController implements IController {
 	private TextField lastNameField;
 	@FXML
 	private Label messageLabel;
-	
-	@Override
-	public void init() {}
 	
 	public void sayHello() {
 		final String firstName = firstNameField.getText();

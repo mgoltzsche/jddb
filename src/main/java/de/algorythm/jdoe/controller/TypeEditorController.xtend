@@ -18,8 +18,11 @@ import org.slf4j.LoggerFactory
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
+import javafx.fxml.Initializable
+import java.net.URL
+import java.util.ResourceBundle
 
-class TypeEditorController implements IController {
+class TypeEditorController implements Initializable {
 
 	static val log = LoggerFactory.getLogger(typeof(TypeEditorController))
 	
@@ -32,7 +35,7 @@ class TypeEditorController implements IController {
 	var EntityType selectedType
 	var Schema schema
 	
-	override init() {
+	override initialize(URL url, ResourceBundle bundle) {
 		schema = dao.schema
 		
 		// setup type list

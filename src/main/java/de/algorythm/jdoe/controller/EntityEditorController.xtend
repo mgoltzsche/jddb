@@ -4,12 +4,12 @@ import com.google.inject.Injector
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.dao.ModelChange
-import de.algorythm.jdoe.taskQueue.TaskQueue
 import de.algorythm.jdoe.ui.jfx.cell.ReferringEntityCell
 import de.algorythm.jdoe.ui.jfx.model.EditorStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
+import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.util.LinkedList
 import javafx.beans.property.SimpleStringProperty
@@ -25,23 +25,23 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.bundle.Bundle
 
-public class EntityEditorController implements IController, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
+public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
-	@Inject extension TaskQueue
+	@Inject extension FXTaskQueue
 	@Inject extension IEntityEditorManager editorManager
 	@Inject extension Injector
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
-	@FXML var GridPane gridPane
-	@FXML var ListView<FXEntityReference> referringEntities
-	@FXML var EditorStateModel editorState
+	@Inject Bundle bundle
+	@FXML GridPane gridPane
+	@FXML ListView<FXEntityReference> referringEntities
+	@FXML EditorStateModel editorState
 	var FXEntity transientEntity
 	val propertyUpdateCallbacks = new LinkedList<Procedure0>
 	var Procedure1<FXEntity> saveCallback
 	val createdContainedEntities = new LinkedList<FXEntityReference>
 	val SimpleStringProperty editorTitle = new SimpleStringProperty()
-	
-	override init() {}
 	
 	def init(StringProperty titleProperty, FXEntityReference entityRef, Procedure1<FXEntity> saveCallback) {
 		this.saveCallback = saveCallback
@@ -49,7 +49,7 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 		editorTitle.set(entityRef.labelProperty.value)
 		titleProperty.bind(editorTitle)
 		
-		runTask('open-editor-' + entityRef.id) [|
+		runTask('open-editor-' + entityRef.id, '''«bundle.taskLoad»: «entityRef» («entityRef.type.label»)''') [|
 			if (entityRef.exists)
 				entityRef.find.initView
 			else
@@ -94,7 +94,7 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 			editorState.busy = true
 			val saveEntity = transientEntity.copy
 			
-			runTask('save-entity-' + saveEntity.id) [|
+			runTask('save-entity-' + saveEntity.id, '''«bundle.taskSave»: «saveEntity» («saveEntity.type.label»)''') [|
 				runLater [|
 					editorState.busy = true
 				]
@@ -126,7 +126,7 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 		editorState.busy = true
 		val deleteEntity = transientEntity.copy
 		
-		runTask('delete-entity-' + deleteEntity.id) [|
+		runTask('delete-entity-' + deleteEntity.id, '''«bundle.taskDelete»: «deleteEntity» («deleteEntity.type.label»)''') [|
 			runLater [|
 				editorState.busy = true
 			]
@@ -154,8 +154,6 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 			runLater [|
 				for (propertyValue : transientEntity.values)
 					propertyValue.doWithValue(visitor)
-//				for (callback : propertyUpdateCallbacks)
-//					callback.apply
 			]
 		}
 	}
