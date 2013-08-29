@@ -20,41 +20,38 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	
 	private final SimpleStringProperty label = new SimpleStringProperty();
 	
-	public FXEntity(final EntityType type, final ArrayList<IFXPropertyValue<?>> values) {
-		super(type, values);
-		
-		applyLabelValue();
+	public FXEntity(final EntityType type) {
+		super(type);
 	}
 	
-	public FXEntity(final String id, final EntityType type, final ArrayList<IFXPropertyValue<?>> values) {
-		super(id, type, values);
-		
-		applyLabelValue();
+	public FXEntity(final String id, final EntityType type) {
+		super(id, type);
 	}
 	
-	public FXEntity(final String id, final EntityType type, final ArrayList<IFXPropertyValue<?>> values, final Collection<FXEntityReference> referringEntities) {
-		super(id, type, values, referringEntities);
-		
-		applyLabelValue();
+	public FXEntity(final String id, final EntityType type, final Collection<FXEntityReference> referringEntities) {
+		super(id, type, referringEntities);
 	}
 	
-	@Override
 	public FXEntity copy() {
-		// TODO: do not copy entity that has already been copied
 		return copy(new HashMap<String,FXEntityReference>());
 	}
 	
 	@Override
 	public FXEntity copy(final Map<String,FXEntityReference> copiedEntities) {
 		// TODO: add copy to copiedEntities before copying properties
-		final FXEntity copy = new FXEntity(getId(), getType(), copiedPropertyValues(copiedEntities));
+		final String id = getId();
+		final FXEntity copy = new FXEntity(id, getType());
+		
+		copiedEntities.put(id, copy);
+		
+		copy.setValues(copiedPropertyValues(copiedEntities));
 		
 		copy.changed = changed;
 		
 		return copy;
 	}
 	
-	private ArrayList<IFXPropertyValue<?>> copiedPropertyValues(final Map<String, FXEntityReference> copiedEntities) {
+	private ArrayList<IFXPropertyValue<?>> copiedPropertyValues(final Map<String,FXEntityReference> copiedEntities) {
 		final Collection<IFXPropertyValue<?>> values = getValues();
 		final int count = values.size();
 		final ArrayList<IFXPropertyValue<?>> copiedValues = new ArrayList<>(count);
@@ -63,6 +60,12 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 			copiedValues.add(propertyValue.copy(copiedEntities));
 		
 		return copiedValues;
+	}
+	
+	@Override
+	public void setValues(final ArrayList<IFXPropertyValue<?>> values) {
+		super.setValues(values);
+		applyLabelValue();
 	}
 	
 	private void applyLabelValue() {

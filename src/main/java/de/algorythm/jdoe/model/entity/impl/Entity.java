@@ -1,6 +1,5 @@
 package de.algorythm.jdoe.model.entity.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 import de.algorythm.jdoe.model.entity.IEntityReference;
@@ -11,15 +10,16 @@ public class Entity extends AbstractEntity<IPropertyValue<?,IEntityReference>,IE
 
 	static private final long serialVersionUID = -4116231309999192319L;
 	
-	public Entity(final EntityType type, final ArrayList<IPropertyValue<?,IEntityReference>> values) {
-		super(type, values);
+	
+	public Entity(final EntityType type) {
+		super(type);
 	}
 	
-	public Entity(final String id, final EntityType type, final ArrayList<IPropertyValue<?,IEntityReference>> values, final Collection<IEntityReference> referencingEntities) {
-		super(id, type, values, referencingEntities);
+	public Entity(final String id, final EntityType type, final Collection<IEntityReference> referencingEntities) {
+		super(id, type, referencingEntities);
 	}
 	
-	public Entity(final String id, final EntityType type, final ArrayList<IPropertyValue<?,IEntityReference>> values) {
-		super(id, type, values);
+	public Entity(final String id, final EntityType type) {
+		super(id, type);
 	}
 }

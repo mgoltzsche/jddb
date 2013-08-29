@@ -29,7 +29,7 @@ import static javafx.application.Platform.*
 public class EntityEditorController implements IController, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
 	@Inject extension TaskQueue
-	@Inject extension IEntityEditorManager
+	@Inject extension IEntityEditorManager editorManager
 	@Inject extension Injector
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@FXML var GridPane gridPane
@@ -82,7 +82,7 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 				i = i + 1
 			}
 			
-			referringEntities.cellFactory = ReferringEntityCell.FACTORY
+			referringEntities.cellFactory = new ReferringEntityCell.Factory(editorManager)
 			referringEntities.itemsProperty.value.all = entity.referencingEntities
 			
 			addObserver(this)

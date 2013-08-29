@@ -17,28 +17,24 @@ public class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntit
 	
 	private final String id;
 	private final EntityType type;
-	protected final ArrayList<P> values;
+	protected ArrayList<P> values;
 	private final Collection<REF> referencingEntities;
 	protected transient boolean changed;
 	
-	public AbstractEntity(final EntityType type, final ArrayList<P> values) {
-		this(UUID.randomUUID().toString(), type, values, new LinkedList<REF>());
+	public AbstractEntity(final EntityType type) {
+		this(UUID.randomUUID().toString(), type, new LinkedList<REF>());
 	}
 	
-	public AbstractEntity(final String id, final EntityType type, final ArrayList<P> values, final Collection<REF> referencingEntities) {
+	public AbstractEntity(final String id, final EntityType type, final Collection<REF> referencingEntities) {
 		this.id = id;
 		this.type = type;
-		this.values = values;
 		this.referencingEntities = referencingEntities;
-		registerAsPropertyValueChangeHandler();
 	}
 	
-	public AbstractEntity(final String id, final EntityType type, final ArrayList<P> values) {
+	public AbstractEntity(final String id, final EntityType type) {
 		this.id = id;
 		this.type = type;
 		referencingEntities = null;
-		this.values = values;
-		registerAsPropertyValueChangeHandler();
 	}
 	
 	@Override
@@ -70,18 +66,21 @@ public class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntit
 	}
 	
 	@Override
-	public Collection<P> getValues() {
+	public ArrayList<P> getValues() {
 		return values;
+	}
+	
+	@Override
+	public void setValues(final ArrayList<P> values) {
+		this.values = values;
+		
+		for (P value : values)
+			value.setChangeHandler(this);
 	}
 	
 	@Override
 	public Iterable<REF> getReferencingEntities() {
 		return referencingEntities;
-	}
-	
-	private void registerAsPropertyValueChangeHandler() {
-		for (P value : values)
-			value.setChangeHandler(this);
 	}
 	
 	@Override

@@ -45,14 +45,9 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 		
 		for (FXEntityReference entityRef : getValue()) {
 			final String id = entityRef.getId();
-			FXEntityReference copiedRef = copiedEntities.get(id);
+			final FXEntityReference copiedRef = copiedEntities.get(id);
 			
-			if (copiedRef == null) {
-				copiedRef = entityRef.copy();
-				copiedEntities.put(id, copiedRef);
-			}
-			
-			entityRefs.add(copiedRef);
+			entityRefs.add(copiedRef == null ? entityRef.copy(copiedEntities) : copiedRef);
 		}
 		
 		copy.setValue(entityRefs);

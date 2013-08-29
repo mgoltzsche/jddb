@@ -19,20 +19,32 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 	@Override
 	public FXEntity createTransientEntity(EntityType type,
 			ArrayList<IFXPropertyValue<?>> values) {
-		return new FXEntity(type, values);
+		final FXEntity entity = new FXEntity(type);
+		
+		entity.setValues(values);
+		
+		return entity;
 	}
 
 	@Override
 	public FXEntity createEntity(String id, EntityType type,
 			ArrayList<IFXPropertyValue<?>> values,
 			Collection<FXEntityReference> referringEntities) {
-		return new FXEntity(id, type, values, referringEntities);
+		final FXEntity entity = new FXEntity(id, type, referringEntities);
+		
+		entity.setValues(values);
+		
+		return entity;
 	}
 
 	@Override
 	public FXEntityReference createEntityReference(String id, EntityType type,
 			ArrayList<IFXPropertyValue<?>> values) {
-		return new FXEntity(id, type, values);
+		final FXEntity entity = new FXEntity(id, type);
+		
+		entity.setValues(values);
+		
+		return entity;
 	}
 
 	@Override
