@@ -24,6 +24,7 @@ import javafx.collections.ListChangeListener.Change
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.event.EventHandler
+import static extension javafx.application.Platform.*
 
 class StatusController implements Initializable, ListChangeListener<FXTask> {
 	
@@ -36,6 +37,7 @@ class StatusController implements Initializable, ListChangeListener<FXTask> {
 	val failedTasks = new SimpleListProperty(FXCollections.observableList(new LinkedList<FXTask>))
 	var taskCount = 0
 	var taskFinishedCount = 0
+	val taskDetails = new Stage
 	
 	override initialize(URL url, ResourceBundle resourceBundle) {
 		val EventHandler<MouseEvent> statusClickListener = [
@@ -48,17 +50,24 @@ class StatusController implements Initializable, ListChangeListener<FXTask> {
 		taskListProperty.addListener(this)
 		
 		status.text = bundle.stateReady
-	}
-	
-	def private showTaskDetails() {
+		
+		// setup task details window
 		val FxmlLoaderResult<Parent, TaskListController> loaderResult = load('/fxml/task_list.fxml')
-		val stage = new Stage
 		
 		loaderResult.controller.init(taskListProperty, failedTasks)
 		
-		stage.title = bundle.taskDetails
-		stage.scene = new Scene(loaderResult.node, 500, 300)
-		stage.show
+		taskDetails.title = bundle.taskDetails
+		taskDetails.scene = new Scene(loaderResult.node, 500, 300)
+	}
+	
+	def private showTaskDetails() {
+		if (taskDetails.showing) {
+			runLater [|
+				taskDetails.requestFocus
+			]
+		} else {
+			taskDetails.show
+		}
 	}
 	
 	override onChanged(Change<? extends FXTask> change) {

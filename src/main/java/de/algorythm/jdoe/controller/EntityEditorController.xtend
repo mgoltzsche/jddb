@@ -7,17 +7,20 @@ import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.dao.ModelChange
 import de.algorythm.jdoe.ui.jfx.cell.ReferringEntityCell
-import de.algorythm.jdoe.ui.jfx.model.EditorStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import java.util.LinkedList
+import javafx.beans.property.BooleanProperty
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.property.StringProperty
 import javafx.fxml.FXML
 import javafx.geometry.Insets
 import javafx.geometry.VPos
+import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ListView
 import javafx.scene.layout.GridPane
@@ -26,9 +29,6 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.ReadOnlyBooleanProperty
-import javafx.scene.control.Button
 
 public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -46,10 +46,11 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	val createdContainedEntities = new LinkedList<FXEntityReference>
 	val SimpleStringProperty editorTitle = new SimpleStringProperty
 	val pristine = new SimpleBooleanProperty(true)
-	val busy = new SimpleBooleanProperty(true)
+	var BooleanProperty busy
 	
-	def init(StringProperty titleProperty, FXEntityReference entityRef, Procedure1<FXEntity> saveCallback) {
+	def init(StringProperty titleProperty, BooleanProperty busy, FXEntityReference entityRef, Procedure1<FXEntity> saveCallback) {
 		this.saveCallback = saveCallback
+		this.busy = busy
 		
 		editorTitle.set(entityRef.labelProperty.value)
 		titleProperty.bind(editorTitle)
