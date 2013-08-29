@@ -43,7 +43,8 @@ public class Bundle {
 	public final String stateRunning;
 	public final String stateCompleted;
 	public final String stateFailed;
-	
+	public final String tasksQueued;
+	public final String tasksFailed;
 	public final String taskOpenDB;
 	public final String taskCloseDB;
 	public final String taskSearch;
@@ -90,6 +91,8 @@ public class Bundle {
 		stateRunning = b.getString("stateRunning");
 		stateCompleted = b.getString("stateCompleted");
 		stateFailed = b.getString("stateFailed");
+		tasksQueued = b.getString("tasksQueued");
+		tasksFailed = b.getString("tasksFailed");
 		taskOpenDB = b.getString("taskOpenDB");
 		taskCloseDB = b.getString("taskCloseDB");
 		taskSearch = b.getString("taskSearch");

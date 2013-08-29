@@ -27,10 +27,12 @@ public class JavaDbObjectEditorFacade {
 			dao.open
 			
 			Platform.runLater [|
-				val FxmlLoaderResult<Parent, Object> loaderResult = '/fxml/entity_list.fxml'.load
+				val FxmlLoaderResult<Parent, Object> loaderResult = load('/fxml/entity_list.fxml')
 				
 				primaryStage.title = 'jDOE'
 				primaryStage.scene = new Scene(loaderResult.node, 600, 500)
+				primaryStage.minWidth = 300
+				primaryStage.minHeight = 400
 				primaryStage.show
 			]
 		]

@@ -27,7 +27,7 @@
 	</top>
 	<center>
 		<SplitPane dividerPositions="0.7,0.3">
-			<ScrollPane>
+			<ScrollPane fitToWidth="true" fitToHeight="true">
 				<GridPane fx:id="gridPane" vgap="20" hgap="20">
 					<padding>
 						<Insets bottom="20" left="20" right="20" top="20"/>

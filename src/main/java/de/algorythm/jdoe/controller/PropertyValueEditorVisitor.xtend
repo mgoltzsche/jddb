@@ -43,6 +43,8 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	static val FIELD_ERROR_STYLE_CLASS = 'field-error'
 	static val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
 	static val REAL_PATTERN = Pattern.compile('^\\d+((\\.|,)\\d+)?$')
+	static val MIN_FIELD_WIDTH = 150
+	static val MIN_FIELD_HEIGHT = 19
 
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension FXTaskQueue
@@ -71,6 +73,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		val addButton = new Button(bundle.add)
 		val vBoxChildren = vBox.children
 		
+		selectedEntities.setMinSize(MIN_FIELD_WIDTH, 75)
 		selectedEntities.cellFactory = AssociationContainmentCell.FACTORY
 		selectedEntities.itemsProperty.bindBidirectional(propertyValue.valueProperty);
 		
@@ -242,6 +245,8 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	override doWithDecimal(IPropertyValue<Long,?> propertyValue) {
 		val textField = new TextField(propertyValue.toString)
 		
+		textField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
+		
 		textField.assign [
 			var Long value = null
 			
@@ -273,6 +278,8 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
 	override doWithReal(IPropertyValue<Double,?> propertyValue) {
 		val textField = new TextField(propertyValue.toString)
+		
+		textField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
 		
 		textField.assign [
 			var Double value = null
@@ -314,6 +321,8 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		val format = new SimpleDateFormat
 		val textField = new TextField(propertyValue.toString)
 		
+		textField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
+		
 		textField.assign [
 			var Date value = null
 			val valid = if (empty) {
@@ -339,12 +348,16 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	override doWithString(IPropertyValue<String,?> propertyValue) {
 		val textField = new TextField
 		
+		textField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
+		
 		propertyValue.bindStringProperty(textField.textProperty)
 		gridPane.add(textField, 1, row)
 	}
 
 	override doWithText(IPropertyValue<String,?> propertyValue) {
 		val textArea = new TextArea
+		
+		textArea.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
 		
 		propertyValue.bindStringProperty(textArea.textProperty)
 		gridPane.add(textArea, 1, row)
