@@ -18,23 +18,17 @@ public class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntit
 	private final String id;
 	private final EntityType type;
 	protected ArrayList<P> values;
-	private final Collection<REF> referencingEntities;
+	private Collection<REF> referringEntities;
 	protected transient boolean changed;
 	
 	public AbstractEntity(final EntityType type) {
-		this(UUID.randomUUID().toString(), type, new LinkedList<REF>());
-	}
-	
-	public AbstractEntity(final String id, final EntityType type, final Collection<REF> referencingEntities) {
-		this.id = id;
-		this.type = type;
-		this.referencingEntities = referencingEntities;
+		this(UUID.randomUUID().toString(), type);
+		referringEntities = new LinkedList<REF>();
 	}
 	
 	public AbstractEntity(final String id, final EntityType type) {
 		this.id = id;
 		this.type = type;
-		referencingEntities = null;
 	}
 	
 	@Override
@@ -79,8 +73,13 @@ public class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntit
 	}
 	
 	@Override
-	public Iterable<REF> getReferencingEntities() {
-		return referencingEntities;
+	public Collection<REF> getReferringEntities() {
+		return referringEntities;
+	}
+	
+	@Override
+	public void setReferringEntities(final Collection<REF> referringEntities) {
+		this.referringEntities = referringEntities;
 	}
 	
 	@Override

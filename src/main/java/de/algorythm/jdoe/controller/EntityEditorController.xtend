@@ -83,7 +83,7 @@ public class EntityEditorController implements IController, IObserver<FXEntity, 
 			}
 			
 			referringEntities.cellFactory = new ReferringEntityCell.Factory(editorManager)
-			referringEntities.itemsProperty.value.all = entity.referencingEntities
+			referringEntities.itemsProperty.value.all = entity.referringEntities
 			
 			addObserver(this)
 		]

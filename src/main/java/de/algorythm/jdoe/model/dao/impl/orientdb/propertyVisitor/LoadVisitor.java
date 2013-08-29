@@ -49,10 +49,10 @@ public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 		final String propertyName = property.getName();
 		
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {
-			final REF entity = dao.createEntityReference(referencingVertex);
+			final REF entityRef = dao.createEntityReference(referencingVertex);
 			
-			if (property.getType().isConform(entity.getType()))
-				associations.add(entity);
+			if (property.getType().isConform(entityRef.getType()))
+				associations.add(entityRef);
 		}
 		
 		propertyValue.setValue(associations);

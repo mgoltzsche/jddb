@@ -1,6 +1,7 @@
 package de.algorythm.jdoe.model.entity;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 public interface IEntity<P extends IPropertyValue<?,REF>, REF extends IEntityReference> extends IEntityReference {
 
@@ -8,5 +9,6 @@ public interface IEntity<P extends IPropertyValue<?,REF>, REF extends IEntityRef
 	void pristine();
 	ArrayList<P> getValues();
 	void setValues(ArrayList<P> values);
-	Iterable<REF> getReferencingEntities();
+	Collection<REF> getReferringEntities();
+	void setReferringEntities(Collection<REF> referringEntities);
 }

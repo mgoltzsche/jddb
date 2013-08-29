@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.Property;
@@ -16,7 +17,7 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	static private final long serialVersionUID = -2428408831904938958L;
 	
 	
-	private final ListProperty<FXEntityReference> observableValue = new SimpleListProperty<>();
+	private final ListProperty<FXEntityReference> observableValue = new SimpleListProperty<>(FXCollections.observableList(new LinkedList<FXEntityReference>()));
 
 	public FXAssociations(final Property property) {
 		super(property);

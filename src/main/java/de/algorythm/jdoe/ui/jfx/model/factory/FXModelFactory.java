@@ -17,34 +17,26 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
 public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 
 	@Override
-	public FXEntity createTransientEntity(EntityType type,
-			ArrayList<IFXPropertyValue<?>> values) {
+	public FXEntity createTransientEntity(final EntityType type, final ArrayList<IFXPropertyValue<?>> values) {
 		final FXEntity entity = new FXEntity(type);
-		
+
 		entity.setValues(values);
 		
 		return entity;
 	}
 
 	@Override
-	public FXEntity createEntity(String id, EntityType type,
-			ArrayList<IFXPropertyValue<?>> values,
-			Collection<FXEntityReference> referringEntities) {
-		final FXEntity entity = new FXEntity(id, type, referringEntities);
-		
-		entity.setValues(values);
-		
-		return entity;
+	public FXEntity createEntity(final String id, final EntityType type) {
+		return new FXEntity(id, type);
 	}
 
 	@Override
-	public FXEntityReference createEntityReference(String id, EntityType type,
-			ArrayList<IFXPropertyValue<?>> values) {
-		final FXEntity entity = new FXEntity(id, type);
+	public FXEntityReference createEntityReference(final String id, final EntityType type, final ArrayList<IFXPropertyValue<?>> values) {
+		final FXEntity entityRef = new FXEntity(id, type);
 		
-		entity.setValues(values);
+		entityRef.setValues(values);
 		
-		return entity;
+		return entityRef;
 	}
 
 	@Override

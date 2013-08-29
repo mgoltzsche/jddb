@@ -54,8 +54,8 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 	
 	static private final Logger LOG = LoggerFactory.getLogger(DAO.class);
 	
+	static public final String ID = "_id";
 	static private final String TYPE_FIELD = "_type";
-	static private final String ID = "_id";
 	static private final String SEARCH_INDEX = "searchIndex";
 	static private final Pattern WORD_PATTERN = Pattern.compile("[\\w]+");
 	
@@ -156,6 +156,7 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 	private V createEntity(final Vertex vertex) {
 		final String id = vertex.<String>getProperty(ID);
 		final EntityType type = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
+		final V entity = modelFactory.createEntity(id, type);
 		final IPropertyValueVisitor<REF> visitor = new LoadVisitor<>(vertex, this);
 		final Collection<Property> properties = type.getProperties();
 		final ArrayList<P> propertyValues = new ArrayList<>(properties.size());
@@ -167,16 +168,22 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 			propertyValues.add(propertyValue);
 		}
 		
-		return modelFactory.createEntity(id, type, propertyValues, referredEntities(vertex));
+		entity.setValues(propertyValues);
+		entity.setReferringEntities(referringEntities(entity, vertex));
+		
+		return entity;
 	}
 	
-	private Collection<REF> referredEntities(final Vertex vertex) {
+	private Collection<REF> referringEntities(final V entity, final Vertex vertex) {
 		final LinkedList<REF> entities = new LinkedList<>();
+		final String entityId = entity.getId();
 		
 		for (Edge edge : vertex.getEdges(Direction.IN)) {
 			final Vertex referringVertex = edge.getVertex(Direction.OUT);
+			final REF referringEntity = createEntityReference(referringVertex);
 			
-			entities.add(createEntityReference(referringVertex));
+			if (!entityId.equals(referringEntity.getId()))
+				entities.add(referringEntity);
 		}
 		
 		return entities;

@@ -28,10 +28,6 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		super(id, type);
 	}
 	
-	public FXEntity(final String id, final EntityType type, final Collection<FXEntityReference> referringEntities) {
-		super(id, type, referringEntities);
-	}
-	
 	public FXEntity copy() {
 		return copy(new HashMap<String,FXEntityReference>());
 	}
@@ -84,7 +80,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 			}
 		}
 		
-		label.set(sb.toString());
+		label.set(sb.length() == 0 ? getType().getLabel() : sb.toString());
 	}
 	
 	public IFXPropertyValue<?> getValue(int index) {
