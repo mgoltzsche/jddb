@@ -48,4 +48,9 @@ public class FXTask implements ITask {
 	public ReadOnlyObjectProperty<TaskState> stateProperty() {
 		return state;
 	}
+	
+	@Override
+	public String toString() {
+		return label + "(" + id + ")";
+	}
 }

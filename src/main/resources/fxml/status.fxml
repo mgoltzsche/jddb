@@ -18,17 +18,17 @@
 		<HBox BorderPane.alignment="BOTTOM_RIGHT">
 			<ProgressBar fx:id="progress" visible="false">
 				<HBox.margin>
-					<Insets top="9" right="3"/>
+					<Insets top="9" right="7"/>
 				</HBox.margin>
 			</ProgressBar>
 			<Button text="Errors">
 				<HBox.margin>
-					<Insets top="3" right="3" bottom="3" left="3"/>
+					<Insets top="2" right="2" bottom="2" left="2"/>
 				</HBox.margin>
 			</Button>
 			<Button text="Details">
 				<HBox.margin>
-					<Insets top="3" right="3" bottom="3" left="3"/>
+					<Insets top="2" right="2" bottom="2" left="2"/>
 				</HBox.margin>
 			</Button>
 		</HBox>

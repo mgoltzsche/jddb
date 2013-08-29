@@ -38,6 +38,10 @@
 		</SplitPane>
 	</center>
 	<bottom>
-		<Button text="%save" onAction="#save"/>
+		<Button text="%save" onAction="#save">
+			<BorderPane.margin>
+				<Insets top="2" right="2" bottom="2" left="2"/>
+			</BorderPane.margin>
+		</Button>
 	</bottom>
 </BorderPane>

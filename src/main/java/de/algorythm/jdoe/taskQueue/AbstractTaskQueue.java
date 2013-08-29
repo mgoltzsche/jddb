@@ -21,12 +21,7 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 			while (run || !taskMap.isEmpty()) {
 				synchronized(runnable) {
 					final Iterator<T> iter = taskMap.values().iterator();
-					
-					if (iter.hasNext()) {
-						currentTask = iter.next();
-						taskMap.remove(currentTask.getId());
-					} else
-						currentTask = null;
+					currentTask = iter.hasNext() ? iter.next() : null;
 				}
 				
 				if (currentTask == null) {
@@ -43,13 +38,13 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 					log.debug("run task: " + taskLabel);
 					try {
 						currentTask.run();
-						currentTask.setState(TaskState.COMPLETED);
-						onTaskFinished(currentTask);
+						finishTask(TaskState.COMPLETED);
 					} catch(Throwable e) {
 						log.error("task " + taskLabel + " failed", e);
-						currentTask.setState(TaskState.FAILED);
-						onTaskFinished(currentTask);
+						finishTask(TaskState.FAILED);
 					}
+					
+					
 				}
 			}
 		}
@@ -58,6 +53,14 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 	
 	public AbstractTaskQueue() {
 		taskThread.start();
+	}
+	
+	private void finishTask(final TaskState state) {
+		synchronized(runnable) {
+			currentTask.setState(state);
+			taskMap.remove(currentTask.getId());
+			onTaskFinished(currentTask);
+		}
 	}
 	
 	public void close() {
@@ -72,8 +75,10 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 		synchronized(runnable) {
 			taskMap.put(task.getId(), task);
 			runnable.notify();
+			onTaskQueued(task);
 		}
 	}
 	
+	protected abstract void onTaskQueued(T task);
 	protected abstract void onTaskFinished(T task);
 }

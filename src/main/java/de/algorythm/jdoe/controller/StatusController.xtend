@@ -18,8 +18,8 @@ class StatusController implements Initializable {
 	@FXML ProgressBar progress
 	
 	override initialize(URL url, ResourceBundle resourceBundle) {
-		tasksProperty.addListener [
-			val tasks = tasksProperty.value
+		taskListProperty.addListener [
+			val tasks = taskListProperty.value
 			
 			if (tasks.empty) {
 				progress.visible = false

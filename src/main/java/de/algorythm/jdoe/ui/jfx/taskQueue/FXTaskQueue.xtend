@@ -7,34 +7,35 @@ import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
-import static extension javafx.application.Platform.*
+
+import static javafx.application.Platform.*
 
 @Singleton
 class FXTaskQueue extends AbstractTaskQueue<FXTask> {
 	
-	val tasks = new SimpleListProperty<FXTask>(FXCollections.observableList(new LinkedList<FXTask>()));
-	
-	override runTask(FXTask task) {
-		super.runTask(task)
-		
-		val currentTasks = new LinkedList(taskMap.values);
-		
-		runLater [|
-			tasks.setAll(currentTasks);
-		]
-	}
+	val taskList = new SimpleListProperty<FXTask>(FXCollections.observableList(new LinkedList<FXTask>))
 	
 	def runTask(String id, String label, Procedure0 task) {
-		runTask(new FXTask(id, label, task));
+		runTask(new FXTask(id, label, task))
 	}
 	
-	def ReadOnlyListProperty<FXTask> tasksProperty() {
-		return tasks;
+	def ReadOnlyListProperty<FXTask> taskListProperty() {
+		taskList
+	}
+
+	override onTaskQueued(FXTask task) {
+		updateTasks
 	}
 
 	override onTaskFinished(FXTask task) {
+		updateTasks
+	}
+	
+	def private updateTasks() {
+		val currentTasks = new LinkedList(taskMap.values)
+		
 		runLater [|
-			tasks.remove(task);
+			taskList.all = currentTasks
 		]
 	}
 }
