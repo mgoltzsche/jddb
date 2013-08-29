@@ -31,8 +31,8 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	}
 
 	@Override
-	public void pristine() {
-		changed = false;
+	public void setChanged(final boolean changed) {
+		this.changed = changed;
 	}
 	
 	protected void changed() {

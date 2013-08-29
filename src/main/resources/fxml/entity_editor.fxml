@@ -20,9 +20,6 @@
 		fx:controller="de.algorythm.jdoe.controller.EntityEditorController"
 		stylesheets="/styles/formstate.css"
 		dividerPositions="0.1,0.8,0.1">
-	<fx:define>
-		<EditorStateModel fx:id="editorState" />
-	</fx:define>
 	<VBox>
 		<Label text="Association tree:">
 			<VBox.margin>
@@ -45,7 +42,7 @@
 			</padding>
 			<children>
 				<Button text="%delete" onAction="#delete"/>
-				<Button text="%save" onAction="#save"/>
+				<Button text="%save" onAction="#save" fx:id="saveButton"/>
 			</children>
 		</HBox>
 	</VBox>

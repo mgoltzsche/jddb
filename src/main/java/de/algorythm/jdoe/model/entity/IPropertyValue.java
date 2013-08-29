@@ -8,7 +8,7 @@ public interface IPropertyValue<V,REF extends IEntityReference> extends Serializ
 	
 	Property getProperty();
 	boolean isChanged();
-	void pristine();
+	void setChanged(boolean changed);
 	void doWithValue(IPropertyValueVisitor<REF> visitor);
 	V getValue();
 	void setValue(V v);

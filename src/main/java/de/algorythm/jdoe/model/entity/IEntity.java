@@ -5,8 +5,6 @@ import java.util.Collection;
 
 public interface IEntity<P extends IPropertyValue<?,REF>, REF extends IEntityReference> extends IEntityReference {
 
-	boolean isChanged();
-	void pristine();
 	ArrayList<P> getValues();
 	void setValues(ArrayList<P> values);
 	Collection<REF> getReferringEntities();

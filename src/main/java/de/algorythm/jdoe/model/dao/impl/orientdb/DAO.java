@@ -194,8 +194,7 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 	
 	@Override
 	public void save(final V entity) {
-		if (entity.isChanged())
-			save(entity, new HashMap<V, Vertex>());
+		save(entity, new HashMap<V, Vertex>());
 	}
 	
 	@Override

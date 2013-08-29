@@ -12,8 +12,8 @@
 		fx:controller="de.algorythm.jdoe.controller.StatusController"
 		alignment="CENTER_LEFT"
 		fx:id="statusPane">
-	<ProgressBar fx:id="progress" prefWidth="Infinity" maxHeight="Infinity" progress="1.0"/>
-	<Label fx:id="status">
+	<ProgressBar fx:id="progress" styleClass="taskProgress" prefWidth="Infinity" maxHeight="Infinity" progress="1.0"/>
+	<Label fx:id="status" styleClass="taskStatusMessage">
 		<StackPane.margin>
 			<Insets top="2" right="2" bottom="2" left="2"/>
 		</StackPane.margin>

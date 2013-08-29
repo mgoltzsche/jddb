@@ -19,7 +19,6 @@ public class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntit
 	private final EntityType type;
 	protected ArrayList<P> values;
 	private Collection<REF> referringEntities;
-	protected transient boolean changed;
 	
 	public AbstractEntity(final EntityType type) {
 		this(UUID.randomUUID().toString(), type);
@@ -37,21 +36,8 @@ public class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntit
 	}
 	
 	@Override
-	public boolean isChanged() {
-		return changed;
-	}
-	
-	@Override
-	public void pristine() {
-		changed = false;
-		
-		for (IPropertyValue<?,REF> value : values)
-			value.pristine();
-	}
-	
-	@Override
 	public boolean changed() {
-		return changed = true;
+		return true;
 	}
 	
 	@Override

@@ -42,10 +42,10 @@ class FXTaskQueue extends AbstractTaskQueue<FXTask> {
 	}
 	
 	def private updateTasks() {
-		val currentTasks = new LinkedList(taskMap.values)
+		val pendingTasks = getPendingTasks();
 		
 		runLater [|
-			taskList.all = currentTasks
+			taskList.all = pendingTasks
 		]
 	}
 }

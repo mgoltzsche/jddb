@@ -1,7 +1,9 @@
 package de.algorythm.jdoe.taskQueue;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,15 +15,20 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 	
 	
 	private boolean run = true;
-	protected final LinkedHashMap<String, T> taskMap = new LinkedHashMap<>();
-	protected T currentTask;
-	protected final Runnable runnable = new Runnable() {
+	private final LinkedHashMap<String, T> taskMap = new LinkedHashMap<>();
+	private T currentTask;
+	private final Runnable runnable = new Runnable() {
 		@Override
 		public void run() {
 			while (run || !taskMap.isEmpty()) {
 				synchronized(runnable) {
 					final Iterator<T> iter = taskMap.values().iterator();
-					currentTask = iter.hasNext() ? iter.next() : null;
+					
+					if (iter.hasNext()) {
+						currentTask = iter.next();
+						taskMap.remove(currentTask.getId());
+					} else
+						currentTask = null;
 				}
 				
 				if (currentTask == null) {
@@ -38,13 +45,11 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 					log.debug("run task: " + taskLabel);
 					try {
 						currentTask.run();
-						finishTask(TaskState.COMPLETED);
+						onTaskFinished(currentTask, TaskState.COMPLETED);
 					} catch(Throwable e) {
 						log.error("task " + taskLabel + " failed", e);
-						finishTask(TaskState.FAILED);
+						onTaskFinished(currentTask, TaskState.FAILED);
 					}
-					
-					
 				}
 			}
 		}
@@ -55,11 +60,17 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 		taskThread.start();
 	}
 	
-	private void finishTask(final TaskState state) {
+	protected Collection<T> getPendingTasks() {
+		final LinkedList<T> pendingTasks = new LinkedList<>();
+		
 		synchronized(runnable) {
-			taskMap.remove(currentTask.getId());
-			onTaskFinished(currentTask, state);
+			if (currentTask != null)
+				pendingTasks.add(currentTask);
+			
+			pendingTasks.addAll(taskMap.values());
 		}
+		
+		return pendingTasks;
 	}
 	
 	public void close() {

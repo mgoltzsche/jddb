@@ -39,8 +39,8 @@ public abstract class AbstractPropertyValue<V,REF extends IEntityReference> impl
 	}
 	
 	@Override
-	public void pristine() {
-		changed = false;
+	public void setChanged(final boolean changed) {
+		this.changed = changed;
 	}
 	
 	@Override

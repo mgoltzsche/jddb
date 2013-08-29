@@ -26,6 +26,9 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.scene.control.Button
 
 public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -36,12 +39,14 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	@Inject Bundle bundle
 	@FXML GridPane gridPane
 	@FXML ListView<FXEntityReference> referringEntities
-	@FXML EditorStateModel editorState
+	@FXML Button saveButton
 	var FXEntity transientEntity
 	val propertyUpdateCallbacks = new LinkedList<Procedure0>
 	var Procedure1<FXEntity> saveCallback
 	val createdContainedEntities = new LinkedList<FXEntityReference>
-	val SimpleStringProperty editorTitle = new SimpleStringProperty()
+	val SimpleStringProperty editorTitle = new SimpleStringProperty
+	val pristine = new SimpleBooleanProperty(true)
+	val busy = new SimpleBooleanProperty(true)
 	
 	def init(StringProperty titleProperty, FXEntityReference entityRef, Procedure1<FXEntity> saveCallback) {
 		this.saveCallback = saveCallback
@@ -57,11 +62,18 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 		]
 	}
 	
+	def ReadOnlyBooleanProperty pristineProperty() {
+		pristine
+	}
+	
 	def private initView(FXEntity entity) {
 		transientEntity = entity
 		
 		runLater [|
 			editorTitle.bind(transientEntity.labelProperty)
+			pristine.bind(transientEntity.changedProperty.not)
+			saveButton.disableProperty.bind(pristine)
+			busy.value = false
 			
 			var i = 0
 			
@@ -90,22 +102,29 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	}
 	
 	def save() {
-		editorState.busy = true
+		busy.value = true
 		val saveEntity = transientEntity.copy
+		transientEntity.changed = false
 		
 		runTask('save-entity-' + saveEntity.id, '''«bundle.taskSave»: «saveEntity» («saveEntity.type.label»)''') [|
 			if (!transientEntity.type.embedded || transientEntity.exists) {
 				runLater [|
-					editorState.busy = true
+					busy.value = true
 				]
 				
 				try {
 					transaction [
 						save(saveEntity)
 					]
+				} catch(Exception e) {
+					runLater [|
+						transientEntity.changed = true
+					]
+					
+					throw e
 				} finally {
 					runLater [|
-						editorState.busy = false
+						busy.value = false
 					]
 				}
 			}
@@ -127,12 +146,12 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	}
 	
 	def delete() {
-		editorState.busy = true
+		busy.value = true
 		val deleteEntity = transientEntity.copy
 		
 		runTask('delete-entity-' + deleteEntity.id, '''«bundle.taskDelete»: «deleteEntity» («deleteEntity.type.label»)''') [|
 			runLater [|
-				editorState.busy = true
+				busy.value = true
 			]
 			
 			try {
@@ -141,7 +160,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 				]
 			} finally {
 				runLater [|
-					editorState.busy = false
+					busy.value = false
 				]
 			}
 		]

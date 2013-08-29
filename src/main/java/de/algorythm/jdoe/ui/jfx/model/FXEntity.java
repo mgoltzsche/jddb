@@ -6,8 +6,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.impl.AbstractEntity;
 import de.algorythm.jdoe.model.entity.impl.DefaultPropertyValueChangeHandler;
 import de.algorythm.jdoe.model.meta.EntityType;
@@ -18,7 +21,8 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	static private final long serialVersionUID = -5386143358866304236L;
 	
 	
-	private final SimpleStringProperty label = new SimpleStringProperty();
+	private final transient SimpleBooleanProperty changed = new SimpleBooleanProperty();
+	private final transient SimpleStringProperty label = new SimpleStringProperty();
 	
 	public FXEntity(final EntityType type) {
 		super(type);
@@ -42,7 +46,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		
 		copy.setValues(copiedPropertyValues(copiedEntities));
 		
-		copy.changed = changed;
+		copy.changed.set(changed.get());
 		
 		return copy;
 	}
@@ -121,9 +125,24 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		propertyValue.setChangeHandler(this);
 	}
 	
+	public boolean isChanged() {
+		return changed.get();
+	}
+	
+	public void setChanged(final boolean changed) {
+		this.changed.set(changed);
+		
+		for (IPropertyValue<?,FXEntityReference> value : values)
+			value.setChanged(changed);
+	}
+	
+	public ReadOnlyBooleanProperty changedProperty() {
+		return changed;
+	}
+	
 	@Override
 	public boolean changed() {
-		super.changed();
+		changed.set(true);
 		applyLabelValue();
 		
 		return true;
