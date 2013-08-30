@@ -19,16 +19,12 @@
 <SplitPane xmlns:fx="http://javafx.com/fxml"
 		fx:controller="de.algorythm.jdoe.controller.EntityEditorController"
 		stylesheets="/styles/formstate.css"
-		dividerPositions="0.1,0.8,0.1">
-	<VBox>
-		<Label text="Association tree:">
-			<VBox.margin>
-				<Insets top="10" right="10" bottom="10" left="10"/>
-			</VBox.margin>
-		</Label>
-		<TreeView VBox.vgrow="ALWAYS"/>
-	</VBox>
+		dividerPositions="0.9,0.1">
 	<VBox fillWidth="true">
+		<ToolBar prefHeight="33">
+			<Button text="%delete" onAction="#delete"/>
+			<Button text="%save" onAction="#save" fx:id="saveButton"/>
+		</ToolBar>
 		<ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" fitToHeight="true">
 			<GridPane fx:id="gridPane" vgap="20" hgap="20">
 				<padding>
@@ -36,22 +32,11 @@
 				</padding>
 			</GridPane>
 		</ScrollPane>
-		<HBox alignment="CENTER" spacing="10">
-			<padding>
-				<Insets top="10" right="10" bottom="10" left="10"/>
-			</padding>
-			<children>
-				<Button text="%delete" onAction="#delete"/>
-				<Button text="%save" onAction="#save" fx:id="saveButton"/>
-			</children>
-		</HBox>
 	</VBox>
 	<VBox>
-		<Label text="Referring entities:">
-			<VBox.margin>
-				<Insets top="10" right="10" bottom="10" left="10"/>
-			</VBox.margin>
-		</Label>
-		<ListView fx:id="referringEntities" VBox.vgrow="ALWAYS"/>
+		<ToolBar prefHeight="33">
+			<Label text="Referring entities:"/>
+		</ToolBar>
+		<ListView fx:id="referringEntities" prefWidth="150" minWidth="150" VBox.vgrow="ALWAYS"/>
 	</VBox>
 </SplitPane>

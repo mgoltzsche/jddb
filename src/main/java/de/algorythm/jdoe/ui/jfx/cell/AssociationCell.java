@@ -60,7 +60,8 @@ public class AssociationCell extends ListCell<FXEntityReference> {
 		addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(final MouseEvent evt) {
-				facade.showEntityEditor(entity);
+				if (entity != null)
+					facade.showEntityEditor(entity);
 			}
 		});
 	}
