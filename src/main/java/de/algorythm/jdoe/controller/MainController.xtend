@@ -12,15 +12,20 @@ import de.algorythm.jdoe.ui.jfx.cell.EntityCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.EntityRow
 import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.PropertyCellValueFactory
+import de.algorythm.jdoe.ui.jfx.comparator.StringComparator
+import de.algorythm.jdoe.ui.jfx.model.ApplicationStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.util.ViewRegistry
 import java.io.IOException
+import java.net.URL
 import java.util.LinkedList
+import java.util.ResourceBundle
 import javafx.beans.property.SimpleStringProperty
 import javafx.fxml.FXML
+import javafx.fxml.Initializable
 import javafx.scene.control.ComboBox
 import javafx.scene.control.MenuButton
 import javafx.scene.control.MenuItem
@@ -32,9 +37,7 @@ import javafx.scene.control.TextField
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
-import javafx.fxml.Initializable
-import java.util.ResourceBundle
-import java.net.URL
+import javafx.scene.control.Button
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -43,6 +46,8 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	@Inject extension JavaDbObjectEditorFacade facade
 	@Inject extension ViewRegistry
 	@Inject var Bundle bundle
+	@FXML var ApplicationStateModel appState
+	@FXML var Button openDbButton
 	@FXML var ComboBox<EntityType> typeComboBox
 	@FXML var TabPane tabs
 	@FXML var Tab listTab
@@ -72,6 +77,10 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 		
 		typeComboBox.valueProperty.addListener [
 			setSelectedType(typeComboBox.value)
+		]
+		
+		runLater [|
+			openDbButton.requestFocus
 		]
 		
 		addObserver(this)
@@ -137,6 +146,9 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			typeColumn.cellValueFactory = EntityTypeCellValueFactory.INSTANCE
 			labelColumn.cellValueFactory = EntityCellValueFactory.INSTANCE
 			
+			labelColumn.comparator = StringComparator.INSTANCE
+			typeColumn.comparator = StringComparator.INSTANCE
+			
 			columns += typeColumn
 			columns += labelColumn
 		} else {
@@ -145,6 +157,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			for (Property property : selectedType.properties) {
 				val column = new TableColumn<FXEntity, String>(property.label)
 				
+				column.comparator = StringComparator.INSTANCE
 				column.cellValueFactory = new PropertyCellValueFactory(i)
 				columns += column
 				i = i + 1
@@ -203,6 +216,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			schema = dao.schema
 			setupTypeSelection
 			setupNewEntityButton
+			appState.dbClosed = false
 			searchField.requestFocus
 		]
 	}

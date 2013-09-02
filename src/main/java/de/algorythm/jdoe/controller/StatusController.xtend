@@ -61,13 +61,10 @@ class StatusController implements Initializable, ListChangeListener<FXTask> {
 	}
 	
 	def private showTaskDetails() {
-		if (taskDetails.showing) {
-			runLater [|
-				taskDetails.requestFocus
-			]
-		} else {
-			taskDetails.show
-		}
+		if (taskDetails.showing)
+			taskDetails.hide
+		
+		taskDetails.show
 	}
 	
 	override onChanged(Change<? extends FXTask> change) {

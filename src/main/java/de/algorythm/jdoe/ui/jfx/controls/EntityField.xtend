@@ -50,7 +50,9 @@ public class EntityField extends TextField implements ChangeListener<String> {
 			
 			selectedValueLabelProperty.unbind
 			
-			if (entityLabelProperty != null)
+			if (entityLabelProperty == null)
+				selectedValueLabelProperty.value = ''
+			else
 				selectedValueLabelProperty.bind(entityLabelProperty)
 		]
 		availableValues.addListener [

@@ -18,27 +18,31 @@
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.Separator?>
+<?import de.algorythm.jdoe.ui.jfx.model.ApplicationStateModel?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
 	fx:controller="de.algorythm.jdoe.controller.MainController"
 	stylesheets="/styles/color.css">
+	<fx:define>
+		<ApplicationStateModel fx:id="appState"/>
+	</fx:define>
 	<top>
 		<!-- <ToolBar maxWidth="Infinity"> -->
 		<ToolBar>
 			<Label fx:id="currentDatabaseLabel"/>
-			<Button text="%open" onAction="#openDatabase"/>
-			<Button text="%configure" onAction="#showTypeEditor"/>
+			<Button text="%open" onAction="#openDatabase" fx:id="openDbButton"/>
+			<Button text="%configure" onAction="#showTypeEditor" disable="${appState.dbClosed}"/>
 			<Region HBox.hgrow="ALWAYS"/>
 			<TextField fx:id="searchField" promptText="%search"
-				prefWidth="200"/>
-			<ComboBox fx:id="typeComboBox"/>
+				prefWidth="200" disable="${appState.dbClosed}"/>
+			<ComboBox fx:id="typeComboBox" disable="${appState.dbClosed}"/>
 			<Region HBox.hgrow="ALWAYS"/>
-			<MenuButton fx:id="newEntityButton" text="%newEntity"/>
+			<MenuButton fx:id="newEntityButton" text="%newEntity" disable="${appState.dbClosed}"/>
 		</ToolBar>
 		<!-- </ToolBar> -->
 	</top>
 	<center>
-		<TabPane fx:id="tabs">
+		<TabPane fx:id="tabs" disable="${appState.dbClosed}">
 			<tabs>
 				<Tab fx:id="listTab" id="list" text="%results" closable="false">
 					<TableView fx:id="entityList" />
