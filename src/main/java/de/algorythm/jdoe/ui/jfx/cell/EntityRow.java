@@ -35,6 +35,7 @@ public class EntityRow extends TableRow<FXEntity> implements EventHandler<MouseE
 		super();
 		this.actionHandler = actionHandler;
 		addEventHandler(MouseEvent.MOUSE_CLICKED, this);
+		setCache(false);
 	}
 	
 	@Override

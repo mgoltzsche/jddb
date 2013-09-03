@@ -13,7 +13,7 @@ public class Association extends AbstractPropertyValue<IEntityReference,IEntityR
 	}
 	
 	@Override
-	public void doWithValue(final IPropertyValueVisitor<IEntityReference> visitor) {
+	public void visit(final IPropertyValueVisitor<IEntityReference> visitor) {
 		visitor.doWithAssociation(this);
 	}
 

@@ -4,12 +4,17 @@ import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.util.Map;
 
-public class CacheCleanDeamon<V> extends Thread {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+public class CacheCleanDaemon<V> extends Thread {
+
+	static private final Logger LOG = LoggerFactory.getLogger(CacheCleanDaemon.class);
+	
 	private final ReferenceQueue<V> removalQueue;
 	private final Map<String, Reference<V>> cacheMap;
 	
-	public CacheCleanDeamon(final ReferenceQueue<V> removalQueue, final Map<String, Reference<V>> cacheMap) {
+	public CacheCleanDaemon(final ReferenceQueue<V> removalQueue, final Map<String, Reference<V>> cacheMap) {
 		super();
 		
 		this.removalQueue = removalQueue;
@@ -28,6 +33,7 @@ public class CacheCleanDeamon<V> extends Thread {
 					final String key = removeObj.getKey();
 					cacheMap.remove(key);
 					removeObj.clear();
+					LOG.debug("cleaned cache key: " + key);
 				}
 			}
 		} catch(InterruptedException e) {

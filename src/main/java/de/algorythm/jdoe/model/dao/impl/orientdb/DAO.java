@@ -194,7 +194,7 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 		
 		// assign values to vertex
 		for (IPropertyValue<?,REF> propertyValue : entity.getValues())
-			propertyValue.doWithValue(visitor);
+			propertyValue.visit(visitor);
 		
 		// update vertex index if keyword changed
 		final HashSet<String> newIndexKeywords = new HashSet<>(indexKeywords);
@@ -216,7 +216,7 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 		final IndexKeywordCollectingVisitor<REF> visitor = new IndexKeywordCollectingVisitor<>(WORD_PATTERN, indexKeywords);
 		
 		for (IPropertyValue<?,REF> propertyValue : entity.getValues())
-			propertyValue.doWithValue(visitor);
+			propertyValue.visit(visitor);
 		
 		return indexKeywords;
 	}
@@ -241,7 +241,7 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 		
 		// delete containments and collect index
 		for (IPropertyValue<?,REF> value : entity.getValues())
-			value.doWithValue(visitor);
+			value.visit(visitor);
 		
 		// remove vertex index
 		for (String keyword : indexKeywords)

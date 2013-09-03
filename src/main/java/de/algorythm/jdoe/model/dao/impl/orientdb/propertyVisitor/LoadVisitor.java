@@ -51,7 +51,7 @@ public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	}
 	
 	public void load(final IPropertyValue<?, REF> propertyValue) {
-		propertyValue.doWithValue(this);
+		propertyValue.visit(this);
 	}
 	
 	@Override
@@ -62,9 +62,13 @@ public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {
 			final REF entityRef = dao.createEntityReference(referencingVertex);
 			
-			if (property.getType().isConform(entityRef.getType()))
+			if (property.getType().isConform(entityRef.getType())) {
 				propertyValue.setValue(entityRef);
+				return;
+			}
 		}
+		
+		propertyValue.setValue(null);
 	}
 
 	@Override

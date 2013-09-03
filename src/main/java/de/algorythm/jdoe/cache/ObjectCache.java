@@ -11,7 +11,7 @@ public class ObjectCache<V> {
 	private final ReferenceQueue<V> removalQueue = new ReferenceQueue<>();
 	
 	public ObjectCache() {
-		new CacheCleanDeamon<V>(removalQueue, cacheMap).start();
+		new CacheCleanDaemon<V>(removalQueue, cacheMap).start();
 	}
 	
 	public void put(final String key, final V obj) {

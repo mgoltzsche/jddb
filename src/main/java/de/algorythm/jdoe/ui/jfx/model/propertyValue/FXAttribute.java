@@ -25,7 +25,7 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 	}
 	
 	@Override
-	public void doWithValue(final IPropertyValueVisitor<FXEntityReference> visitor) {
+	public void visit(final IPropertyValueVisitor<FXEntityReference> visitor) {
 		type.doWithPropertyValue(this, visitor);
 	}
 	

@@ -25,7 +25,7 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	}
 	
 	@Override
-	public void doWithValue(final IPropertyValueVisitor<FXEntityReference> visitor) {
+	public void visit(final IPropertyValueVisitor<FXEntityReference> visitor) {
 		visitor.doWithAssociations(this);
 	}
 	

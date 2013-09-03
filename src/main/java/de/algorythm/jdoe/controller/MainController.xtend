@@ -71,6 +71,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			search
 		]
 		
+		entityList.cache = false
 		entityList.setRowFactory(new EntityRow.Factory [
 			showEntityEditor
 		])

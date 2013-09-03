@@ -1,5 +1,6 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import de.algorythm.jdoe.model.entity.IPropertyValueChangeHandler;
@@ -36,8 +37,14 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	}
 	
 	protected void changed() {
-		applyLabelValue();
-		changed = changeHandler.changed();
+		// TODO: create runnable only when entity is already initialized
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				applyLabelValue();
+				changed = changeHandler.changed();
+			}
+		});
 	}
 	
 	@Override

@@ -15,7 +15,7 @@ public class Associations extends AbstractPropertyValue<Collection<IEntityRefere
 	}
 	
 	@Override
-	public void doWithValue(final IPropertyValueVisitor<IEntityReference> visitor) {
+	public void visit(final IPropertyValueVisitor<IEntityReference> visitor) {
 		visitor.doWithAssociations(this);
 	}
 
