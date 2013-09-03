@@ -5,8 +5,11 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
+import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 import de.algorythm.jdoe.model.meta.IPropertyType;
+import de.algorythm.jdoe.model.meta.Property;
 
 public abstract class AbstractAttributeType<V> implements IPropertyType<V>, Serializable {
 
@@ -51,6 +54,11 @@ public abstract class AbstractAttributeType<V> implements IPropertyType<V>, Seri
 	
 	public boolean valueChanged(final V oldValue, final V newValue) {
 		return oldValue == null && newValue != null || oldValue != null && !oldValue.equals(newValue);
+	}
+	
+	@Override
+	public <P extends IPropertyValue<?,REF>, REF extends IEntityReference> P createPropertyValue(final Property property, final IPropertyValueFactory<P,REF> factory) {
+		return factory.createAttributeValue(property, this);
 	}
 	
 	public abstract void doWithPropertyValue(IPropertyValue<V,?> value, IAttributeValueVisitor visitor);

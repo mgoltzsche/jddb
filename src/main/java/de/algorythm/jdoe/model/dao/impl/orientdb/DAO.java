@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +35,7 @@ import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.IDAOTransactionContext;
 import de.algorythm.jdoe.model.dao.IModelFactory;
 import de.algorythm.jdoe.model.dao.IObserver;
+import de.algorythm.jdoe.model.dao.IPropertyValueLoader;
 import de.algorythm.jdoe.model.dao.ModelChange;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.DeleteVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.IndexKeywordCollectingVisitor;
@@ -44,9 +44,7 @@ import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.SaveVisitor;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.EntityType;
-import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.Schema;
 
 @Singleton
@@ -54,7 +52,7 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 	
 	static private final Logger LOG = LoggerFactory.getLogger(DAO.class);
 	
-	static public final String ID = "_id";
+	static private final String ID = "_id";
 	static private final String TYPE_FIELD = "_type";
 	static private final String SEARCH_INDEX = "searchIndex";
 	static private final Pattern WORD_PATTERN = Pattern.compile("[\\w]+");
@@ -126,60 +124,29 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 	}
 
 	@Override
-	public V createEntity(final EntityType type) {
-		final Collection<Property> properties = type.getProperties();
-		final ArrayList<P> propertyValues = new ArrayList<>(properties.size());
-		
-		for (Property property : type.getProperties())
-			propertyValues.add(property.createPropertyValue(modelFactory));
-		
-		return modelFactory.createTransientEntity(type, propertyValues);
+	public V createNewEntity(final EntityType type) {
+		return modelFactory.createNewEntity(type);
 	}
 	
 	@Override
 	public REF createEntityReference(final Vertex vertex) {
-		final String id = vertex.<String>getProperty(ID);
-		final EntityType type = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
-		final LoadVisitor<V,P,REF> visitor = new LoadVisitor<>(vertex, this);
-		final Collection<Property> properties = type.getProperties();
-		final ArrayList<P> propertyValues = new ArrayList<>(properties.size());
-		
-		for (Property property : type.getProperties()) {
-			if (!property.getType().isUserDefined()) {
-				final P propertyValue = property.createPropertyValue(modelFactory);
-				
-				propertyValue.doWithValue(visitor);
-				propertyValues.add(propertyValue);
-			}
-		}
-		
-		return modelFactory.createEntityReference(id, type, propertyValues);
+		return modelFactory.createEntityReference(createLoader(vertex));
 	}
 	
 	private V createEntity(final Vertex vertex) {
-		final String id = vertex.<String>getProperty(ID);
-		final EntityType type = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
-		final V entity = modelFactory.createEntity(id, type);
-		final IPropertyValueVisitor<REF> visitor = new LoadVisitor<>(vertex, this);
-		final Collection<Property> properties = type.getProperties();
-		final ArrayList<P> propertyValues = new ArrayList<>(properties.size());
-		
-		for (Property property : type.getProperties()) {
-			final P propertyValue = property.createPropertyValue(modelFactory);
-			
-			propertyValue.doWithValue(visitor);
-			propertyValues.add(propertyValue);
-		}
-		
-		entity.setValues(propertyValues);
-		entity.setReferringEntities(referringEntities(entity, vertex));
-		
-		return entity;
+		return modelFactory.createEntity(createLoader(vertex));
 	}
 	
-	private Collection<REF> referringEntities(final V entity, final Vertex vertex) {
+	private IPropertyValueLoader<REF> createLoader(final Vertex vertex) {
+		final String id = vertex.<String>getProperty(ID);
+		final EntityType type = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
+		
+		return new LoadVisitor<>(vertex, id, type, this);
+	}
+	
+	@Override
+	public Collection<REF> loadReferringEntities(final String entityId, final Vertex vertex) {
 		final LinkedList<REF> entities = new LinkedList<>();
-		final String entityId = entity.getId();
 		
 		for (Edge edge : vertex.getEdges(Direction.IN)) {
 			final Vertex referringVertex = edge.getVertex(Direction.OUT);

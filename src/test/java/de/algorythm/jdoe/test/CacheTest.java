@@ -70,4 +70,30 @@ public class CacheTest {
 		
 		Assert.assertEquals("InnerObj should still exist", 2, cache.size());
 	}
+	
+	@Test
+	public void CachedObjectWithCyclicStrongReferencesShouldBeRemoved() {
+		MyObject innerObj = new MyObject(null);
+		MyObject obj = new MyObject(innerObj);
+		MyObject cyclicObj = new MyObject(obj);
+		innerObj.setRef(cyclicObj);
+		
+		cache.put(innerObj.getId(), innerObj);
+		cache.put(obj.getId(), obj);
+		cache.put(cyclicObj.getId(), cyclicObj);
+		
+		Assert.assertEquals(3, cache.size());
+		
+		obj = innerObj = cyclicObj = null;
+		
+		System.gc();
+		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			throw new AssertionError(e);
+		}
+		
+		Assert.assertEquals("Cache should be cleared", 0, cache.size());
+	}
 }

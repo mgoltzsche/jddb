@@ -22,7 +22,7 @@ public interface IDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>
 	void setSchema(Schema schema) throws IOException;
 	Set<V> list(EntityType type);
 	Set<V> list(EntityType type, String search);
-	V createEntity(EntityType type);
+	V createNewEntity(EntityType type);
 	V find(IEntityReference entityRef);
 	boolean exists(IEntityReference entityRef);
 	void transaction(Procedure1<IDAOTransactionContext<V,P,REF>> transaction);

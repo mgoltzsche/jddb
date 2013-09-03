@@ -42,7 +42,7 @@ public class Property extends AbstractLabeledElement {
 		this.searchable = searchable;
 	}
 	
-	public <REF extends IEntityReference, P extends IPropertyValue<?,REF>> P createPropertyValue(final IPropertyValueFactory<REF,P> factory) {
+	public <REF extends IEntityReference, P extends IPropertyValue<?,REF>> P createPropertyValue(final IPropertyValueFactory<P,REF> factory) {
 		return type.createPropertyValue(this, factory);
 	}
 	

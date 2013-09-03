@@ -10,23 +10,48 @@ import org.slf4j.LoggerFactory;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 
+import de.algorythm.jdoe.model.dao.IPropertyValueLoader;
 import de.algorythm.jdoe.model.dao.impl.orientdb.IDAOVisitorContext;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
+import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> implements IPropertyValueVisitor<REF> {
+public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> implements IPropertyValueVisitor<REF>, IPropertyValueLoader<REF> {
 	
 	static private final Logger LOG = LoggerFactory.getLogger(LoadVisitor.class);
 	
 	private final Vertex vertex;
+	private final String id;
+	private final EntityType type;
 	private final IDAOVisitorContext<V,P,REF> dao;
 	
-	public LoadVisitor(final Vertex vertex, final IDAOVisitorContext<V,P,REF> dao) {
+	public LoadVisitor(final Vertex vertex, final String id, final EntityType type, final IDAOVisitorContext<V,P,REF> dao) {
 		this.vertex = vertex;
+		this.id = id;
+		this.type = type;
 		this.dao = dao;
+	}
+	
+	@Override
+	public String getId() {
+		return id;
+	}
+	
+	@Override
+	public EntityType getType() {
+		return type;
+	}
+	
+	@Override
+	public Collection<REF> loadReferringEntities() {
+		return dao.loadReferringEntities(id, vertex);
+	}
+	
+	public void load(final IPropertyValue<?, REF> propertyValue) {
+		propertyValue.doWithValue(this);
 	}
 	
 	@Override

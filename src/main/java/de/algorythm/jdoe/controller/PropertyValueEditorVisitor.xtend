@@ -6,6 +6,7 @@ import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.entity.IPropertyValue
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
+import de.algorythm.jdoe.ui.jfx.cell.AssociationCell
 import de.algorythm.jdoe.ui.jfx.controls.EntityField
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
@@ -30,17 +31,14 @@ import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
-import org.slf4j.LoggerFactory
-import javafx.scene.layout.Priority
-import de.algorythm.jdoe.ui.jfx.cell.AssociationCell
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
-	static val LOG = LoggerFactory.getLogger(typeof(PropertyValueEditorVisitor))
 	static val FIELD_ERROR_STYLE_CLASS = 'field-error'
 	static val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
 	static val REAL_PATTERN = Pattern.compile('^\\d+((\\.|,)\\d+)?$')
@@ -83,7 +81,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			vBoxChildren += addButton
 			
 			addButton.setOnAction [
-				val newEntity = entityType.createEntity
+				val newEntity = entityType.createNewEntity
 				
 				createdContainedEntities += newEntity
 				selectedEntities.items += newEntity
@@ -130,7 +128,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			]
 			
 			createButton.setOnAction [
-				entityType.createEntity.showEntityEditor [FXEntity it|
+				entityType.createNewEntity.showEntityEditor [FXEntity it|
 					selectedEntities.items += it
 				]
 			]
@@ -198,7 +196,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			
 			editButton.setOnAction [
 				if (propertyValue.value == null) { 
-					propertyValue.value = entityType.createEntity
+					propertyValue.value = entityType.createNewEntity
 					createdContainedEntities += propertyValue.value
 				}
 				
@@ -222,7 +220,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				val selectedEntity = entityField.value
 				
 				if (selectedEntity == null) {
-					entityType.createEntity.showEntityEditor [
+					entityType.createNewEntity.showEntityEditor [
 						propertyValue.value = it
 					]
 				} else {
@@ -256,7 +254,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			var Long value = null
 			
 			val valid = if (empty || DECIMAL_PATTERN.matcher(it).matches) {
-				value = textField.text.asLong
+				value = Long.valueOf(textField.text)
 				true
 			} else
 				false
@@ -270,18 +268,6 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		gridPane.add(textField, 1, row)
 	}
 	
-	def private asLong(String txt) {
-		if (!txt.empty) {
-			try {
-				return Long.valueOf(txt)
-			} catch(NumberFormatException e) {
-				LOG.warn('Invalid decimal format: ' + txt)
-			}
-		}
-		
-		null
-	}
-
 	override doWithReal(IPropertyValue<Double,?> propertyValue) {
 		val textField = new TextField(propertyValue.toString)
 		
@@ -317,7 +303,6 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			try {
 				return NumberFormat.instance.parse(txt)
 			} catch(ParseException e) {
-				LOG.warn('Invalid real format: ' + txt)
 			}
 		}
 		
@@ -339,7 +324,6 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 					value = format.parse(it)
 					true
 				} catch(ParseException e) {
-					LOG.warn('Invalid date format: ' + it)
 					false
 				}
 			}

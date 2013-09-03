@@ -8,6 +8,6 @@ public interface IPropertyType<V> {
 	
 	String getLabel();
 	boolean isUserDefined();
-	<REF extends IEntityReference, P extends IPropertyValue<?,REF>> P createPropertyValue(Property property, IPropertyValueFactory<REF,P> factory);
+	<P extends IPropertyValue<?,REF>, REF extends IEntityReference> P createPropertyValue(Property property, IPropertyValueFactory<P,REF> factory);
 	boolean isConform(IPropertyType<?> type);
 }

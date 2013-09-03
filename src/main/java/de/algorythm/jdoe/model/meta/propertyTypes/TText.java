@@ -1,10 +1,7 @@
 package de.algorythm.jdoe.model.meta.propertyTypes;
 
 import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
-import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
-import de.algorythm.jdoe.model.meta.Property;
 
 public class TText extends AbstractAttributeType<String> {
 
@@ -12,11 +9,6 @@ public class TText extends AbstractAttributeType<String> {
 
 	public TText() {
 		super("text");
-	}
-	
-	@Override
-	public <E extends IEntityReference, P extends IPropertyValue<?,E>> P createPropertyValue(final Property property, final IPropertyValueFactory<E,P> factory) {
-		return factory.createAttributeValue(property, this);
 	}
 	
 	@Override

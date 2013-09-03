@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import de.algorythm.jdoe.model.dao.IModelFactory;
+import de.algorythm.jdoe.model.dao.IPropertyValueLoader;
+import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
@@ -14,25 +16,60 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociations;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAttribute;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
 
-public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
+public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IPropertyValueFactory<IFXPropertyValue<?>, FXEntityReference> {
 
 	@Override
-	public FXEntity createTransientEntity(final EntityType type, final ArrayList<IFXPropertyValue<?>> values) {
+	public FXEntity createNewEntity(final EntityType type) {
 		final FXEntity entity = new FXEntity(type);
-
+		final Collection<Property> properties = type.getProperties();
+		final ArrayList<IFXPropertyValue<?>> values = new ArrayList<>(properties.size());
+		
+		for (Property property : type.getProperties())
+			values.add(property.createPropertyValue(this));
+		
 		entity.setValues(values);
 		
 		return entity;
 	}
 
 	@Override
-	public FXEntity createEntity(final String id, final EntityType type) {
-		return new FXEntity(id, type);
+	public FXEntity createEntity(final IPropertyValueLoader<FXEntityReference> loader) {
+		final String id = loader.getId();
+		final EntityType type = loader.getType();
+		final FXEntity entity = new FXEntity(id, type);
+		
+		final Collection<Property> properties = type.getProperties();
+		final ArrayList<IFXPropertyValue<?>> propertyValues = new ArrayList<>(properties.size());
+		
+		for (Property property : type.getProperties()) {
+			final IFXPropertyValue<?> propertyValue = property.createPropertyValue(this);
+			
+			loader.load(propertyValue);
+			propertyValues.add(propertyValue);
+		}
+		
+		entity.setValues(propertyValues);
+		entity.setReferringEntities(loader.loadReferringEntities());
+		
+		return entity;
 	}
 
 	@Override
-	public FXEntityReference createEntityReference(final String id, final EntityType type, final ArrayList<IFXPropertyValue<?>> values) {
+	public FXEntityReference createEntityReference(final IPropertyValueLoader<FXEntityReference> loader) {
+		final String id = loader.getId();
+		final EntityType type = loader.getType();
 		final FXEntity entityRef = new FXEntity(id, type);
+		final Collection<Property> properties = type.getProperties();
+		final ArrayList<IFXPropertyValue<?>> values = new ArrayList<>(properties.size());
+		
+		for (Property property : type.getProperties()) {
+			if (!property.getType().isUserDefined()) {
+				final IFXPropertyValue<?> propertyValue = property.createPropertyValue(this);
+				
+				loader.load(propertyValue);
+				values.add(propertyValue);
+			}
+		}
 		
 		entityRef.setValues(values);
 		

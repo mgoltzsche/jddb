@@ -3,7 +3,7 @@ package de.algorythm.jdoe.model.entity.impl;
 import de.algorythm.jdoe.model.entity.IPropertyValueChangeHandler;
 
 public class DefaultPropertyValueChangeHandler implements IPropertyValueChangeHandler {
-
+	
 	static public final DefaultPropertyValueChangeHandler INSTANCE = new DefaultPropertyValueChangeHandler();
 	
 	
@@ -13,5 +13,4 @@ public class DefaultPropertyValueChangeHandler implements IPropertyValueChangeHa
 	public boolean changed() {
 		return false;
 	}
-
 }

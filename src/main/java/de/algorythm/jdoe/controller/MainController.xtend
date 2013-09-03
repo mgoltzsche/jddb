@@ -127,7 +127,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			menuItem.text = type.label
 			
 			menuItem.setOnAction [
-				type.createEntity.showEntityEditor
+				type.createNewEntity.showEntityEditor
 			]
 			
 			menuItems += menuItem
