@@ -5,7 +5,7 @@ import java.lang.ref.ReferenceQueue;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ObjectCache<V> {
+public class ObjectCache<V> implements IObjectCache<V> {
 
 	private final Map<String, Reference<V>> cacheMap = new HashMap<>();
 	private final ReferenceQueue<V> removalQueue = new ReferenceQueue<>();
@@ -26,12 +26,6 @@ public class ObjectCache<V> {
 		}
 	}
 	
-	public int size() {
-		synchronized(cacheMap) {
-			return cacheMap.size();
-		}
-	}
-	
 	public V get(final String key) {
 		final Reference<V> ref;
 		
@@ -43,5 +37,11 @@ public class ObjectCache<V> {
 			return null;
 		else
 			return ref.get();
+	}
+	
+	public int size() {
+		synchronized(cacheMap) {
+			return cacheMap.size();
+		}
 	}
 }

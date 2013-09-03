@@ -4,8 +4,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 
 import de.algorythm.jdoe.bundle.Bundle;
+import de.algorythm.jdoe.cache.ObjectCache;
 import de.algorythm.jdoe.model.dao.IDAO;
-import de.algorythm.jdoe.model.dao.IModelFactory;
 import de.algorythm.jdoe.model.dao.impl.orientdb.DAO;
 import de.algorythm.jdoe.ui.jfx.model.FXEntity;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
@@ -18,10 +18,13 @@ public class JavaDbObjectEditorModule extends AbstractModule {
 	
 	@Override
 	protected void configure() {
-		final IModelFactory<FXEntity, IFXPropertyValue<?>, FXEntityReference> modelFactory = new FXModelFactory();
+		final FXModelFactory modelFactory = new FXModelFactory();
+		final IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao = new DAO<>(modelFactory);
 		
 		bind(IEntityEditorManager.class).to(ViewRegistry.class);
 		bind(Bundle.class).toInstance(Bundle.getInstance());
-		bind(new TypeLiteral<IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference>>() {}).toInstance(new DAO<FXEntity,IFXPropertyValue<?>,FXEntityReference>(modelFactory));
+		bind(new TypeLiteral<IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference>>() {}).toInstance(dao);
+		
+		modelFactory.init(dao, new ObjectCache<FXEntity>());
 	}
 }

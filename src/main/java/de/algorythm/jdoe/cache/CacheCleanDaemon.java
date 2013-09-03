@@ -10,12 +10,13 @@ import org.slf4j.LoggerFactory;
 public class CacheCleanDaemon<V> extends Thread {
 
 	static private final Logger LOG = LoggerFactory.getLogger(CacheCleanDaemon.class);
+	static private int instanceCount = 0;	
 	
 	private final ReferenceQueue<V> removalQueue;
 	private final Map<String, Reference<V>> cacheMap;
 	
 	public CacheCleanDaemon(final ReferenceQueue<V> removalQueue, final Map<String, Reference<V>> cacheMap) {
-		super();
+		super("cache-clean-daemon-" + (instanceCount++));
 		
 		this.removalQueue = removalQueue;
 		this.cacheMap = cacheMap;

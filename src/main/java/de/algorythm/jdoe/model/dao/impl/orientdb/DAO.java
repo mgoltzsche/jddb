@@ -67,7 +67,6 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 	
 	public DAO(final IModelFactory<V, P, REF> modelFactory) {
 		this.modelFactory = modelFactory;
-		
 		final Representer representer = new Representer();
         representer.getPropertyUtils().setSkipMissingProperties(true);
         yaml = new Yaml(representer);

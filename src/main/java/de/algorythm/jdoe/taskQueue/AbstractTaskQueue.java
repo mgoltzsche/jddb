@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractTaskQueue<T extends ITask> {
 	
 	static private final Logger log = LoggerFactory.getLogger(AbstractTaskQueue.class);
-	static private final String THREAD_NAME = "task-thread";
+	static private final String THREAD_NAME = "task-queue-";
+	static private int instanceCount = 0;
 	
 	
 	private boolean run = true;
@@ -54,7 +55,7 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 			}
 		}
 	};
-	private final Thread taskThread = new Thread(runnable, THREAD_NAME);
+	private final Thread taskThread = new Thread(runnable, THREAD_NAME + (instanceCount++));
 	
 	public AbstractTaskQueue() {
 		taskThread.start();
