@@ -23,13 +23,24 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	
 	private final transient SimpleBooleanProperty changed = new SimpleBooleanProperty();
 	private final transient SimpleStringProperty label = new SimpleStringProperty();
+	private boolean reference;
 	
 	public FXEntity(final EntityType type) {
 		super(type);
+		reference = false;
 	}
 	
-	public FXEntity(final String id, final EntityType type) {
+	public FXEntity(final String id, final EntityType type, final boolean reference) {
 		super(id, type);
+		this.reference = reference;
+	}
+	
+	public boolean isReference() {
+		return reference;
+	}
+	
+	public void setReference(final boolean reference) {
+		this.reference = reference;
 	}
 	
 	public FXEntity copy() {
@@ -40,7 +51,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	public FXEntity copy(final Map<String,FXEntityReference> copiedEntities) {
 		// TODO: add copy to copiedEntities before copying properties
 		final String id = getId();
-		final FXEntity copy = new FXEntity(id, getType());
+		final FXEntity copy = new FXEntity(id, getType(), reference);
 		
 		copiedEntities.put(id, copy);
 		

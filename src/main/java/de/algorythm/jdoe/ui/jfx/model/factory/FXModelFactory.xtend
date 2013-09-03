@@ -15,12 +15,22 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAttribute
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import java.util.ArrayList
 import javax.inject.Singleton
+import javax.inject.Inject
+import de.algorythm.jdoe.model.dao.IDAO
+import javax.annotation.PostConstruct
+import de.algorythm.jdoe.model.dao.IObserver
+import de.algorythm.jdoe.model.dao.ModelChange
 
 @Singleton
-public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IPropertyValueFactory<IFXPropertyValue<?>, FXEntityReference> {
+public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IPropertyValueFactory<IFXPropertyValue<?>, FXEntityReference>, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 
-	// TODO: update cached entities on DAO event
-	val loadedEntities = new ObjectCache<FXEntity>
+	@Inject IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
+	val cachedEntities = new ObjectCache<FXEntity>
+	
+	@PostConstruct
+	def init() {
+		dao.addObserver(this)
+	}
 	
 	override createNewEntity(EntityType type) {
 		val entity = new FXEntity(type)
@@ -45,13 +55,15 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 
 	def private FXEntity createEntity(IPropertyValueLoader<FXEntityReference> loader, boolean withAssociations) {
 		val id = loader.id
-		val loadedEntity = loadedEntities.get(id)
+		val cachedEntity = cachedEntities.get(id)
 		
-		if (loadedEntity == null) {
+		if (cachedEntity == null) {
 			val type = loader.type
-			val entity = new FXEntity(id, type)
+			val entity = new FXEntity(id, type, !withAssociations)
 			val properties = type.properties
 			val values = new ArrayList<IFXPropertyValue<?>>(properties.size)
+			
+			cachedEntities.put(id, entity)
 			
 			for (Property property : type.properties) {
 				val propertyValue = property.createPropertyValue(this)
@@ -67,19 +79,25 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 			if (withAssociations)
 				entity.referringEntities = loader.loadReferringEntities
 			
-			loadedEntities.put(id, entity)
-			
 			return entity
-		} else if (withAssociations) {
-			for (IFXPropertyValue<?> propertyValue : loadedEntity.values)
+		} else if (withAssociations && cachedEntity.reference) {
+			for (IFXPropertyValue<?> propertyValue : cachedEntity.values)
 				loader.load(propertyValue)
 			
-			loadedEntity.referringEntities = loader.loadReferringEntities
+			cachedEntity.referringEntities = loader.loadReferringEntities
 		}
 		
-		loadedEntity
+		cachedEntity
 	}
 
+	override update(ModelChange<FXEntity,IFXPropertyValue<? extends Object>,FXEntityReference> change) {
+		for (entity : change.saved.values) {
+			val cachedEntity = cachedEntities.get(entity.id)
+			
+			if (cachedEntity != null)
+				cachedEntity.assign(entity)
+		}
+	}
 
 	override <V> createAttributeValue(Property property,
 			AbstractAttributeType<V> type) {
@@ -92,5 +110,5 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 
 	override createAssociationsValue(Property property) {
 		return new FXAssociations(property);
-	}
+	}	
 }
