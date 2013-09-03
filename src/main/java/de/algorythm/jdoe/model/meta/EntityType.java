@@ -42,7 +42,7 @@ public class EntityType extends AbstractLabeledElement implements IPropertyType<
 	
 	@Override
 	public boolean isUserDefined() {
-		return true;
+		return Boolean.TRUE;
 	}
 	
 	@Override

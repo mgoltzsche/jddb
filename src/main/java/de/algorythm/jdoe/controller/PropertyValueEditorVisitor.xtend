@@ -253,11 +253,10 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		textField.assign [
 			var Long value = null
 			
-			val valid = if (empty || DECIMAL_PATTERN.matcher(it).matches) {
+			val valid = empty || DECIMAL_PATTERN.matcher(it).matches
+			
+			if (valid)
 				value = Long.valueOf(textField.text)
-				true
-			} else
-				false
 			
 			propertyValue.value = value
 			

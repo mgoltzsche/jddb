@@ -11,6 +11,6 @@ public class DefaultPropertyValueChangeHandler implements IPropertyValueChangeHa
 	
 	@Override
 	public boolean changed() {
-		return false;
+		return Boolean.FALSE;
 	}
 }

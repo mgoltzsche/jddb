@@ -37,7 +37,7 @@ public class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntit
 	
 	@Override
 	public boolean changed() {
-		return true;
+		return Boolean.TRUE;
 	}
 	
 	@Override

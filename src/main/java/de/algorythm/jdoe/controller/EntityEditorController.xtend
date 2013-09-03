@@ -74,7 +74,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 			editorTitle.bind(transientEntity.labelProperty)
 			pristine.bind(transientEntity.changedProperty.not)
 			saveButton.disableProperty.bind(pristine)
-			busy.value = false
+			busy.value = true
 			
 			var i = 0
 			

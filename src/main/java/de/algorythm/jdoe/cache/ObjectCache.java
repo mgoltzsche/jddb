@@ -11,14 +11,14 @@ public class ObjectCache<V> implements IObjectCache<V> {
 	private final ReferenceQueue<V> removalQueue = new ReferenceQueue<>();
 	
 	public ObjectCache() {
-		new CacheCleanDaemon<V>(removalQueue, cacheMap).start();
+		new CacheCleanDaemon<V>(this, removalQueue, cacheMap).start();
 	}
 	
 	public void put(final String key, final V obj) {
 		if (obj == null)
 			throw new IllegalArgumentException("Cannot cache null");
 		
-		synchronized(cacheMap) {
+		synchronized(this) {
 			if (cacheMap.containsKey(key))
 				throw new IllegalArgumentException("object with key " + key + " is already cached");
 			
@@ -29,7 +29,7 @@ public class ObjectCache<V> implements IObjectCache<V> {
 	public V get(final String key) {
 		final Reference<V> ref;
 		
-		synchronized(cacheMap) {
+		synchronized(this) {
 			ref = cacheMap.get(key);
 		}
 		
@@ -40,7 +40,7 @@ public class ObjectCache<V> implements IObjectCache<V> {
 	}
 	
 	public int size() {
-		synchronized(cacheMap) {
+		synchronized(this) {
 			return cacheMap.size();
 		}
 	}

@@ -95,7 +95,7 @@ public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 			try {
 				propertyValue.setValue(Boolean.valueOf(valueAsString));
 			} catch(Throwable e) {
-				propertyValue.setValue(false);
+				propertyValue.setValue(Boolean.FALSE);
 				LOG.debug("Couldn't read boolean property " + propertyValue.getProperty().getLabel(), e);
 			}
 	}
@@ -104,13 +104,14 @@ public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	public void doWithDecimal(final IPropertyValue<Long,?> propertyValue) {
 		final String valueAsString = attributeValueAsString(propertyValue);
 		
-		if (valueAsString != null)
+		if (valueAsString != null) {
 			try {
 				propertyValue.setValue(Long.valueOf(valueAsString));
 			} catch(Throwable e) {
 				LOG.debug("Couldn't read decimal property " + propertyValue.getProperty().getLabel(), e);
 				propertyValue.setValue(null);
 			}
+		}
 	}
 
 	@Override

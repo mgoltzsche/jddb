@@ -39,7 +39,7 @@ public abstract class AbstractAttributeType<V> implements IPropertyType<V>, Seri
 
 	@Override
 	public boolean isUserDefined() {
-		return false;
+		return Boolean.FALSE;
 	}
 	
 	@Override

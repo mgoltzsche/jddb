@@ -30,7 +30,7 @@ public class CollectionType implements IPropertyType<Collection<IEntityReference
 
 	@Override
 	public boolean isUserDefined() {
-		return true;
+		return Boolean.TRUE;
 	}
 
 	public EntityType getItemType() {
@@ -58,6 +58,8 @@ public class CollectionType implements IPropertyType<Collection<IEntityReference
 
 	@Override
 	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
 		if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
