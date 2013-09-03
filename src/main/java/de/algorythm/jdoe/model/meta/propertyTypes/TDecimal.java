@@ -12,7 +12,7 @@ public class TDecimal extends AbstractAttributeType<Long> {
 	}
 
 	@Override
-	public void doWithPropertyValue(final IPropertyValue<Long,?> value,
+	public void visit(final IPropertyValue<Long,?> value,
 			final IAttributeValueVisitor visitor) {
 		visitor.doWithDecimal(value);
 	}

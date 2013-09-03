@@ -12,7 +12,7 @@ public class TText extends AbstractAttributeType<String> {
 	}
 	
 	@Override
-	public void doWithPropertyValue(final IPropertyValue<String,?> value,
+	public void visit(final IPropertyValue<String,?> value,
 			final IAttributeValueVisitor visitor) {
 		visitor.doWithText(value);
 	}

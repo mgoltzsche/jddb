@@ -21,23 +21,23 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 	public FXAttribute(final Property property, final AbstractAttributeType<V> type) {
 		super(property);
 		this.type = type;
-		//observableValue.addListener(this);
-		observableValue.addListener(new ChangeListener<V>() {
+		observableValue.addListener(this);
+		/*observableValue.addListener(new ChangeListener<V>() {
 			@Override
 			public void changed(final ObservableValue<? extends V> valueContainer, V oldValue, V newValue) {
 				FXAttribute.this.changed();
 			}
-		});
+		});*/
 	}
 	
 	@Override
 	public void visit(final IPropertyValueVisitor<FXEntityReference> visitor) {
-		type.doWithPropertyValue(this, visitor);
+		type.visit(this, visitor);
 	}
 	
 	@Override
 	public void doWithValue(final IFXPropertyValueVisitor visitor) {
-		type.doWithPropertyValue(this, visitor);
+		type.visit(this, visitor);
 	}
 
 	@Override

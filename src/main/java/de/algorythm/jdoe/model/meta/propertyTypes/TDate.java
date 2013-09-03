@@ -15,7 +15,7 @@ public class TDate extends AbstractAttributeType<Date>  {
 	}
 	
 	@Override
-	public void doWithPropertyValue(final IPropertyValue<Date,?> value,
+	public void visit(final IPropertyValue<Date,?> value,
 			final IAttributeValueVisitor visitor) {
 		visitor.doWithDate(value);
 	}

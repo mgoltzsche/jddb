@@ -12,7 +12,7 @@ public class TReal extends AbstractAttributeType<Double> {
 	}
 
 	@Override
-	public void doWithPropertyValue(final IPropertyValue<Double,?> value,
+	public void visit(final IPropertyValue<Double,?> value,
 			final IAttributeValueVisitor visitor) {
 		visitor.doWithReal(value);
 	}

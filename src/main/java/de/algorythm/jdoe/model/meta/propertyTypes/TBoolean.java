@@ -13,7 +13,7 @@ public class TBoolean extends AbstractAttributeType<Boolean> {
 	}
 	
 	@Override
-	public void doWithPropertyValue(final IPropertyValue<Boolean,?> value,
+	public void visit(final IPropertyValue<Boolean,?> value,
 			final IAttributeValueVisitor visitor) {
 		visitor.doWithBoolean(value);
 	}

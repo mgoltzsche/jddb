@@ -61,7 +61,7 @@ public abstract class AbstractAttributeType<V> implements IPropertyType<V>, Seri
 		return factory.createAttributeValue(property, this);
 	}
 	
-	public abstract void doWithPropertyValue(IPropertyValue<V,?> value, IAttributeValueVisitor visitor);
+	public abstract void visit(IPropertyValue<V,?> value, IAttributeValueVisitor visitor);
 
 	public abstract void valueToString(V value, StringBuilder sb);
 	

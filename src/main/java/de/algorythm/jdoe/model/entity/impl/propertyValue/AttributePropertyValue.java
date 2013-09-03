@@ -18,7 +18,7 @@ public class AttributePropertyValue<V> extends AbstractPropertyValue<V,IEntityRe
 	
 	@Override
 	public void visit(final IPropertyValueVisitor<IEntityReference> visitor) {
-		type.doWithPropertyValue(this, visitor);
+		type.visit(this, visitor);
 	}
 
 	@Override
