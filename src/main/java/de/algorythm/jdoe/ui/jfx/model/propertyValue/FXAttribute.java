@@ -2,6 +2,7 @@ package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
 import java.util.Map;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -21,7 +22,6 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 	public FXAttribute(final Property property, final AbstractAttributeType<V> type) {
 		super(property);
 		this.type = type;
-		observableValue.addListener(this);
 	}
 	
 	@Override
@@ -33,7 +33,11 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 	public void doWithValue(final IFXPropertyValueVisitor visitor) {
 		type.visit(this, visitor);
 	}
-
+	
+	public ObjectProperty<V> valueProperty() {
+		return observableValue;
+	}
+	
 	@Override
 	public void toString(final StringBuilder sb) {
 		type.valueToString(value, sb);
@@ -52,18 +56,21 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 	@Override
 	public void changed(final ObservableValue<? extends V> valueContainer, V oldValue, V newValue) {
 		value = newValue;
-		changed();
-	}
-
-	@Override
-	protected void updateObservableValueInternal() {
-		observableValue.removeListener(this);
-		observableValue.set(value);
-		observableValue.addListener(this);
+		onObservableValueChanged();
 	}
 	
 	@Override
-	public void setNewValue(final V value) {
+	public void setObservableValue(final V value) {
 		observableValue.set(value);
+	}
+	
+	@Override
+	protected void removeValueListener() {
+		observableValue.removeListener(this);
+	}
+
+	@Override
+	protected void addValueListener() {
+		observableValue.addListener(this);
 	}
 }

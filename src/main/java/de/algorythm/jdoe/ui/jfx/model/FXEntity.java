@@ -155,7 +155,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	
 	@Override
 	public <V> void changeValue(final AbstractFXPropertyValue<V> propertyValue, final V value) {
-		propertyValue.setNewValue(value);
+		propertyValue.setObservableValue(value);
 	}
 	
 	@Override
@@ -165,8 +165,8 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	}
 	
 	@Override
-	public void updateBoundValues(final AbstractFXPropertyValue<?> propertyValue) {
-		propertyValue.updateBoundValues();
+	public void updateValueBinding(final AbstractFXPropertyValue<?> propertyValue) {
+		propertyValue.bind();
 	}
 	
 	@Override

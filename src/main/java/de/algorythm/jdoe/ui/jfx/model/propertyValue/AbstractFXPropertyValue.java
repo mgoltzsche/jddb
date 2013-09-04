@@ -44,7 +44,7 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 		this.value = value;
 	}
 	
-	public abstract void setNewValue(final V value);
+	public abstract void setObservableValue(final V value);
 	
 	@Override
 	public void setPristine(final boolean pristine) {
@@ -60,15 +60,22 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	public void setChangeHandler(final IFXPropertyValueChangeHandler changeHandler) {
 		this.changeHandler = changeHandler;
 		
-		changeHandler.updateBoundValues(this);
+		changeHandler.updateValueBinding(this);
 	}
 	
-	public void updateBoundValues() {
-		updateObservableValueInternal();
+	public void unbind() {
+		removeValueListener();
+	}
+	
+	public void bind() {
+		setObservableValue(value);
+		addValueListener();
 		updateLabelValue();
 	}
 	
-	protected abstract void updateObservableValueInternal();
+	protected abstract void removeValueListener();
+	
+	protected abstract void addValueListener();
 	
 	protected void updateLabelValue() {
 		final StringBuilder sb = new StringBuilder();
@@ -78,7 +85,7 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 		label.set(sb.toString());
 	}
 	
-	protected void changed() {
+	protected void onObservableValueChanged() {
 		pristine = false;
 		updateLabelValue();
 		changeHandler.valueChanged();

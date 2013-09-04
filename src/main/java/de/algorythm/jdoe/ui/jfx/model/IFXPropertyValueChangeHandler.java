@@ -15,10 +15,12 @@ public interface IFXPropertyValueChangeHandler {
 		public void valueChanged() {}
 		
 		@Override
-		public void updateBoundValues(final AbstractFXPropertyValue<?> propertyValue) {}
+		public void updateValueBinding(final AbstractFXPropertyValue<?> propertyValue) {
+			propertyValue.unbind();
+		}
 	};
 	
 	<V> void changeValue(AbstractFXPropertyValue<V> propertyValue, V value);
-	void updateBoundValues(AbstractFXPropertyValue<?> propertyValue);
+	void updateValueBinding(AbstractFXPropertyValue<?> propertyValue);
 	void valueChanged();
 }

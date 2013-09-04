@@ -117,18 +117,18 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 				}
 			}
 			
-			applySaveCallback
+			saveEntity.applySaveCallback
 		] 
 	}
 	
-	def private applySaveCallback() {
+	def private applySaveCallback(FXEntity savedEntity) {
 		if (saveCallback != null) {
 			val callback = saveCallback
 			
 			saveCallback = null
 			
 			runLater [|
-				callback.apply(transientEntity)
+				callback.apply(savedEntity)
 			]
 		}
 	}

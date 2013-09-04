@@ -22,7 +22,6 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	public FXAssociations(final Property property) {
 		super(property);
 		value = new LinkedList<>();
-		observableValue.addListener(this);
 	}
 	
 	@Override
@@ -61,23 +60,26 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	public ListProperty<FXEntityReference> valueProperty() {
 		return observableValue;
 	}
-
+	
 	@Override
 	public void onChanged(final Change<? extends FXEntityReference> change) {
 		value.clear();
 		value.addAll(observableValue);
-		changed();
-	}
-
-	@Override
-	protected void updateObservableValueInternal() {
-		observableValue.removeListener(this);
-		observableValue.setAll(value);
-		observableValue.addListener(this);
+		onObservableValueChanged();
 	}
 	
 	@Override
-	public void setNewValue(final Collection<FXEntityReference> value) {
+	public void setObservableValue(final Collection<FXEntityReference> value) {
 		observableValue.setAll(value);
+	}
+	
+	@Override
+	protected void removeValueListener() {
+		observableValue.removeListener(this);
+	}
+
+	@Override
+	protected void addValueListener() {
+		observableValue.addListener(this);
 	}
 }

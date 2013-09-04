@@ -17,7 +17,6 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 
 	public FXAssociation(final Property property) {
 		super(property);
-		observableValue.addListener(this);
 	}
 
 	@Override
@@ -63,7 +62,7 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 	public void changed(final ObservableValue<? extends FXEntityReference> refContainer,
 			FXEntityReference oldRef, FXEntityReference newRef) {
 		value = newRef;
-		changed();
+		onObservableValueChanged();
 	}
 	
 	@Override
@@ -74,16 +73,19 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 		} else
 			label.bind(value.labelProperty());
 	}
-	
+
 	@Override
-	protected void updateObservableValueInternal() {
-		observableValue.removeListener(this);
+	public void setObservableValue(final FXEntityReference value) {
 		observableValue.set(value);
-		observableValue.addListener(this);
 	}
 
 	@Override
-	public void setNewValue(final FXEntityReference value) {
-		observableValue.set(value);
+	protected void removeValueListener() {
+		observableValue.removeListener(this);
+	}
+
+	@Override
+	protected void addValueListener() {
+		observableValue.addListener(this);
 	}
 }
