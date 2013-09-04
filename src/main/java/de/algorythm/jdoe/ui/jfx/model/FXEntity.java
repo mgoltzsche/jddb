@@ -20,10 +20,10 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
 public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityReference> implements FXEntityReference, IFXPropertyValueChangeHandler {
 
 	static private final long serialVersionUID = -5386143358866304236L;
-	
+	static private final String EMPTY = "";
 	
 	private final transient SimpleBooleanProperty pristine = new SimpleBooleanProperty(true);
-	private final transient SimpleStringProperty label = new SimpleStringProperty();
+	private final transient SimpleStringProperty label = new SimpleStringProperty(EMPTY);
 	private boolean reference;
 	
 	public FXEntity(final EntityType type) {
@@ -55,8 +55,9 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		copiedEntities.put(id, copy);
 		
 		copy.setValues(copiedPropertyValues(copiedEntities));
-		copy.pristine.set(pristine.get());
+		copy.label.set(label.get());
 		copy.bindValues();
+		copy.pristine.set(pristine.get());
 		
 		return copy;
 	}
