@@ -2,8 +2,6 @@ package de.algorythm.jdoe.model.entity.impl.propertyValue;
 
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.entity.IPropertyValueChangeHandler;
-import de.algorythm.jdoe.model.entity.impl.DefaultPropertyValueChangeHandler;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
 
@@ -15,8 +13,7 @@ public abstract class AbstractPropertyValue<V,REF extends IEntityReference> impl
 	private V value;
 	private Property property;
 	protected IPropertyType<?> type;
-	protected transient boolean changed;
-	private IPropertyValueChangeHandler changeHandler = DefaultPropertyValueChangeHandler.INSTANCE;
+	protected transient boolean pristine = true;
 
 	public AbstractPropertyValue(final Property property) {
 		this.property = property;
@@ -29,18 +26,13 @@ public abstract class AbstractPropertyValue<V,REF extends IEntityReference> impl
 	}
 	
 	@Override
-	public void setChangeHandler(final IPropertyValueChangeHandler changeHandler) {
-		this.changeHandler = changeHandler;
+	public boolean isPristine() {
+		return pristine;
 	}
 	
 	@Override
-	public boolean isChanged() {
-		return changed;
-	}
-	
-	@Override
-	public void setChanged(final boolean changed) {
-		this.changed = changed;
+	public void setPristine(final boolean pristine) {
+		this.pristine = pristine;
 	}
 	
 	@Override
@@ -52,7 +44,7 @@ public abstract class AbstractPropertyValue<V,REF extends IEntityReference> impl
 	public void setValue(final V value) {
 		if (valueChanged(this.value, value)) {
 			this.value = value;
-			changed = changeHandler.changed();
+			pristine = false;
 		}
 	}
 	

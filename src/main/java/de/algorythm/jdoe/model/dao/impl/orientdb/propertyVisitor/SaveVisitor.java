@@ -34,7 +34,7 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	@Override
 	@SuppressWarnings("unchecked")
 	public void doWithAssociations(final IPropertyValue<Collection<REF>,REF> propertyValue) {
-		if (!propertyValue.isChanged())
+		if (propertyValue.isPristine())
 			return;
 		
 		final Property property = propertyValue.getProperty();
@@ -92,7 +92,7 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	@Override
 	@SuppressWarnings("unchecked")
 	public void doWithAssociation(final IPropertyValue<REF,REF> propertyValue) {
-		if (!propertyValue.isChanged())
+		if (propertyValue.isPristine())
 			return;
 		
 		final Property property = propertyValue.getProperty();
@@ -171,7 +171,7 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	}
 	
 	private void writeAttributeValue(IPropertyValue<?,?> propertyValue) {
-		if (!propertyValue.isChanged())
+		if (propertyValue.isPristine())
 			return;
 		
 		final Property property = propertyValue.getProperty();

@@ -22,12 +22,6 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 		super(property);
 		this.type = type;
 		observableValue.addListener(this);
-		/*observableValue.addListener(new ChangeListener<V>() {
-			@Override
-			public void changed(final ObservableValue<? extends V> valueContainer, V oldValue, V newValue) {
-				FXAttribute.this.changed();
-			}
-		});*/
 	}
 	
 	@Override
@@ -42,31 +36,34 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 
 	@Override
 	public void toString(final StringBuilder sb) {
-		type.valueToString(getValue(), sb);
+		type.valueToString(value, sb);
 	}
 
 	@Override
 	public IFXPropertyValue<V> copy(final Map<String, FXEntityReference> copiedEntities) {
 		final FXAttribute<V> copy = new FXAttribute<>(getProperty(), type);
 		
-		copy.setValue(getValue());
-		copy.changed = changed;
+		copy.setValue(value);
+		copy.pristine = pristine;
 		
 		return copy;
 	}
 	
 	@Override
-	public V getValue() {
-		return observableValue.get();
+	public void changed(final ObservableValue<? extends V> valueContainer, V oldValue, V newValue) {
+		value = newValue;
+		changed();
 	}
 
 	@Override
-	public void setValue(final V value) {
+	protected void updateObservableValueInternal() {
+		observableValue.removeListener(this);
 		observableValue.set(value);
+		observableValue.addListener(this);
 	}
 	
 	@Override
-	public void changed(final ObservableValue<? extends V> valueContainer, V oldValue, V newValue) {
-		changed();
+	public void setNewValue(final V value) {
+		observableValue.set(value);
 	}
 }

@@ -9,10 +9,10 @@ import javafx.scene.Node
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
+import javafx.scene.layout.Region
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
-import javafx.scene.layout.Region
 
 @Singleton
 public class ViewRegistry implements IEntityEditorManager {
@@ -35,16 +35,17 @@ public class ViewRegistry implements IEntityEditorManager {
 		
 		if (existingViewData == null) { // create tab
 			val loaderResult = <Node, EntityEditorController>load('/fxml/entity_editor.fxml')
-			
 			val tab = new Tab
 			val progressIndicator = new ProgressIndicator
-			val busy = progressIndicator.visibleProperty
-			busy.value = true
+			
 			progressIndicator.setPrefSize(17, 17)
 			progressIndicator.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE)
 			tab.graphic = progressIndicator
 			
-			loaderResult.controller.init(tab.textProperty, busy, entityRef, saveCallback)
+			val stateModel = loaderResult.controller.init(entityRef, saveCallback)
+			
+			tab.textProperty.bind(stateModel.titleProperty)
+			progressIndicator.visibleProperty.bind(stateModel.busyProperty)
 			
 			tab.content = loaderResult.node
 			

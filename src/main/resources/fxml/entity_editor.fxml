@@ -15,15 +15,19 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.control.Label?>
+<?import de.algorythm.jdoe.ui.jfx.model.EditorStateModel?>
 
 <SplitPane xmlns:fx="http://javafx.com/fxml"
 		fx:controller="de.algorythm.jdoe.controller.EntityEditorController"
 		stylesheets="/styles/formstate.css"
 		dividerPositions="0.9,0.1">
+	<fx:define>
+		<EditorStateModel fx:id="editorState"/>
+	</fx:define>
 	<VBox fillWidth="true">
 		<ToolBar prefHeight="33">
 			<Button text="%delete" onAction="#delete"/>
-			<Button text="%save" onAction="#save" fx:id="saveButton"/>
+			<Button text="%save" onAction="#save" fx:id="saveButton" disable="${editorState.pristine}"/>
 		</ToolBar>
 		<ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" fitToHeight="true">
 			<GridPane fx:id="gridPane" vgap="20" hgap="20">

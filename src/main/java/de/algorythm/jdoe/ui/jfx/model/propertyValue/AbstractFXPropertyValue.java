@@ -1,21 +1,20 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
-import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
-import de.algorythm.jdoe.model.entity.IPropertyValueChangeHandler;
-import de.algorythm.jdoe.model.entity.impl.DefaultPropertyValueChangeHandler;
 import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.ui.jfx.model.IFXPropertyValueChangeHandler;
 
 public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> {
 	
 	static private final long serialVersionUID = -8869779848370884103L;
 	static protected final String EMPTY = "";
 	
-	private final Property property;
-	protected final SimpleStringProperty label = new SimpleStringProperty(EMPTY);
-	protected boolean changed;
-	protected IPropertyValueChangeHandler changeHandler = DefaultPropertyValueChangeHandler.INSTANCE;
+	protected V value;
+	private transient final Property property;
+	protected transient final SimpleStringProperty label = new SimpleStringProperty(EMPTY);
+	protected transient boolean pristine = true;
+	protected transient IFXPropertyValueChangeHandler changeHandler = IFXPropertyValueChangeHandler.PRISTINE;
 	
 	public AbstractFXPropertyValue(final Property property) {
 		this.property = property;
@@ -27,24 +26,29 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	}
 	
 	@Override
-	public boolean isChanged() {
-		return changed;
+	public boolean isPristine() {
+		return pristine;
 	}
 
 	@Override
-	public void setChanged(final boolean changed) {
-		this.changed = changed;
+	public V getValue() {
+		return value;
 	}
 	
-	protected void changed() {
-		// TODO: create runnable only when entity is already initialized
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				applyLabelValue();
-				changed = changeHandler.changed();
-			}
-		});
+	@Override
+	public void setValue(final V value) {
+		changeHandler.changeValue(this, value);
+	}
+	
+	public void setPristineValue(final V value) {
+		this.value = value;
+	}
+	
+	public abstract void setNewValue(final V value);
+	
+	@Override
+	public void setPristine(final boolean pristine) {
+		this.pristine = pristine;
 	}
 	
 	@Override
@@ -53,16 +57,31 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	}
 	
 	@Override
-	public void setChangeHandler(final IPropertyValueChangeHandler changeHandler) {
+	public void setChangeHandler(final IFXPropertyValueChangeHandler changeHandler) {
 		this.changeHandler = changeHandler;
+		
+		changeHandler.updateBoundValues(this);
 	}
 	
-	protected void applyLabelValue() {
+	public void updateBoundValues() {
+		updateObservableValueInternal();
+		updateLabelValue();
+	}
+	
+	protected abstract void updateObservableValueInternal();
+	
+	protected void updateLabelValue() {
 		final StringBuilder sb = new StringBuilder();
 		
 		toString(sb);
 		
 		label.set(sb.toString());
+	}
+	
+	protected void changed() {
+		pristine = false;
+		updateLabelValue();
+		changeHandler.valueChanged();
 	}
 	
 	@Override

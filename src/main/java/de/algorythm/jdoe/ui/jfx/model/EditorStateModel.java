@@ -3,15 +3,25 @@ package de.algorythm.jdoe.ui.jfx.model;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 public class EditorStateModel {
 
-	private final BooleanProperty busy = new SimpleBooleanProperty(false);
-	private final BooleanProperty changed = new SimpleBooleanProperty(false);
+	private final StringProperty title = new SimpleStringProperty();
+	private final BooleanProperty busy = new SimpleBooleanProperty(true);
 	private final BooleanProperty pristine = new SimpleBooleanProperty(true);
-
-	public EditorStateModel() {
-		pristine.bind(changed.not());
+	
+	public String getTitle() {
+		return title.get();
+	}
+	
+	public void setTitle(final String title) {
+		this.title.set(title);
+	}
+	
+	public StringProperty titleProperty() {
+		return title;
 	}
 	
 	public Boolean isBusy() {
@@ -22,27 +32,19 @@ public class EditorStateModel {
 		this.busy.set(disable);
 	}
 	
-	public BooleanProperty busyProperty() {
+	public ReadOnlyBooleanProperty busyProperty() {
 		return busy;
-	}
-	
-	public Boolean isChanged() {
-		return changed.get();
-	}
-	
-	public void setChanged(final Boolean changed) {
-		this.changed.set(changed);
-	}
-	
-	public BooleanProperty changedProperty() {
-		return changed;
-	}
-	
-	public ReadOnlyBooleanProperty pristineProperty() {
-		return pristine;
 	}
 	
 	public Boolean isPristine() {
 		return pristine.get();
+	}
+	
+	public void setPristine(final Boolean pristine) {
+		this.pristine.set(pristine);
+	}
+	
+	public BooleanProperty pristineProperty() {
+		return pristine;
 	}
 }

@@ -50,19 +50,9 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 			copy.setValue(copiedRef == null ? entityRef.copy(copiedEntities) : copiedRef);
 		}
 		
-		copy.changed = changed;
+		copy.pristine = pristine;
 		
 		return copy;
-	}
-
-	@Override
-	public FXEntityReference getValue() {
-		return observableValue.get();
-	}
-
-	@Override
-	public void setValue(final FXEntityReference value) {
-		observableValue.set(value);
 	}
 	
 	public ObjectProperty<FXEntityReference> valueProperty() {
@@ -72,16 +62,28 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 	@Override
 	public void changed(final ObservableValue<? extends FXEntityReference> refContainer,
 			FXEntityReference oldRef, FXEntityReference newRef) {
-		if (newRef == null) {
+		value = newRef;
+		changed();
+	}
+	
+	@Override
+	protected void updateLabelValue() {
+		if (value == null) {
 			label.unbind();
 			label.set(EMPTY);
 		} else
-			label.bind(newRef.labelProperty());
-		
-		changed = changeHandler.changed();
+			label.bind(value.labelProperty());
 	}
 	
-	public ObservableValue<FXEntityReference> observableValueProperty() {
-		return observableValue;
+	@Override
+	protected void updateObservableValueInternal() {
+		observableValue.removeListener(this);
+		observableValue.set(value);
+		observableValue.addListener(this);
+	}
+
+	@Override
+	public void setNewValue(final FXEntityReference value) {
+		observableValue.set(value);
 	}
 }
