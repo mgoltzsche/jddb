@@ -10,7 +10,7 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	static private final long serialVersionUID = -8869779848370884103L;
 	static protected final String EMPTY = "";
 	
-	protected V value;
+	private V value;
 	private transient final Property property;
 	protected transient final SimpleStringProperty label = new SimpleStringProperty(EMPTY);
 	protected transient boolean pristine = true;

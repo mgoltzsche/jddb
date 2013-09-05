@@ -16,7 +16,7 @@ public class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntit
 	
 	private final String id;
 	private final EntityType type;
-	protected ArrayList<P> values;
+	private ArrayList<P> values;
 	private Collection<REF> referringEntities;
 	
 	public AbstractEntity(final EntityType type) {

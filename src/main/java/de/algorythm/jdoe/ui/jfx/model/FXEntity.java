@@ -2,9 +2,7 @@ package de.algorythm.jdoe.ui.jfx.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -44,37 +42,30 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	}
 	
 	public FXEntity copy() {
-		return copy(new HashMap<String,FXEntityReference>());
-	}
-	
-	@Override
-	public FXEntity copy(final Map<String,FXEntityReference> copiedEntities) {
 		final String id = getId();
 		final FXEntity copy = new FXEntity(id, getType(), reference);
 		
-		copiedEntities.put(id, copy);
-		
-		copy.setValues(copiedPropertyValues(copiedEntities));
-		copy.label.set(label.get());
+		copy.setValues(copiedPropertyValues());
+		copy.setReferringEntities(getReferringEntities());
 		copy.bindValues();
 		copy.pristine.set(pristine.get());
 		
 		return copy;
 	}
 	
-	private ArrayList<IFXPropertyValue<?>> copiedPropertyValues(final Map<String,FXEntityReference> copiedEntities) {
+	private ArrayList<IFXPropertyValue<?>> copiedPropertyValues() {
 		final Collection<IFXPropertyValue<?>> values = getValues();
 		final int count = values.size();
 		final ArrayList<IFXPropertyValue<?>> copiedValues = new ArrayList<>(count);
 		
 		for (IFXPropertyValue<?> propertyValue : values)
-			copiedValues.add(propertyValue.copy(copiedEntities));
+			copiedValues.add(propertyValue.copy());
 		
 		return copiedValues;
 	}
 	
 	public IFXPropertyValue<?> getValue(int index) {
-		return values.get(index);
+		return getValues().get(index);
 	}
 	
 	public ReadOnlyStringProperty labelProperty() {
@@ -90,8 +81,8 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		if (!getId().equals(entity.getId()))
 				throw new IllegalArgumentException("Given entity has a different id");
 		
-		final Iterator<IFXPropertyValue<?>> iter = values.iterator();
-		final Iterator<IFXPropertyValue<?>> otherIter = entity.values.iterator();
+		final Iterator<IFXPropertyValue<?>> iter = getValues().iterator();
+		final Iterator<IFXPropertyValue<?>> otherIter = entity.getValues().iterator();
 		
 		while (iter.hasNext())
 			assignPropertyValue(iter.next(), otherIter.next());
@@ -114,7 +105,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	public void setPristine(final boolean pristine) {
 		this.pristine.set(pristine);
 		
-		for (IPropertyValue<?,FXEntityReference> value : values)
+		for (IPropertyValue<?,FXEntityReference> value : getValues())
 			value.setPristine(pristine);
 	}
 	
@@ -126,7 +117,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				for (IFXPropertyValue<?> value : values)
+				for (IFXPropertyValue<?> value : getValues())
 					value.setChangeHandler(FXEntity.this);
 				
 				updateLabelValue();
@@ -137,7 +128,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	private void updateLabelValue() {
 		final StringBuilder sb = new StringBuilder();
 		
-		for (IFXPropertyValue<?> value : values) {
+		for (IFXPropertyValue<?> value : getValues()) {
 			if (!value.getProperty().getType().isUserDefined()) { // attrs only
 				final String valueStr = value.labelProperty().get();
 				
