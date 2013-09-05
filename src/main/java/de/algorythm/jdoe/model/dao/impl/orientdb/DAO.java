@@ -242,15 +242,15 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 		for (IPropertyValue<?,REF> value : entity.getValues())
 			value.visit(visitor);
 		
-		// remove vertex index
+		// delete vertex index
 		for (String keyword : indexKeywords)
 			searchIndex.remove(SEARCH_INDEX, keyword, vertex);
 		
-		// remove all edges
-		//for (Edge edge : vertex.getEdges(Direction.BOTH))
-		//	edge.remove();
+		// delete all edges
+		for (Edge edge : vertex.getEdges(Direction.BOTH))
+			edge.remove();
 		
-		// remove vertex
+		// delete vertex
 		vertex.remove();
 	}
 	
@@ -275,8 +275,9 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 		final LinkedHashSet<V> result = new LinkedHashSet<>();
 		final Collection<Index<Vertex>> useIndices;
 		final Iterable<String> searchKeywords = createSearchKeywords(search);
+		final boolean searchAllTypes = type == EntityType.ALL;
 		
-		if (type == EntityType.ALL) {
+		if (searchAllTypes) {
 			useIndices = searchIndices.values();
 		} else {
 			useIndices = new LinkedList<>();
@@ -305,9 +306,20 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 				foundVertices.retainAll(keywordVertices);
 		}
 		
-		if (foundVertices != null)
-			for (Vertex vertex : foundVertices)
-				result.add(createEntity(vertex));
+		if (foundVertices != null) {
+			for (Vertex vertex : foundVertices) {
+				final V entity = createEntity(vertex);
+				
+				result.add(entity);
+				
+				if (searchAllTypes && entity.getType().isEmbedded()) {
+					for (Vertex referringVertex : vertex.getVertices(Direction.IN)) {
+						if (!foundVertices.contains(referringVertex))
+							result.add(createEntity(referringVertex));
+					}
+				}
+			}
+		}
 		
 		return result;
 	}

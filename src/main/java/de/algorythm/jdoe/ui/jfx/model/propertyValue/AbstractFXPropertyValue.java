@@ -13,7 +13,6 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	private V value;
 	private transient final Property property;
 	protected transient final SimpleStringProperty label = new SimpleStringProperty(EMPTY);
-	protected transient boolean pristine = true;
 	protected transient IFXPropertyValueChangeHandler changeHandler = IFXPropertyValueChangeHandler.PRISTINE;
 	
 	public AbstractFXPropertyValue(final Property property) {
@@ -23,11 +22,6 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	@Override
 	public Property getProperty() {
 		return property;
-	}
-	
-	@Override
-	public boolean isPristine() {
-		return pristine;
 	}
 
 	@Override
@@ -45,11 +39,6 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	}
 	
 	public abstract void setObservableValue(final V value);
-	
-	@Override
-	public void setPristine(final boolean pristine) {
-		this.pristine = pristine;
-	}
 	
 	@Override
 	public ReadOnlyStringProperty labelProperty() {
@@ -87,7 +76,6 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	
 	protected void onObservableValueChanged(final V value) {
 		this.value = value;
-		pristine = false;
 		updateLabelValue();
 		changeHandler.valueChanged();
 	}

@@ -34,9 +34,6 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	@Override
 	@SuppressWarnings("unchecked")
 	public void doWithAssociations(final IPropertyValue<Collection<REF>,REF> propertyValue) {
-		if (propertyValue.isPristine())
-			return;
-		
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		final LinkedList<Edge> existingEdges = new LinkedList<Edge>();
@@ -92,9 +89,6 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	@Override
 	@SuppressWarnings("unchecked")
 	public void doWithAssociation(final IPropertyValue<REF,REF> propertyValue) {
-		if (propertyValue.isPristine())
-			return;
-		
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		final REF entityRef = propertyValue.getValue();
@@ -171,12 +165,13 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	}
 	
 	private void writeAttributeValue(IPropertyValue<?,?> propertyValue) {
-		if (propertyValue.isPristine())
-			return;
-		
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		final Object newValue = propertyValue.getValue();
+		final Object oldValue = vertex.getProperty(propertyName);
+		
+		if (oldValue == null && newValue == null || oldValue != null && oldValue.equals(newValue))
+			return;
 		
 		// persist new value
 		if (newValue == null)

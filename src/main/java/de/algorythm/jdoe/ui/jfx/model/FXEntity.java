@@ -9,7 +9,6 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
-import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.impl.AbstractEntity;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.AbstractFXPropertyValue;
@@ -96,17 +95,6 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		
 		propertyValue.setChangeHandler(IFXPropertyValueChangeHandler.PRISTINE);
 		propertyValue.setValue(otherValue.getValue());
-	}
-	
-	public boolean isPristine() {
-		return pristine.get();
-	}
-	
-	public void setPristine(final boolean pristine) {
-		this.pristine.set(pristine);
-		
-		for (IPropertyValue<?,FXEntityReference> value : getValues())
-			value.setPristine(pristine);
 	}
 	
 	public ReadOnlyBooleanProperty pristineProperty() {

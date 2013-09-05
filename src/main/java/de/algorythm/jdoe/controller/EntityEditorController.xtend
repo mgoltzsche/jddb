@@ -70,7 +70,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	def private initView(FXEntity entity) {
 		transientEntity = entity.copy
 		editorState.titleProperty.bind(transientEntity.labelProperty)
-		editorState.pristineProperty.bind(transientEntity.pristineProperty)
+		//editorState.pristineProperty.bind(transientEntity.pristineProperty)
 		editorState.busy = false
 		
 		var i = 0
@@ -83,7 +83,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 			
 			gridPane.add(label, 0, i)
 			
-			val visitor = new PropertyValueEditorVisitor(gridPane, i, entityReference, saveContainmentTasks, containedNewEntities, propertyUpdateCallbacks)
+			val visitor = new PropertyValueEditorVisitor(gridPane, i, entityReference, editorState.pristineProperty, saveContainmentTasks, containedNewEntities, propertyUpdateCallbacks)
 			
 			visitor.injectMembers
 			
@@ -130,7 +130,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	override saveLater() {
 		val saveTasks = new LinkedList<FXTransactionTask>
 		val saveEntity = transientEntity.copy
-		transientEntity.pristine = true
+		editorState.pristine = true
 		
 		saveTasks += saveContainmentTasks.values.flatten
 		saveTasks += new FXTransactionTask(saveEntity) => [
@@ -141,12 +141,13 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 				save(saveEntity)
 			]
 			setOnFailed [|
-				transientEntity.pristine = false
+				editorState.pristine = false
 				editorState.busy = false
 			]
 			setOnSuccess [|
 				saveCallback = null
 				saveContainmentTasks.clear
+				editorState.creating = false
 				editorState.busy = false
 			]
 		]

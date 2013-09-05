@@ -43,7 +43,6 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 		final FXAssociations copy = new FXAssociations(getProperty());
 		
 		copy.setValue(new LinkedList<>(getValue()));
-		copy.pristine = pristine;
 		
 		return copy;
 	}

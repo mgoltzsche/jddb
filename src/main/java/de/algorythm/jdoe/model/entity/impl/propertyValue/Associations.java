@@ -23,11 +23,4 @@ public class Associations extends AbstractPropertyValue<Collection<IEntityRefere
 	public void toString(final StringBuilder sb) {
 		sb.append(String.valueOf(getValue().size()));
 	}
-
-	@Override
-	protected boolean valueChanged(final Collection<IEntityReference> oldValue,
-			final Collection<IEntityReference> newValue) {
-		return !oldValue.containsAll(newValue) || !newValue.containsAll(oldValue);
-	}
-
 }

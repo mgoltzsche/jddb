@@ -76,7 +76,7 @@ public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 		final LinkedHashSet<REF> associations = new LinkedHashSet<>();
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();
-		
+		System.out.println("# " + propertyName + "    " + vertex.getId());
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {
 			final REF entityRef = dao.createEntityReference(referencingVertex);
 			

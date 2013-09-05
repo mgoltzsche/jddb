@@ -40,6 +40,7 @@ import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import javafx.beans.property.BooleanProperty
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -59,14 +60,16 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	var Collection<FXEntityReference> containedNewEntities
 	var FXEntityReference entityRef
 	var Map<FXEntityReference, Collection<FXTransactionTask>> saveContainmentTasks
+	var BooleanProperty pristine
 	
-	new(GridPane gridPane, int row, FXEntityReference entityRef, Map<FXEntityReference, Collection<FXTransactionTask>> saveContainmentTasks, Collection<FXEntityReference> containedNewEntities, Collection<Procedure0> updateCallbacks) {
+	new(GridPane gridPane, int row, FXEntityReference entityRef, BooleanProperty pristine, Map<FXEntityReference, Collection<FXTransactionTask>> saveContainmentTasks, Collection<FXEntityReference> containedNewEntities, Collection<Procedure0> updateCallbacks) {
 		this.gridPane = gridPane
 		this.row = row
 		this.entityRef = entityRef
 		this.updateCallbacks = updateCallbacks
 		this.saveContainmentTasks = saveContainmentTasks
 		this.containedNewEntities = containedNewEntities
+		this.pristine = pristine
 	}
 
 	override doWithAssociations(FXAssociations propertyValue) {
@@ -86,6 +89,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			onRemove = [
 				saveContainmentTasks.remove(it)
 				closeEntityEditor
+				pristine.value = false
 			]
 			
 			addButton.setOnAction [
@@ -97,6 +101,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				newEntity.showEntityEditor [
 					saveContainmentTasks.put(newEntity, saveLater)
 					selectedEntities.items += newEntity
+					pristine.value = false
 				]
 			]
 			
@@ -135,12 +140,14 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				if (selectedEntity != null) {
 					selectedEntities.items += selectedEntity
 					addEntityField.value = null
+					pristine.value = false
 				}
 			]
 			
 			createButton.setOnAction [
 				entityType.createNewEntity.showEntityEditor [
 					selectedEntities.items += entityReference
+					pristine.value = false
 				]
 			]
 			
@@ -160,7 +167,9 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				addEntityField.update
 			]
 			
-			onRemove = []
+			onRemove = [
+				pristine.value = false
+			]
 		}
 		
 		selectedEntities.setMinSize(MIN_FIELD_WIDTH, 75)
@@ -226,6 +235,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 					createdNotAssignedValue.value = null
 					propertyValue.value = entityReference
 					saveContainmentTasks.put(entityReference, saveLater)
+					pristine.value = false
 				]
 			]
 			
@@ -233,6 +243,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				propertyValue.value.closeEntityEditor
 				saveContainmentTasks.remove(propertyValue.value)
 				propertyValue.value = null
+				pristine.value = false
 			]
 		} else {
 			val entityField = new EntityField [searchPhrase,it|
@@ -254,6 +265,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				if (selectedEntity == null) {
 					entityType.createNewEntity.showEntityEditor [
 						propertyValue.value = entityReference
+						pristine.value = false
 					]
 				} else {
 					selectedEntity.showEntityEditor
@@ -262,6 +274,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			
 			removeButton.setOnAction [
 				propertyValue.value = null
+				pristine.value = false
 			]
 		}
 		
@@ -276,6 +289,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		
 		checkBox.selectedProperty.addListener [
 			propertyValue.value = checkBox.selected
+			pristine.value = false
 		]
 		
 		gridPane.add(checkBox, 1, row)
@@ -400,15 +414,20 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				null
 			else
 				value
+			
+			pristine.value = false
 		]
 	}
 	
 	def private void assign(TextField field, Function1<String, Boolean> validator) {
 		field.textProperty.addListener [c,o,newValue|
-			if (validator.apply(newValue))
+			if (validator.apply(newValue)) {
 				field.styleClass -= FIELD_ERROR_STYLE_CLASS
-			else
+			} else {
 				field.styleClass += FIELD_ERROR_STYLE_CLASS
+			}
+			
+			pristine.value = false
 		]
 	}
 }

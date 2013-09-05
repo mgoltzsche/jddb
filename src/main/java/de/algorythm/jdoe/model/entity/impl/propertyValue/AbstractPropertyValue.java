@@ -13,7 +13,6 @@ public abstract class AbstractPropertyValue<V,REF extends IEntityReference> impl
 	private V value;
 	private Property property;
 	protected IPropertyType<?> type;
-	protected transient boolean pristine = true;
 
 	public AbstractPropertyValue(final Property property) {
 		this.property = property;
@@ -26,41 +25,14 @@ public abstract class AbstractPropertyValue<V,REF extends IEntityReference> impl
 	}
 	
 	@Override
-	public boolean isPristine() {
-		return pristine;
-	}
-	
-	@Override
-	public void setPristine(final boolean pristine) {
-		this.pristine = pristine;
-	}
-	
-	@Override
 	public V getValue() {
 		return value;
 	}
 	
 	@Override
 	public void setValue(final V value) {
-		if (valueChanged(this.value, value)) {
-			this.value = value;
-			pristine = false;
-		}
+		this.value = value;
 	}
-	
-	protected boolean valueChanged(V oldValue, V newValue) {
-		return oldValue == null && newValue != null || oldValue != null && !oldValue.equals(newValue);
-	}
-	
-	/*@Override
-	public void doWithValue(final IPropertyValueVisitor<ENTITYREF> visitor) {
-		type.doWithPropertyValue(this, visitor);
-	}
-	
-	@Override
-	public void toString(final StringBuilder sb) {
-		type.valueToString(value, sb);
-	}*/
 	
 	@Override
 	public String toString() {
