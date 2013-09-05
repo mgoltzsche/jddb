@@ -44,6 +44,8 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 		entity.setValues(values);
 		entity.setReferringEntities(new LinkedList<FXEntityReference>());
 		
+		entityCache.put(entity.getId(), entity);
+		
 		return entity;
 	}
 
