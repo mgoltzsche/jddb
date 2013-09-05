@@ -63,9 +63,7 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	
 	@Override
 	public void onChanged(final Change<? extends FXEntityReference> change) {
-		value.clear();
-		value.addAll(observableValue);
-		onObservableValueChanged();
+		onObservableValueChanged(new LinkedList<FXEntityReference>(observableValue));
 	}
 	
 	@Override

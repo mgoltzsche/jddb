@@ -1,5 +1,7 @@
 package de.algorythm.jdoe.ui.jfx.cell;
 
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
+
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -22,14 +24,16 @@ public class AssociationCell extends ListCell<FXEntityReference> {
 	static public class Factory implements Callback<ListView<FXEntityReference>, ListCell<FXEntityReference>> {
 
 		private final JavaDbObjectEditorFacade facade;
+		private final Procedure1<FXEntityReference> onRemove;
 		
-		public Factory(final JavaDbObjectEditorFacade facade) {
+		public Factory(final JavaDbObjectEditorFacade facade, final Procedure1<FXEntityReference> onRemove) {
 			this.facade = facade;
+			this.onRemove = onRemove;
 		}
 		
 		@Override
 		public ListCell<FXEntityReference> call(final ListView<FXEntityReference> view) {
-			return new AssociationCell(facade);
+			return new AssociationCell(facade, onRemove);
 		}
 	};
 	
@@ -40,7 +44,7 @@ public class AssociationCell extends ListCell<FXEntityReference> {
 	private final Button removeButton = new Button("remove");
 	private FXEntityReference entity;
 	
-	public AssociationCell(final JavaDbObjectEditorFacade facade) {
+	public AssociationCell(final JavaDbObjectEditorFacade facade, final Procedure1<FXEntityReference> onRemove) {
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 		hBox.setAlignment(Pos.CENTER_LEFT);
 		
@@ -53,6 +57,7 @@ public class AssociationCell extends ListCell<FXEntityReference> {
 		removeButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent evt) {
+				onRemove.apply(entity);
 				getListView().getItems().remove(entity);
 			}
 		});

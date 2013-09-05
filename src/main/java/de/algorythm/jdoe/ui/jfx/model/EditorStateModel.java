@@ -10,6 +10,7 @@ public class EditorStateModel {
 
 	private final StringProperty title = new SimpleStringProperty();
 	private final BooleanProperty busy = new SimpleBooleanProperty(true);
+	private final BooleanProperty creating = new SimpleBooleanProperty(true);
 	private final BooleanProperty pristine = new SimpleBooleanProperty(true);
 	
 	public String getTitle() {
@@ -34,6 +35,18 @@ public class EditorStateModel {
 	
 	public ReadOnlyBooleanProperty busyProperty() {
 		return busy;
+	}
+	
+	public Boolean isCreating() {
+		return creating.get();
+	}
+	
+	public void setCreating(final Boolean creating) {
+		this.creating.set(creating);
+	}
+	
+	public BooleanProperty creatingProperty() {
+		return creating;
 	}
 	
 	public Boolean isPristine() {

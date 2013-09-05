@@ -1,7 +1,7 @@
 package de.algorythm.jdoe.ui.jfx.util;
 
 import de.algorythm.jdoe.controller.EntityEditorController
-import de.algorythm.jdoe.ui.jfx.model.FXEntity
+import de.algorythm.jdoe.controller.IEntitySaveResult
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.ViewData
 import java.util.HashMap
@@ -29,12 +29,13 @@ public class ViewRegistry implements IEntityEditorManager {
 		showEntityEditor(entityRef, null)
 	}
 	
-	override showEntityEditor(FXEntityReference entityRef, Procedure1<FXEntity> saveCallback) {
+	override showEntityEditor(FXEntityReference entityRef, Procedure1<IEntitySaveResult> saveCallback) {
 		val entityId = entityRef.id
 		val existingViewData = viewMap.get(entityId)
 		
 		if (existingViewData == null) { // create tab
 			val loaderResult = <Node, EntityEditorController>load('/fxml/entity_editor.fxml')
+			val controller = loaderResult.controller
 			val tab = new Tab
 			val progressIndicator = new ProgressIndicator
 			
@@ -42,7 +43,7 @@ public class ViewRegistry implements IEntityEditorManager {
 			progressIndicator.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE)
 			tab.graphic = progressIndicator
 			
-			val stateModel = loaderResult.controller.init(entityRef, saveCallback)
+			val stateModel = controller.init(entityRef, saveCallback)
 			
 			tab.textProperty.bind(stateModel.titleProperty)
 			progressIndicator.visibleProperty.bind(stateModel.busyProperty)
@@ -51,7 +52,7 @@ public class ViewRegistry implements IEntityEditorManager {
 			
 			tabPane.tabs += tab
 			
-			val viewData = new ViewData(tab, entityRef, loaderResult.controller)
+			val viewData = new ViewData(tab, entityRef, controller)
 			
 			viewMap.put(entityId, viewData)
 			

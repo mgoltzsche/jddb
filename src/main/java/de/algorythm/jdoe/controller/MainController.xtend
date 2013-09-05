@@ -199,15 +199,13 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def private void search() {
-		if (dao.opened) {
-			runTask('search', '''«bundle.taskSearch»: «searchPhrase» («selectedType.label»)''') [|
-				val entities = dao.list(selectedType, searchPhrase)
-				
-				runLater [|
-					entityList.items.all = entities
-				]
+		runTask('search', '''«bundle.taskSearch»: «searchPhrase» («selectedType.label»)''') [|
+			val entities = dao.list(selectedType, searchPhrase)
+			
+			runLater [|
+				entityList.items.all = entities
 			]
-		}
+		]
 	}
 	
 	def openDatabase() {

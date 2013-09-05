@@ -50,6 +50,7 @@ public class Bundle {
 	public final String taskLoad;
 	public final String taskSave;
 	public final String taskDelete;
+	public final String taskCloseTransientContainmentEditors;
 	public final String taskDetails;
 	public final String tasksQueued;
 	public final String tasksFailed;
@@ -99,6 +100,7 @@ public class Bundle {
 		taskLoad = b.getString("taskLoad");
 		taskSave = b.getString("taskSave");
 		taskDelete = b.getString("taskDelete");
+		taskCloseTransientContainmentEditors = b.getString("taskCloseTransientContainmentEditors");
 		tasksQueued = b.getString("tasksQueued");
 		tasksFailed = b.getString("tasksFailed");
 		taskDetails = b.getString("taskDetails");

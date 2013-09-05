@@ -85,7 +85,8 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 		label.set(sb.toString());
 	}
 	
-	protected void onObservableValueChanged() {
+	protected void onObservableValueChanged(final V value) {
+		this.value = value;
 		pristine = false;
 		updateLabelValue();
 		changeHandler.valueChanged();

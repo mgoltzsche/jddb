@@ -2,6 +2,7 @@ package de.algorythm.jdoe.ui.jfx.model.factory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 
 import de.algorythm.jdoe.cache.IObjectCache;
 import de.algorythm.jdoe.model.dao.IDAO;
@@ -41,6 +42,7 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 			values.add(property.createPropertyValue(this));
 		
 		entity.setValues(values);
+		entity.setReferringEntities(new LinkedList<FXEntityReference>());
 		
 		return entity;
 	}

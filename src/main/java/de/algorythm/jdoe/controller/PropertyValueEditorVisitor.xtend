@@ -10,16 +10,19 @@ import de.algorythm.jdoe.ui.jfx.cell.AssociationCell
 import de.algorythm.jdoe.ui.jfx.controls.EntityField
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
+import de.algorythm.jdoe.ui.jfx.model.ValueContainer
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociation
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociations
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValueVisitor
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
+import de.algorythm.jdoe.ui.jfx.taskQueue.FXTransactionTask
 import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Collection
 import java.util.Date
+import java.util.Map
 import java.util.regex.Pattern
 import javafx.beans.property.StringProperty
 import javafx.geometry.Insets
@@ -36,6 +39,7 @@ import javafx.scene.layout.VBox
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -52,15 +56,17 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	var GridPane gridPane
 	var int row
 	var Collection<Procedure0> updateCallbacks
-	var Collection<FXEntityReference> createdContainedEntities
-	var FXEntity entity
+	var Collection<FXEntityReference> containedNewEntities
+	var FXEntityReference entityRef
+	var Map<FXEntityReference, Collection<FXTransactionTask>> saveContainmentTasks
 	
-	new(GridPane gridPane, int row, FXEntity entity, Collection<FXEntityReference> createdContainedEntities, Collection<Procedure0> updateCallbacks) {
+	new(GridPane gridPane, int row, FXEntityReference entityRef, Map<FXEntityReference, Collection<FXTransactionTask>> saveContainmentTasks, Collection<FXEntityReference> containedNewEntities, Collection<Procedure0> updateCallbacks) {
 		this.gridPane = gridPane
 		this.row = row
-		this.entity = entity
+		this.entityRef = entityRef
 		this.updateCallbacks = updateCallbacks
-		this.createdContainedEntities = createdContainedEntities
+		this.saveContainmentTasks = saveContainmentTasks
+		this.containedNewEntities = containedNewEntities
 	}
 
 	override doWithAssociations(FXAssociations propertyValue) {
@@ -71,22 +77,27 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		val selectedEntities = new ListView<FXEntityReference>
 		val addButton = new Button(bundle.add)
 		val vBoxChildren = vBox.children
-		
-		selectedEntities.setMinSize(MIN_FIELD_WIDTH, 75)
-		selectedEntities.cellFactory = new AssociationCell.Factory(facade)
-		selectedEntities.itemsProperty.bindBidirectional(propertyValue.valueProperty);
+		var Procedure1<FXEntityReference> onRemove
 		
 		if (property.containment) {
 			vBoxChildren += selectedEntities
 			vBoxChildren += addButton
 			
+			onRemove = [
+				saveContainmentTasks.remove(it)
+				closeEntityEditor
+			]
+			
 			addButton.setOnAction [
 				val newEntity = entityType.createNewEntity
 				
-				createdContainedEntities += newEntity
-				selectedEntities.items += newEntity
+				newEntity.referringEntities += entityRef
+				containedNewEntities += newEntity
 				
-				newEntity.showEntityEditor
+				newEntity.showEntityEditor [
+					saveContainmentTasks.put(newEntity, saveLater)
+					selectedEntities.items += newEntity
+				]
 			]
 			
 			updateCallbacks += [| // update selected entities
@@ -101,7 +112,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			val hBoxChildren = hBox.children
 			val createButton = new Button(bundle.create)
 			val addEntityField = new EntityField [searchPhrase,it|
-				runTask('''search-«entity.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''') [|
+				runTask('''search-«entityRef.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''') [|
 					all = entityType.list(searchPhrase)
 				]
 			]
@@ -128,8 +139,8 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			]
 			
 			createButton.setOnAction [
-				entityType.createNewEntity.showEntityEditor [FXEntity it|
-					selectedEntities.items += it
+				entityType.createNewEntity.showEntityEditor [
+					selectedEntities.items += entityReference
 				]
 			]
 			
@@ -148,7 +159,13 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				
 				addEntityField.update
 			]
+			
+			onRemove = []
 		}
+		
+		selectedEntities.setMinSize(MIN_FIELD_WIDTH, 75)
+		selectedEntities.cellFactory = new AssociationCell.Factory(facade, onRemove)
+		selectedEntities.itemsProperty.bindBidirectional(propertyValue.valueProperty);
 		
 		GridPane.setHgrow(vBox, Priority.ALWAYS)
 		gridPane.add(vBox, 1, row)
@@ -168,13 +185,6 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				bundle.edit
 		val editButton = new Button(editButtonLabel)
 		
-		removeButton.setOnAction [
-			if (property.containment)
-				propertyValue.value.closeEntityEditor
-			
-			propertyValue.value = null
-		]
-		
 		propertyValue.valueProperty.addListener [c,o,value|
 			val isNull = value == null
 			removeButton.disable = isNull
@@ -185,6 +195,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		]
 		
 		if (property.containment) {
+			val createdNotAssignedValue = new ValueContainer<FXEntityReference>
 			val label = new Label
 			
 			label.textProperty.bind(propertyValue.labelProperty)
@@ -195,16 +206,37 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			hBoxChildren += removeButton
 			
 			editButton.setOnAction [
-				if (propertyValue.value == null) { 
-					propertyValue.value = entityType.createNewEntity
-					createdContainedEntities += propertyValue.value
+				var value = propertyValue.value
+				
+				if (value == null) {
+					value = createdNotAssignedValue.value
+					
+					if (value == null) {
+						val newEntity = entityType.createNewEntity
+						
+						newEntity.referringEntities += entityRef
+						containedNewEntities += newEntity
+						
+						createdNotAssignedValue.value = newEntity
+						value = newEntity
+					}
 				}
 				
-				propertyValue.value.showEntityEditor
+				value.showEntityEditor [
+					createdNotAssignedValue.value = null
+					propertyValue.value = entityReference
+					saveContainmentTasks.put(entityReference, saveLater)
+				]
+			]
+			
+			removeButton.setOnAction [
+				propertyValue.value.closeEntityEditor
+				saveContainmentTasks.remove(propertyValue.value)
+				propertyValue.value = null
 			]
 		} else {
 			val entityField = new EntityField [searchPhrase,it|
-				runTask('''search-«entity.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''') [|
+				runTask('''search-«entityRef.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''') [|
 					all = entityType.list(searchPhrase)
 				]
 			]
@@ -221,11 +253,15 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				
 				if (selectedEntity == null) {
 					entityType.createNewEntity.showEntityEditor [
-						propertyValue.value = it
+						propertyValue.value = entityReference
 					]
 				} else {
 					selectedEntity.showEntityEditor
 				}
+			]
+			
+			removeButton.setOnAction [
+				propertyValue.value = null
 			]
 		}
 		

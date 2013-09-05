@@ -2,6 +2,7 @@
 	-fx-base: #D0D0D0;
 	-fx-background: #F0F0F0;
 	-fx-control-inner-background: #FFFFFF;
+	/*-fx-font-size: 20px;*/
 }
 
 .taskStatusMessage {

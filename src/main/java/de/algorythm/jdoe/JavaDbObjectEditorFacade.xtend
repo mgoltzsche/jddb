@@ -19,6 +19,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.controller.IEntitySaveResult
 
 public class JavaDbObjectEditorFacade {
 
@@ -44,8 +45,8 @@ public class JavaDbObjectEditorFacade {
 		editorManager.showEntityEditor(entityRef)
 	}
 	
-	def showEntityEditor(FXEntityReference entityRef, Procedure1<FXEntity> firstSaveCallback) {
-		editorManager.showEntityEditor(entityRef, firstSaveCallback)
+	def showEntityEditor(FXEntityReference entityRef, Procedure1<IEntitySaveResult> saveCallback) {
+		editorManager.showEntityEditor(entityRef, saveCallback)
 	}
 	
 	def closeEntityEditor(FXEntityReference entityRef) {
