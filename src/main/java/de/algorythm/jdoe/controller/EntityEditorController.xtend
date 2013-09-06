@@ -70,7 +70,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	def private initView(FXEntity entity) {
 		transientEntity = entity.copy
 		editorState.titleProperty.bind(transientEntity.labelProperty)
-		//editorState.pristineProperty.bind(transientEntity.pristineProperty)
+		editorState.pristine = true
 		editorState.busy = false
 		
 		var i = 0
@@ -87,13 +87,13 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 			
 			visitor.injectMembers
 			
-			value.doWithValue(visitor)
+			value.visit(visitor)
 			
 			i = i + 1
 		}
 		
 		referringEntities.cellFactory = new ReferringEntityCell.Factory(facade)
-		referringEntities.itemsProperty.value.all = entity.referringEntities
+		referringEntities.itemsProperty.bind(entity.referringEntitiesProperty)
 		
 		addObserver(this)
 	}
@@ -193,18 +193,20 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	}
 
 	override update(ModelChange<FXEntity, IFXPropertyValue<?>, FXEntityReference> change) {
-		if (change.deleted.contains(transientEntity))
+		if (change.deleted.contains(transientEntity)) {
 			runLater [|
+				// close entity if deleted
 				transientEntity.closeEntityEditor
 			]
-		else {
+		}
+		/*else {
 			val visitor = new AssociationUpdateVisitor(change)
 			
 			runLater [|
 				for (propertyValue : transientEntity.values)
 					propertyValue.doWithValue(visitor)
 			]
-		}
+		}*/
 	}
 	
 	def close() {

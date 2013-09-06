@@ -28,7 +28,7 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 	}
 	
 	@Override
-	public void doWithValue(final IFXPropertyValueVisitor visitor) {
+	public void visit(final IFXPropertyValueVisitor visitor) {
 		type.visit(this, visitor);
 	}
 	

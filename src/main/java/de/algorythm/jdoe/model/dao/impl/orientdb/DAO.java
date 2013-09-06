@@ -19,8 +19,6 @@ import java.util.regex.Pattern;
 import javax.inject.Singleton;
 
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
@@ -49,9 +47,7 @@ import de.algorythm.jdoe.model.meta.Schema;
 
 @Singleton
 public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> implements IDAO<V,P,REF>, IDAOVisitorContext<V,P,REF>, IDAOTransactionContext<V,P,REF> {
-	
-	static private final Logger LOG = LoggerFactory.getLogger(DAO.class);
-	
+
 	static private final String ID = "_id";
 	static private final String TYPE_FIELD = "_type";
 	static private final String SEARCH_INDEX = "searchIndex";
@@ -179,7 +175,7 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 			vertex = findVertex(entity);
 			oldIndexKeywords = createIndexKeywords(createEntity(vertex));
 		} catch(IllegalArgumentException e) {
-			change.setAdded(true);
+			change.setNewOrDeleted(true);
 			vertex = graph.addVertex(null);
 			vertex.setProperty(ID, entity.getId());
 			vertex.setProperty(TYPE_FIELD, entity.getType().getName());
@@ -222,21 +218,21 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 	
 	@Override
 	public void delete(final REF entityRef) {
-		change.getDeleted().add(entityRef);
-		
 		final Vertex vertex;
 		
 		try {
 			vertex = findVertex(entityRef);
 		} catch(IllegalArgumentException e) {
-			LOG.warn("Cannot remove entity " + entityRef + "(" + entityRef.getId() + ") because it doesn't exist");
-			return;
+			throw new IllegalArgumentException("Cannot remove entity " + entityRef + "(" + entityRef.getId() + ") because it doesn't exist");
 		}
 		
 		final V entity = createEntity(vertex);
 		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
 		final Set<String> indexKeywords = new HashSet<>();
 		final DeleteVisitor<V,P,REF> visitor = new DeleteVisitor<>(this, WORD_PATTERN, indexKeywords);
+		
+		change.setNewOrDeleted(true);
+		change.getDeleted().add(entity);
 		
 		// delete containments and collect index
 		for (IPropertyValue<?,REF> value : entity.getValues())

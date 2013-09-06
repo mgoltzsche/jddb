@@ -3,12 +3,14 @@ package de.algorythm.jdoe.ui.jfx.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ListProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import de.algorythm.jdoe.model.entity.impl.AbstractEntity;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.AbstractFXPropertyValue;
@@ -19,8 +21,8 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	static private final long serialVersionUID = -5386143358866304236L;
 	static private final String EMPTY = "";
 	
-	private final transient SimpleBooleanProperty pristine = new SimpleBooleanProperty(true);
 	private final transient SimpleStringProperty label = new SimpleStringProperty(EMPTY);
+	private transient SimpleListProperty<FXEntityReference> referringEntities = new SimpleListProperty<>(FXCollections.observableList(new LinkedList<FXEntityReference>()));
 	private boolean reference;
 	
 	public FXEntity(final EntityType type) {
@@ -32,6 +34,25 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		this.reference = reference;
 	}
 	
+	public FXEntity(final FXEntity source) {
+		this(source.getId(), source.getType(), source.reference);
+		
+		setValues(copiedPropertyValues(source));
+		referringEntities = source.referringEntities;
+		bindValues();
+	}
+	
+	private ArrayList<IFXPropertyValue<?>> copiedPropertyValues(final FXEntity source) {
+		final Collection<IFXPropertyValue<?>> values = source.getValues();
+		final int count = values.size();
+		final ArrayList<IFXPropertyValue<?>> copiedValues = new ArrayList<>(count);
+		
+		for (IFXPropertyValue<?> propertyValue : values)
+			copiedValues.add(propertyValue.copy());
+		
+		return copiedValues;
+	}
+	
 	public boolean isReference() {
 		return reference;
 	}
@@ -40,27 +61,22 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		this.reference = reference;
 	}
 	
-	public FXEntity copy() {
-		final String id = getId();
-		final FXEntity copy = new FXEntity(id, getType(), reference);
-		
-		copy.setValues(copiedPropertyValues());
-		copy.setReferringEntities(getReferringEntities());
-		copy.bindValues();
-		copy.pristine.set(pristine.get());
-		
-		return copy;
+	@Override
+	public Collection<FXEntityReference> getReferringEntities() {
+		return referringEntities.get();
 	}
 	
-	private ArrayList<IFXPropertyValue<?>> copiedPropertyValues() {
-		final Collection<IFXPropertyValue<?>> values = getValues();
-		final int count = values.size();
-		final ArrayList<IFXPropertyValue<?>> copiedValues = new ArrayList<>(count);
-		
-		for (IFXPropertyValue<?> propertyValue : values)
-			copiedValues.add(propertyValue.copy());
-		
-		return copiedValues;
+	@Override
+	public void setReferringEntities(final Collection<FXEntityReference> referringEntities) {
+		this.referringEntities.setAll(referringEntities);
+	}
+	
+	public ListProperty<FXEntityReference> referringEntitiesProperty() {
+		return referringEntities;
+	}
+	
+	public FXEntity copy() {
+		return new FXEntity(this);
 	}
 	
 	public IFXPropertyValue<?> getValue(int index) {
@@ -86,6 +102,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		while (iter.hasNext())
 			assignPropertyValue(iter.next(), otherIter.next());
 		
+		//setReferringEntities(entity.getReferringEntities());
 		bindValues();
 	}
 	
@@ -93,12 +110,8 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		@SuppressWarnings("unchecked")
 		final IFXPropertyValue<V> otherValue = (IFXPropertyValue<V>) other;
 		
-		propertyValue.setChangeHandler(IFXPropertyValueChangeHandler.PRISTINE);
+		propertyValue.setChangeHandler(IFXPropertyValueChangeHandler.DEFAULT);
 		propertyValue.setValue(otherValue.getValue());
-	}
-	
-	public ReadOnlyBooleanProperty pristineProperty() {
-		return pristine;
 	}
 	
 	public void bindValues() {
@@ -139,7 +152,6 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	
 	@Override
 	public void valueChanged() {
-		pristine.set(false);
 		updateLabelValue();
 	}
 	

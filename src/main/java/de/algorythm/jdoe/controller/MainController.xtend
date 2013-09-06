@@ -174,28 +174,11 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	override update(ModelChange<FXEntity, IFXPropertyValue<?>, FXEntityReference> change) {
-		runLater [|
-			val iter = entityList.items.iterator
-			var i = 0
-			
-			while(iter.hasNext) {
-				val item = iter.next
-				
-				if (change.deleted.contains(item))
-					iter.remove
-				else {
-					val savedEntity = change.saved.get(item.id)
-					
-					if (savedEntity != null) {
-						item.assign(savedEntity)
-						i = i + 1
-					}
-				}
-			}
-			
-			if (i < change.saved.size)
+		if (change.newOrDeleted) {
+			runLater [|
 				search
-		]
+			]
+		}
 	}
 	
 	def private void search() {

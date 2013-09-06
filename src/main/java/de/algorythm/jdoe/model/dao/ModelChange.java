@@ -12,22 +12,22 @@ import de.algorythm.jdoe.model.entity.IPropertyValue;
 public class ModelChange<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> {
 
 	private final Map<String,V> saved = new HashMap<>();
-	private final Set<REF> deleted = new HashSet<>();
-	private boolean added;
+	private final Set<V> deleted = new HashSet<>();
+	private boolean newOrDeleted;
 	
 	public Map<String,V> getSaved() {
 		return saved;
 	}
 	
-	public boolean isAdded() {
-		return added;
+	public boolean isNewOrDeleted() {
+		return newOrDeleted;
 	}
 
-	public void setAdded(boolean added) {
-		this.added = added;
+	public void setNewOrDeleted(boolean newOrDeleted) {
+		this.newOrDeleted = newOrDeleted;
 	}
 
-	public Set<REF> getDeleted() {
+	public Set<V> getDeleted() {
 		return deleted;
 	}
 }

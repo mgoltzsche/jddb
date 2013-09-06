@@ -2,8 +2,10 @@ package de.algorythm.jdoe.ui.jfx.model.factory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.Set;
 
+import javafx.application.Platform;
 import de.algorythm.jdoe.cache.IObjectCache;
 import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.IModelFactory;
@@ -42,7 +44,6 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 			values.add(property.createPropertyValue(this));
 		
 		entity.setValues(values);
-		entity.setReferringEntities(new LinkedList<FXEntityReference>());
 		
 		entityCache.put(entity.getId(), entity);
 		
@@ -93,35 +94,37 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 			entity.setValues(values);
 			
 			if (withAssociations)
-				entity.setReferringEntities(loader.loadReferringEntities());
+				setReferringEntitiesLater(entity, loader);
 			
 			entity.bindValues();
 			
 			return entity;
 		} else if (withAssociations && cachedEntity.isReference()) {
 			for (IFXPropertyValue<?> propertyValue : cachedEntity.getValues()) {
-				propertyValue.setChangeHandler(IFXPropertyValueChangeHandler.PRISTINE);
+				propertyValue.setChangeHandler(IFXPropertyValueChangeHandler.DEFAULT);
 				loader.load(propertyValue);
 			}
+
+			setReferringEntitiesLater(cachedEntity, loader);
 			
-			cachedEntity.setReferringEntities(loader.loadReferringEntities());
 			cachedEntity.setReference(false);
 			cachedEntity.bindValues();
 		}
 		
 		return cachedEntity;
 	}
-
-	@Override
-	public void update(final ModelChange<FXEntity,IFXPropertyValue<? extends Object>,FXEntityReference> change) {
-		for (FXEntity entity : change.getSaved().values()) {
-			final FXEntity cachedEntity = entityCache.get(entity.getId());
-			
-			if (cachedEntity != null)
-				cachedEntity.assign(entity);
-		}
+	
+	private void setReferringEntitiesLater(final FXEntity entity, final IPropertyValueLoader<FXEntityReference> loader) {
+		final Collection<FXEntityReference> referringEntities = loader.loadReferringEntities();
+		
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				entity.setReferringEntities(referringEntities);
+			}
+		});
 	}
-
+	
 	@Override
 	public <V> IFXPropertyValue<?> createAttributeValue(final Property property,
 			AbstractAttributeType<V> type) {
@@ -133,7 +136,51 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 		return new FXAssociation(property);
 	}
 
+	@Override
 	public IFXPropertyValue<?> createAssociationsValue(final Property property) {
 		return new FXAssociations(property);
-	}	
+	}
+	
+	@Override
+	public void update(final ModelChange<FXEntity,IFXPropertyValue<? extends Object>,FXEntityReference> change) {
+		// remove deleted entities from referring entities
+		for (FXEntity entity : change.getDeleted())
+			AssociationRemovingVisitor.removeAssociationsTo(entity, entityCache);
+		
+		// update changed entities
+		for (FXEntity entity : change.getSaved().values()) {
+			final FXEntity cachedEntity = entityCache.get(entity.getId());
+			
+			if (cachedEntity != null) {
+				final FXEntity updatedEntity = entity;
+				final Set<FXEntityReference> oldReferredEntities = ReferredEntityCollectingVisitor.referredEntities(cachedEntity);
+				final Set<FXEntityReference> newReferredEntities = ReferredEntityCollectingVisitor.referredEntities(updatedEntity);
+				final Set<FXEntityReference> tmpOldReferredEntities = new HashSet<>(oldReferredEntities);
+				
+				oldReferredEntities.removeAll(newReferredEntities);
+				newReferredEntities.removeAll(tmpOldReferredEntities);
+				
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						for (FXEntityReference oldRef : oldReferredEntities) {
+							final FXEntity cachedOldReferredEntity = entityCache.get(oldRef.getId());
+							
+							if (cachedOldReferredEntity != null)
+								cachedOldReferredEntity.getReferringEntities().remove(cachedEntity);
+						}
+						
+						for (FXEntityReference newRef : newReferredEntities) {
+							final FXEntity cachedNewReferredEntity = entityCache.get(newRef.getId());
+							
+							if (cachedNewReferredEntity != null)
+								cachedNewReferredEntity.getReferringEntities().add(cachedEntity);
+						}
+						
+						cachedEntity.assign(updatedEntity);
+					}
+				});
+			}
+		}
+	}
 }

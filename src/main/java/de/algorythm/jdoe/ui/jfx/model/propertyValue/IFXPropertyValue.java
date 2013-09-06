@@ -9,6 +9,6 @@ public interface IFXPropertyValue<V> extends IPropertyValue<V,FXEntityReference>
 
 	ReadOnlyStringProperty labelProperty();
 	IFXPropertyValue<V> copy();
-	void doWithValue(IFXPropertyValueVisitor visitor);
+	void visit(IFXPropertyValueVisitor visitor);
 	void setChangeHandler(IFXPropertyValueChangeHandler changeHandler);
 }

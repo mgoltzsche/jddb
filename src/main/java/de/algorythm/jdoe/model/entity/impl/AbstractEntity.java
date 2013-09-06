@@ -1,8 +1,6 @@
 package de.algorythm.jdoe.model.entity.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.UUID;
 
 import de.algorythm.jdoe.model.entity.IEntity;
@@ -10,18 +8,16 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
 
-public class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntityReference> implements IEntity<P, REF> {
+public abstract class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntityReference> implements IEntity<P, REF> {
 
 	static private final long serialVersionUID = 8803662114651751761L;
 	
 	private final String id;
 	private final EntityType type;
 	private ArrayList<P> values;
-	private Collection<REF> referringEntities;
 	
 	public AbstractEntity(final EntityType type) {
 		this(UUID.randomUUID().toString(), type);
-		referringEntities = new LinkedList<REF>();
 	}
 	
 	public AbstractEntity(final String id, final EntityType type) {
@@ -47,16 +43,6 @@ public class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntit
 	@Override
 	public void setValues(final ArrayList<P> values) {
 		this.values = values;
-	}
-	
-	@Override
-	public Collection<REF> getReferringEntities() {
-		return referringEntities;
-	}
-	
-	@Override
-	public void setReferringEntities(final Collection<REF> referringEntities) {
-		this.referringEntities = referringEntities;
 	}
 	
 	@Override
