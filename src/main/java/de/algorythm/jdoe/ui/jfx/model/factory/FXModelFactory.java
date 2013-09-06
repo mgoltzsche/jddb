@@ -166,14 +166,14 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 						for (FXEntityReference oldRef : oldReferredEntities) {
 							final FXEntity cachedOldReferredEntity = entityCache.get(oldRef.getId());
 							
-							if (cachedOldReferredEntity != null)
+							if (cachedOldReferredEntity != null && !cachedOldReferredEntity.isReference())
 								cachedOldReferredEntity.getReferringEntities().remove(cachedEntity);
 						}
 						
 						for (FXEntityReference newRef : newReferredEntities) {
 							final FXEntity cachedNewReferredEntity = entityCache.get(newRef.getId());
 							
-							if (cachedNewReferredEntity != null)
+							if (cachedNewReferredEntity != null && !cachedNewReferredEntity.isReference())
 								cachedNewReferredEntity.getReferringEntities().add(cachedEntity);
 						}
 						
