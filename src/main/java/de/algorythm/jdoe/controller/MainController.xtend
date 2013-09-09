@@ -38,6 +38,7 @@ import javax.inject.Inject
 
 import static javafx.application.Platform.*
 import javafx.scene.control.Button
+import de.algorythm.jdoe.model.meta.EntityTypeWildcard
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -55,7 +56,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	@FXML var TextField searchField
 	@FXML var MenuButton newEntityButton
 	var Schema schema
-	var selectedType = EntityType.ALL
+	var selectedType = EntityTypeWildcard.INSTANCE
 	var String searchPhrase
 	
 	override initialize(URL url, ResourceBundle resourceBundle) {
@@ -93,7 +94,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	
 	def private void setSelectedType(EntityType type) {
 		selectedType = if (type == null)
-				EntityType.ALL
+				EntityTypeWildcard.INSTANCE
 			else
 				type
 		
@@ -113,7 +114,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	def private void setupTypeSelection() {
 		val types = new LinkedList<EntityType>(schema.types)
 		
-		types.addFirst(EntityType.ALL)
+		types.addFirst(EntityTypeWildcard.INSTANCE)
 		
 		typeComboBox.items.all = types
 		typeComboBox.selectionModel.selectFirst
@@ -140,7 +141,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	def private updateTableColumns() {
 		val columns = new LinkedList<TableColumn<FXEntity, String>>
 		
-		if (selectedType == EntityType.ALL) {
+		if (selectedType == EntityTypeWildcard.INSTANCE) {
 			val typeColumn = new TableColumn<FXEntity, String>(bundle.type)
 			val labelColumn = new TableColumn<FXEntity, String>(bundle.entity)
 			

@@ -43,6 +43,7 @@ import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.EntityType;
+import de.algorythm.jdoe.model.meta.EntityTypeWildcard;
 import de.algorythm.jdoe.model.meta.Schema;
 
 @Singleton
@@ -58,7 +59,7 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 	private Schema schema;
 	private OrientGraph graph;
 	private final HashSet<IObserver<V,P,REF>> observers = new HashSet<>();
-	private final HashMap<String, Index<Vertex>> searchIndices = new HashMap<>();
+	private Index<Vertex> searchIndex;
 	private ModelChange<V,P,REF> change;
 	
 	public DAO(final IModelFactory<V, P, REF> modelFactory) {
@@ -68,10 +69,12 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
         yaml = new Yaml(representer);
 	}
 	
+	@Override
 	public boolean isOpened() {
 		return graph != null;
 	}
 	
+	@Override
 	public void open() throws IOException {
 		loadSchema();
 		graph = new OrientGraph("local:graph.db");
@@ -80,21 +83,13 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 		graph.createKeyIndex(TYPE_FIELD, Vertex.class);
 		graph.createKeyIndex(ID, Vertex.class);
 		
-		mapIndices();
+		searchIndex = graph.getIndex(SEARCH_INDEX, Vertex.class);
+		
+		if (searchIndex == null)
+			searchIndex = graph.createIndex(SEARCH_INDEX, Vertex.class);
 	}
 	
-	private void mapIndices() {
-		for (EntityType type : schema.getTypes()) {
-			final String typeName = type.getName();
-			Index<Vertex> typeIndex = graph.getIndex(typeName, Vertex.class);
-			
-			if (typeIndex == null)
-				typeIndex = graph.createIndex(typeName, Vertex.class);
-			
-			searchIndices.put(typeName, typeIndex);
-		}
-	}
-	
+	@Override
 	public void close() {
 		graph.shutdown();
 	}
@@ -168,7 +163,6 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 		if (vertex != null)
 			return vertex;
 		
-		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
 		Set<String> oldIndexKeywords;
 		
 		try {
@@ -227,7 +221,6 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 		}
 		
 		final V entity = createEntity(vertex);
-		final Index<Vertex> searchIndex = searchIndices.get(entity.getType().getName());
 		final Set<String> indexKeywords = new HashSet<>();
 		final DeleteVisitor<V,P,REF> visitor = new DeleteVisitor<>(this, WORD_PATTERN, indexKeywords);
 		
@@ -253,7 +246,7 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 	@Override
 	public Set<V> list(final EntityType type) {
 		final LinkedHashSet<V> result = new LinkedHashSet<>();
-		final Iterable<Vertex> vertices = type == EntityType.ALL
+		final Iterable<Vertex> vertices = type == EntityTypeWildcard.INSTANCE
 				? graph.getVertices()
 				: graph.getVertices(TYPE_FIELD, type.getName());
 		
@@ -269,31 +262,20 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 			return list(type);
 		
 		final LinkedHashSet<V> result = new LinkedHashSet<>();
-		final Collection<Index<Vertex>> useIndices;
 		final Iterable<String> searchKeywords = createSearchKeywords(search);
-		final boolean searchAllTypes = type == EntityType.ALL;
-		
-		if (searchAllTypes) {
-			useIndices = searchIndices.values();
-		} else {
-			useIndices = new LinkedList<>();
-			useIndices.add(searchIndices.get(type.getName()));
-		}
 		
 		LinkedHashSet<Vertex> foundVertices = null;
 		
 		for (String keyword : searchKeywords) {
 			final LinkedHashSet<Vertex> keywordVertices = new LinkedHashSet<>();
 			
-			for (Index<Vertex> searchIndex : useIndices) {
-				final CloseableIterable<Vertex> hits = searchIndex.get(SEARCH_INDEX, keyword);
-				
-				try {
-					for (Vertex vertex : hits)
-						keywordVertices.add(vertex);
-				} finally {
-					hits.close();
-				}
+			final CloseableIterable<Vertex> hits = searchIndex.get(SEARCH_INDEX, keyword);
+			
+			try {
+				for (Vertex vertex : hits)
+					keywordVertices.add(vertex);
+			} finally {
+				hits.close();
 			}
 			
 			if (foundVertices == null)
@@ -304,13 +286,16 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 		
 		if (foundVertices != null) {
 			for (Vertex vertex : foundVertices) {
-				final V entity = createEntity(vertex);
+				final EntityType vertexType = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
 				
-				result.add(entity);
+				if (type.isConform(vertexType))
+					result.add(createEntity(vertex));
 				
-				if (searchAllTypes && entity.getType().isEmbedded()) {
+				if (vertexType.isEmbedded()) {
 					for (Vertex referringVertex : vertex.getVertices(Direction.IN)) {
-						if (!foundVertices.contains(referringVertex))
+						final EntityType referringVertexType = schema.getTypeByName(referringVertex.<String>getProperty(TYPE_FIELD));
+						
+						if (type.isConform(referringVertexType) && !foundVertices.contains(referringVertex))
 							result.add(createEntity(referringVertex));
 					}
 				}

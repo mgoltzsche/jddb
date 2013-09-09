@@ -11,7 +11,6 @@ import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 public class EntityType extends AbstractLabeledElement implements IPropertyType<IEntityReference>, Serializable {
 
 	static private final long serialVersionUID = 2546803693147036351L;
-	static public final EntityType ALL = new EntityType("All");
 	
 	private Collection<Property> properties = new LinkedList<>();
 	private boolean embedded;
