@@ -16,6 +16,7 @@
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.control.Label?>
 <?import de.algorythm.jdoe.ui.jfx.model.EditorStateModel?>
+<?import javafx.scene.layout.Region?>
 
 <SplitPane xmlns:fx="http://javafx.com/fxml"
 		fx:controller="de.algorythm.jdoe.controller.EntityEditorController"
@@ -27,7 +28,9 @@
 	<VBox fillWidth="true" disable="${editorState.deleting}">
 		<ToolBar prefHeight="33">
 			<Button text="%delete" onAction="#delete" disable="${editorState.creating}"/>
-			<Button text="%save" onAction="#save" fx:id="saveButton" disable="${editorState.pristine}"/>
+			<Button text="%save" onAction="#save" disable="${editorState.pristine}"/>
+			<Region prefWidth="10"/>
+			<Label text="${editorState.typeName}"/>
 		</ToolBar>
 		<ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" fitToHeight="true">
 			<GridPane fx:id="gridPane" vgap="20" hgap="20">

@@ -9,6 +9,7 @@ import javafx.beans.property.StringProperty;
 public class EditorStateModel {
 
 	private final StringProperty title = new SimpleStringProperty();
+	private final StringProperty typeName = new SimpleStringProperty();
 	private final BooleanProperty busy = new SimpleBooleanProperty(true);
 	private final BooleanProperty creating = new SimpleBooleanProperty(true);
 	private final BooleanProperty pristine = new SimpleBooleanProperty(true);
@@ -24,6 +25,18 @@ public class EditorStateModel {
 	
 	public StringProperty titleProperty() {
 		return title;
+	}
+	
+	public String getTypeName() {
+		return typeName.get();
+	}
+	
+	public void setTypeName(final String typeName) {
+		this.typeName.set(typeName);
+	}
+	
+	public StringProperty typeNameProperty() {
+		return typeName;
 	}
 	
 	public Boolean isBusy() {

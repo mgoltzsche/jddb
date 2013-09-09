@@ -51,6 +51,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 		this.saveCallback = saveCallback
 		
 		editorState.title = entityRef.labelProperty.value
+		editorState.typeName = entityRef.type.label
 		
 		runTask('load-' + entityRef.id, '''«bundle.taskLoad»: «entityRef» («entityRef.type.label»)''') [|
 			val isNew = !entityRef.exists
