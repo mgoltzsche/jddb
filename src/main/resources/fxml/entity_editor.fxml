@@ -24,7 +24,7 @@
 	<fx:define>
 		<EditorStateModel fx:id="editorState"/>
 	</fx:define>
-	<VBox fillWidth="true">
+	<VBox fillWidth="true" disable="${editorState.deleting}">
 		<ToolBar prefHeight="33">
 			<Button text="%delete" onAction="#delete" disable="${editorState.creating}"/>
 			<Button text="%save" onAction="#save" fx:id="saveButton" disable="${editorState.pristine}"/>

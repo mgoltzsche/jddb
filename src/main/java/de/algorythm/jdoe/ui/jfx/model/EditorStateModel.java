@@ -12,6 +12,7 @@ public class EditorStateModel {
 	private final BooleanProperty busy = new SimpleBooleanProperty(true);
 	private final BooleanProperty creating = new SimpleBooleanProperty(true);
 	private final BooleanProperty pristine = new SimpleBooleanProperty(true);
+	private final BooleanProperty deleting = new SimpleBooleanProperty(false);
 	
 	public String getTitle() {
 		return title.get();
@@ -59,5 +60,17 @@ public class EditorStateModel {
 	
 	public BooleanProperty pristineProperty() {
 		return pristine;
+	}
+	
+	public Boolean isDeleting() {
+		return deleting.get();
+	}
+	
+	public void setDeleting(final Boolean deleting) {
+		this.deleting.set(deleting);
+	}
+	
+	public BooleanProperty deletingProperty() {
+		return deleting;
 	}
 }

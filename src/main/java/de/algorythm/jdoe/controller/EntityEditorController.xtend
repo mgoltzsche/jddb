@@ -27,6 +27,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.ui.jfx.model.factory.AssociationRemovingVisitor
 
 public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IEntitySaveResult {
 	
@@ -173,6 +174,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	
 	def delete() {
 		editorState.busy = true
+		editorState.deleting = true
 		val deleteEntity = transientEntity.copy
 		
 		runTask('delete-entity-' + deleteEntity.id, '''«bundle.taskDelete»: «deleteEntity» («deleteEntity.type.label»)''') [|
@@ -187,35 +189,31 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 			} finally {
 				runLater [|
 					editorState.busy = false
+					editorState.deleting = false
 				]
 			}
 		]
 	}
 
 	override update(ModelChange<FXEntity, IFXPropertyValue<?>, FXEntityReference> change) {
-		if (change.deleted.contains(transientEntity)) {
-			runLater [|
+		runLater [|
+			if (change.deleted.contains(transientEntity)) {
 				// close entity if deleted
 				transientEntity.closeEntityEditor
-			]
-		}
-		/*else {
-			val visitor = new AssociationUpdateVisitor(change)
-			
-			runLater [|
-				for (propertyValue : transientEntity.values)
-					propertyValue.doWithValue(visitor)
-			]
-		}*/
+			} else {
+				// remove deleted associations
+				for (deletedEntity : change.deleted)
+					AssociationRemovingVisitor.removeAssociationsTo(deletedEntity, transientEntity)
+			}
+		]
 	}
 	
 	def close() {
 		removeObserver(this)
 		
 		runTask('close-unsaved-containment-editors-' + transientEntity.id, bundle.taskCloseTransientContainmentEditors) [|
-			for (entity : containedNewEntities)
-				if (!entity.exists)
-					entity.closeEntityEditor
+			for (entity : containedNewEntities.filter[e|!e.exists])
+				entity.closeEntityEditor
 		]
 	}
 }

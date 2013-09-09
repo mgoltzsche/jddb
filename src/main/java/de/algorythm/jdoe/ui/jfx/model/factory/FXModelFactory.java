@@ -3,6 +3,7 @@ package de.algorythm.jdoe.ui.jfx.model.factory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javafx.application.Platform;
@@ -143,26 +144,33 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 	
 	@Override
 	public void update(final ModelChange<FXEntity,IFXPropertyValue<? extends Object>,FXEntityReference> change) {
-		// remove deleted entities from referring entities
-		for (FXEntity entity : change.getDeleted())
-			AssociationRemovingVisitor.removeAssociationsTo(entity, entityCache);
-		
-		// update changed entities
-		for (FXEntity entity : change.getSaved().values()) {
-			final FXEntity cachedEntity = entityCache.get(entity.getId());
-			
-			if (cachedEntity != null) {
-				final FXEntity updatedEntity = entity;
-				final Set<FXEntityReference> oldReferredEntities = ReferredEntityCollectingVisitor.referredEntities(cachedEntity);
-				final Set<FXEntityReference> newReferredEntities = ReferredEntityCollectingVisitor.referredEntities(updatedEntity);
-				final Set<FXEntityReference> tmpOldReferredEntities = new HashSet<>(oldReferredEntities);
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				// remove references to deleted entity
+				for (FXEntity entity : change.getDeleted()) {
+					AssociationRemovingVisitor.removeAssociationsTo(entity, entityCache);
+					
+					for (FXEntityReference entityRef : AssociationCollectingVisitor.associations(entity)) {
+						final FXEntity cachedEntity = entityCache.get(entityRef.getId());
+						
+						cachedEntity.getReferringEntities().remove(entity);
+					}
+				}
 				
-				oldReferredEntities.removeAll(newReferredEntities);
-				newReferredEntities.removeAll(tmpOldReferredEntities);
-				
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
+				// update saved cached entities
+				for (FXEntity entity : change.getSaved().values()) {
+					final FXEntity cachedEntity = entityCache.get(entity.getId());
+					
+					if (cachedEntity != null) {
+						final Set<FXEntityReference> oldReferredEntities = ReferredEntityCollectingVisitor.referredEntities(cachedEntity);
+						final Set<FXEntityReference> newReferredEntities = ReferredEntityCollectingVisitor.referredEntities(entity);
+						final Set<FXEntityReference> tmpOldReferredEntities = new HashSet<>(oldReferredEntities);
+						
+						oldReferredEntities.removeAll(newReferredEntities);
+						newReferredEntities.removeAll(tmpOldReferredEntities);
+						
+						// update referring entities
 						for (FXEntityReference oldRef : oldReferredEntities) {
 							final FXEntity cachedOldReferredEntity = entityCache.get(oldRef.getId());
 							
@@ -173,14 +181,19 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 						for (FXEntityReference newRef : newReferredEntities) {
 							final FXEntity cachedNewReferredEntity = entityCache.get(newRef.getId());
 							
-							if (cachedNewReferredEntity != null && !cachedNewReferredEntity.isReference())
-								cachedNewReferredEntity.getReferringEntities().add(cachedEntity);
+							if (cachedNewReferredEntity != null && !cachedNewReferredEntity.isReference()) {
+								final Collection<FXEntityReference> newReferringEntities = new LinkedHashSet<>(cachedNewReferredEntity.getReferringEntities());
+								
+								newReferringEntities.add(cachedEntity);
+								cachedNewReferredEntity.setReferringEntities(newReferringEntities);
+							}
 						}
 						
-						cachedEntity.assign(updatedEntity);
+						// update cached entity 
+						cachedEntity.assign(entity);
 					}
-				});
+				}
 			}
-		}
+		});
 	}
 }

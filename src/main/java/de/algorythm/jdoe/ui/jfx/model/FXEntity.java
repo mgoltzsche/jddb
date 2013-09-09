@@ -38,7 +38,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		this(source.getId(), source.getType(), source.reference);
 		
 		setValues(copiedPropertyValues(source));
-		referringEntities = source.referringEntities;
+		referringEntities.setAll(source.referringEntities);
 		bindValues();
 	}
 	

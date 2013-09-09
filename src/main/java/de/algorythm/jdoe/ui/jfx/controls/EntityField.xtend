@@ -56,23 +56,18 @@ public class EntityField extends TextField implements ChangeListener<String> {
 				selectedValueLabelProperty.bind(entityLabelProperty)
 		]
 		availableValues.addListener [
-			if (availableValues.empty) {
-				runLater [|
-					//showError('No match found\ntry sth else')
+			runLater [|
+				if (availableValues.empty) {
 					error = true
 					
 					contextMenu.hide
-				]
-			} else if (availableValues.size == 1) {
-				runLater [|
+				} else if (availableValues.size == 1) {
 					setValue(availableValues.get(0))
 					
 					contextMenu.hide
-				]
-			} else {
-				val menuItems = availableValues.createMenuItems
-				
-				runLater [|
+				} else {
+					val menuItems = availableValues.createMenuItems
+					
 					error = true
 					contextMenu.items.all = menuItems
 					
@@ -80,8 +75,8 @@ public class EntityField extends TextField implements ChangeListener<String> {
 						contextMenu.show(this, Side.BOTTOM, 10, -5)
 					
 					contextMenu.requestFocus
-				]
-			}
+				}
+			]
 		]
 	}
 	
@@ -147,6 +142,7 @@ public class EntityField extends TextField implements ChangeListener<String> {
 	override changed(ObservableValue<? extends String> valueContainer, String oldValue, String newValue) {
 		if (newValue.empty) {
 			value.value = null
+			error = false
 			contextMenu.hide
 		} else {
 			searchHandler.apply(newValue, availableValues)
