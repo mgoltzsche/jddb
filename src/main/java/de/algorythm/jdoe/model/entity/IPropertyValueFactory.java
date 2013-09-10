@@ -7,5 +7,5 @@ public interface IPropertyValueFactory<P extends IPropertyValue<?,REF>, REF exte
 
 	P createAssociationValue(Property property);
 	P createAssociationsValue(Property property);
-	<V> P createAttributeValue(Property property, AbstractAttributeType<V> type);
+	<V extends Comparable<V>> P createAttributeValue(Property property, AbstractAttributeType<V> type);
 }

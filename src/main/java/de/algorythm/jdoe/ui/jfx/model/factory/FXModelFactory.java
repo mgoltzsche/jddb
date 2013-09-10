@@ -127,7 +127,7 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 	}
 	
 	@Override
-	public <V> IFXPropertyValue<?> createAttributeValue(final Property property,
+	public <V extends Comparable<V>> IFXPropertyValue<?> createAttributeValue(final Property property,
 			AbstractAttributeType<V> type) {
 		return new FXAttribute<V>(property, type);
 	}

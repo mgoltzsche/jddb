@@ -11,6 +11,10 @@ public class TString extends AbstractAttributeType<String> {
 		super("string");
 	}
 	
+	protected TString(final String label) {
+		super(label);
+	}
+	
 	@Override
 	public void visit(final IPropertyValue<String,?> value,
 			final IAttributeValueVisitor visitor) {
@@ -21,5 +25,10 @@ public class TString extends AbstractAttributeType<String> {
 	public void valueToString(final String value, final StringBuilder sb) {
 		if (value != null)
 			sb.append(value);
+	}
+	
+	@Override
+	public int compare(final String a, final String b) {
+		return a.compareToIgnoreCase(b);
 	}
 }

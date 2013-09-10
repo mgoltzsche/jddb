@@ -1,10 +1,12 @@
 package de.algorythm.jdoe.model.meta;
 
+import java.util.Comparator;
+
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 
-public interface IPropertyType<V> {
+public interface IPropertyType<V> extends Comparator<V> {
 	
 	String getLabel();
 	boolean isUserDefined();

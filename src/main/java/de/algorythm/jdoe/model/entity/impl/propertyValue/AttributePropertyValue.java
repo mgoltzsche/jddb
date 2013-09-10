@@ -5,7 +5,7 @@ import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
 
-public class AttributePropertyValue<V> extends AbstractPropertyValue<V,IEntityReference> {
+public class AttributePropertyValue<V extends Comparable<V>> extends AbstractPropertyValue<V,IEntityReference> {
 
 	static private final long serialVersionUID = 2179613684367210970L;
 

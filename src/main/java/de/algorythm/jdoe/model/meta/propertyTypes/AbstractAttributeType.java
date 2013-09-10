@@ -11,7 +11,7 @@ import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
 
-public abstract class AbstractAttributeType<V> implements IPropertyType<V>, Serializable {
+public abstract class AbstractAttributeType<V extends Comparable<V>> implements IPropertyType<V>, Serializable {
 
 	static private final long serialVersionUID = 4590467257394701843L;
 	
@@ -52,8 +52,9 @@ public abstract class AbstractAttributeType<V> implements IPropertyType<V>, Seri
 		return this == type;
 	}
 	
-	public boolean valueChanged(final V oldValue, final V newValue) {
-		return oldValue == null && newValue != null || oldValue != null && !oldValue.equals(newValue);
+	@Override
+	public int compare(final V a, final V b) {
+		return a == null && b == null ? 0 : (a == null ? -1 : (b == null ? 1 : a.compareTo(b)));
 	}
 	
 	@Override

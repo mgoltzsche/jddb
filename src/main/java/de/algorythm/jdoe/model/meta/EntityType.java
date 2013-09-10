@@ -53,7 +53,12 @@ public class EntityType extends AbstractLabeledElement implements IPropertyType<
 	public boolean isConform(final IPropertyType<?> type) {
 		return type == null ? false : label.equals(type.getLabel());
 	}
-
+	
+	@Override
+	public int compare(final IEntityReference a, final IEntityReference b) {
+		return a.toString().compareToIgnoreCase(b.toString());
+	}
+	
 	@Override
 	public String toString() {
 		return label;

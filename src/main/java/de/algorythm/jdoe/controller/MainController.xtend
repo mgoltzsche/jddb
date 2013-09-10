@@ -39,6 +39,7 @@ import javax.inject.Inject
 import static javafx.application.Platform.*
 import javafx.scene.control.Button
 import de.algorythm.jdoe.model.meta.EntityTypeWildcard
+import de.algorythm.jdoe.model.meta.IPropertyType
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -139,7 +140,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def private updateTableColumns() {
-		val columns = new LinkedList<TableColumn<FXEntity, String>>
+		val columns = new LinkedList<TableColumn<FXEntity, ?>>
 		
 		if (selectedType == EntityTypeWildcard.INSTANCE) {
 			val typeColumn = new TableColumn<FXEntity, String>(bundle.type)
@@ -172,6 +173,12 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			entityList.items.all = entities
 			entityList.columns.all = columns
 		]
+	}
+	
+	def private <T> TableColumn<FXEntity,T> createTableColumn(IPropertyType<T> type) {
+		val column = new TableColumn<FXEntity, T>
+		column.comparator = type
+		column
 	}
 	
 	override update(ModelChange<FXEntity, IFXPropertyValue<?>, FXEntityReference> change) {

@@ -10,7 +10,7 @@ import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
 
-public class CollectionType implements IPropertyType<Collection<IEntityReference>>, Serializable {
+public class CollectionType implements IPropertyType<Collection<? extends IEntityReference>>, Serializable {
 
 	static private final long serialVersionUID = 5746102308534615947L;
 	static private final String LABEL_SUFFIX = " (Liste)";
@@ -49,6 +49,11 @@ public class CollectionType implements IPropertyType<Collection<IEntityReference
 	@Override
 	public boolean isConform(final IPropertyType<?> type) {
 		return itemType.isConform(type);
+	}
+	
+	@Override
+	public int compare(final Collection<? extends IEntityReference> a, final Collection<? extends IEntityReference> b) {
+		return a.size() - b.size();
 	}
 	
 	@Override

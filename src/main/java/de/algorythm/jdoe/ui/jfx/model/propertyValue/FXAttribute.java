@@ -1,5 +1,7 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
+import javafx.beans.binding.Binding;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -9,7 +11,7 @@ import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 
-public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements ChangeListener<V> {
+public class FXAttribute<V extends Comparable<V>> extends AbstractFXPropertyValue<V> implements ChangeListener<V> {
 
 	static private final long serialVersionUID = 4112630308772125334L;
 	
@@ -34,6 +36,11 @@ public class FXAttribute<V> extends AbstractFXPropertyValue<V> implements Change
 	
 	public ObjectProperty<V> valueProperty() {
 		return observableValue;
+	}
+	
+	@Override
+	public void bindFrom(final ObjectProperty<String> strProperty) {
+		strProperty.bind(Bindings.convert(observableValue));
 	}
 	
 	@Override
