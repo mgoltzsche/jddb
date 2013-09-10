@@ -1,6 +1,5 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -16,11 +15,6 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 
 	public FXAssociation(final Property property) {
 		super(property);
-	}
-
-	@Override
-	public void bindFrom(final ObjectProperty<String> strProperty) {
-		strProperty.bind(Bindings.convert(observableValue.get().labelProperty()));
 	}
 	
 	@Override
@@ -84,5 +78,10 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 	@Override
 	protected void addValueListener() {
 		observableValue.addListener(this);
+	}
+	
+	@Override
+	public int compareTo(final IFXPropertyValue<FXEntityReference> propertyValue) {
+		return label.get().compareToIgnoreCase(propertyValue.labelProperty().get());
 	}
 }

@@ -6,12 +6,13 @@ import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.dao.ModelChange
 import de.algorythm.jdoe.model.meta.EntityType
+import de.algorythm.jdoe.model.meta.EntityTypeWildcard
 import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.model.meta.Schema
 import de.algorythm.jdoe.ui.jfx.cell.EntityCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.EntityRow
 import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
-import de.algorythm.jdoe.ui.jfx.cell.PropertyCellValueFactory
+import de.algorythm.jdoe.ui.jfx.cell.PropertyValueCell
 import de.algorythm.jdoe.ui.jfx.comparator.StringComparator
 import de.algorythm.jdoe.ui.jfx.model.ApplicationStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
@@ -23,9 +24,12 @@ import java.io.IOException
 import java.net.URL
 import java.util.LinkedList
 import java.util.ResourceBundle
+import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.property.SimpleStringProperty
+import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
+import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.MenuButton
 import javafx.scene.control.MenuItem
@@ -37,9 +41,6 @@ import javafx.scene.control.TextField
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
-import javafx.scene.control.Button
-import de.algorythm.jdoe.model.meta.EntityTypeWildcard
-import de.algorythm.jdoe.model.meta.IPropertyType
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -158,11 +159,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			var i = 0
 			
 			for (Property property : selectedType.properties) {
-				val column = new TableColumn<FXEntity, String>(property.label)
-				
-				column.comparator = StringComparator.INSTANCE
-				column.cellValueFactory = new PropertyCellValueFactory(i)
-				columns += column
+				columns += createTableColumn(property.label, i)
 				i = i + 1
 			}
 		}
@@ -175,9 +172,13 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 		]
 	}
 	
-	def private <T> TableColumn<FXEntity,T> createTableColumn(IPropertyType<T> type) {
-		val column = new TableColumn<FXEntity, T>
-		column.comparator = type
+	def private TableColumn<FXEntity,IFXPropertyValue<?>> createTableColumn(String label, int i) {
+		val column = new TableColumn<FXEntity,IFXPropertyValue<?>>(label)
+		column.cellFactory = new PropertyValueCell.Factory
+		column.cellValueFactory = [
+			val ObservableValue<IFXPropertyValue<?>> cell = new ReadOnlyObjectWrapper(value.getValue(i))
+			cell
+		]
 		column
 	}
 	

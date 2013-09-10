@@ -71,33 +71,36 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	
 	def private initView(FXEntity entity) {
 		transientEntity = entity.copy
-		editorState.titleProperty.bind(transientEntity.labelProperty)
-		editorState.pristine = true
-		editorState.busy = false
 		
-		var i = 0
-		
-		for (IFXPropertyValue<?> value : transientEntity.values) {
-			val label = new Label(value.property.label + ': ')
+		runLater [|
+			editorState.titleProperty.bind(transientEntity.labelProperty)
+			editorState.pristine = true
+			editorState.busy = false
 			
-			GridPane.setValignment(label, VPos.TOP)
-			GridPane.setMargin(label, new Insets(4, 0, 0, 0))
+			var i = 0
 			
-			gridPane.add(label, 0, i)
+			for (IFXPropertyValue<?> value : transientEntity.values) {
+				val label = new Label(value.property.label + ': ')
+				
+				GridPane.setValignment(label, VPos.TOP)
+				GridPane.setMargin(label, new Insets(4, 0, 0, 0))
+				
+				gridPane.add(label, 0, i)
+				
+				val visitor = new PropertyValueEditorVisitor(gridPane, i, entityReference, editorState.pristineProperty, saveContainmentTasks, containedNewEntities, propertyUpdateCallbacks)
+				
+				visitor.injectMembers
+				
+				value.visit(visitor)
+				
+				i = i + 1
+			}
 			
-			val visitor = new PropertyValueEditorVisitor(gridPane, i, entityReference, editorState.pristineProperty, saveContainmentTasks, containedNewEntities, propertyUpdateCallbacks)
+			referringEntities.cellFactory = new ReferringEntityCell.Factory(facade)
+			referringEntities.itemsProperty.bind(entity.referringEntitiesProperty)
 			
-			visitor.injectMembers
-			
-			value.visit(visitor)
-			
-			i = i + 1
-		}
-		
-		referringEntities.cellFactory = new ReferringEntityCell.Factory(facade)
-		referringEntities.itemsProperty.bind(entity.referringEntitiesProperty)
-		
-		addObserver(this)
+			addObserver(this)
+		]
 	}
 	
 	def save() {

@@ -29,6 +29,6 @@ public class TString extends AbstractAttributeType<String> {
 	
 	@Override
 	public int compare(final String a, final String b) {
-		return a.compareToIgnoreCase(b);
+		return a == null && b == null ? 0 : a == null ? -1 : b == null ? 1 : a.compareToIgnoreCase(b);
 	}
 }

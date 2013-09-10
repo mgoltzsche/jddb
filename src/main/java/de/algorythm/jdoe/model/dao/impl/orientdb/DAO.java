@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
 import javax.inject.Singleton;
 
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
@@ -49,6 +51,8 @@ import de.algorythm.jdoe.model.meta.Schema;
 @Singleton
 public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> implements IDAO<V,P,REF>, IDAOVisitorContext<V,P,REF>, IDAOTransactionContext<V,P,REF> {
 
+	static private final Logger LOG = LoggerFactory.getLogger(DAO.class);
+	
 	static private final String ID = "_id";
 	static private final String TYPE_FIELD = "_type";
 	static private final String SEARCH_INDEX = "searchIndex";
@@ -85,8 +89,10 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 		
 		searchIndex = graph.getIndex(SEARCH_INDEX, Vertex.class);
 		
-		if (searchIndex == null)
+		if (searchIndex == null) {
 			searchIndex = graph.createIndex(SEARCH_INDEX, Vertex.class);
+			LOG.debug("New search index created");
+		}
 	}
 	
 	@Override

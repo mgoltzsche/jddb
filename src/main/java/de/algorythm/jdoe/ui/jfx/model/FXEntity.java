@@ -102,7 +102,6 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		while (iter.hasNext())
 			assignPropertyValue(iter.next(), otherIter.next());
 		
-		//setReferringEntities(entity.getReferringEntities());
 		bindValues();
 	}
 	

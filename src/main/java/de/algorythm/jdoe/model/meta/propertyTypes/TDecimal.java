@@ -2,6 +2,7 @@ package de.algorythm.jdoe.model.meta.propertyTypes;
 
 import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.meta.TextAlignment;
 
 public class TDecimal extends AbstractAttributeType<Long> {
 
@@ -21,5 +22,10 @@ public class TDecimal extends AbstractAttributeType<Long> {
 	public void valueToString(final Long value, final StringBuilder sb) {
 		if (value != null)
 			sb.append(value);
+	}
+	
+	@Override
+	public TextAlignment getTextAlignment() {
+		return TextAlignment.RIGHT;
 	}
 }

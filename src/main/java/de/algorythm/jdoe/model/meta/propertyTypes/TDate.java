@@ -5,6 +5,7 @@ import java.util.Date;
 
 import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.meta.TextAlignment;
 
 public class TDate extends AbstractAttributeType<Date>  {
 
@@ -24,5 +25,10 @@ public class TDate extends AbstractAttributeType<Date>  {
 	public void valueToString(final Date value, final StringBuilder sb) {
 		if (value != null)
 			sb.append(new SimpleDateFormat().format(value));
+	}
+	
+	@Override
+	public TextAlignment getTextAlignment() {
+		return TextAlignment.CENTER;
 	}
 }

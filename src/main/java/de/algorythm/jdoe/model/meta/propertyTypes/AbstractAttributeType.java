@@ -2,6 +2,7 @@ package de.algorythm.jdoe.model.meta.propertyTypes;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedList;
 
 import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
@@ -10,8 +11,9 @@ import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.TextAlignment;
 
-public abstract class AbstractAttributeType<V extends Comparable<V>> implements IPropertyType<V>, Serializable {
+public abstract class AbstractAttributeType<V extends Comparable<V>> implements IPropertyType<V>, Comparator<V>, Serializable {
 
 	static private final long serialVersionUID = 4590467257394701843L;
 	
@@ -50,6 +52,11 @@ public abstract class AbstractAttributeType<V extends Comparable<V>> implements 
 	@Override
 	public boolean isConform(final IPropertyType<?> type) {
 		return this == type;
+	}
+	
+	@Override
+	public TextAlignment getTextAlignment() {
+		return TextAlignment.LEFT;
 	}
 	
 	@Override

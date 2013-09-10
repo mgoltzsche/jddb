@@ -1,7 +1,5 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
-import javafx.beans.binding.Binding;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -39,11 +37,6 @@ public class FXAttribute<V extends Comparable<V>> extends AbstractFXPropertyValu
 	}
 	
 	@Override
-	public void bindFrom(final ObjectProperty<String> strProperty) {
-		strProperty.bind(Bindings.convert(observableValue));
-	}
-	
-	@Override
 	public void toString(final StringBuilder sb) {
 		type.valueToString(getValue(), sb);
 	}
@@ -75,5 +68,10 @@ public class FXAttribute<V extends Comparable<V>> extends AbstractFXPropertyValu
 	@Override
 	protected void addValueListener() {
 		observableValue.addListener(this);
+	}
+	
+	@Override
+	public int compareTo(final IFXPropertyValue<V> propertyValue) {
+		return type.compare(getValue(), propertyValue.getValue());
 	}
 }

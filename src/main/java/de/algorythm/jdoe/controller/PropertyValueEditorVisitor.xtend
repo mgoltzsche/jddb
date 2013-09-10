@@ -408,7 +408,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	}
 	
 	def private void bindStringProperty(IPropertyValue<String,?> propertyValue, StringProperty textProperty) {
-		textProperty.set(propertyValue.value)
+		textProperty.value = propertyValue.value
 		textProperty.addListener [c,o,value|
 			propertyValue.value = if (value.empty)
 				null

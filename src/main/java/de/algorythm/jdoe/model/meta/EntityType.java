@@ -55,8 +55,8 @@ public class EntityType extends AbstractLabeledElement implements IPropertyType<
 	}
 	
 	@Override
-	public int compare(final IEntityReference a, final IEntityReference b) {
-		return a.toString().compareToIgnoreCase(b.toString());
+	public TextAlignment getTextAlignment() {
+		return TextAlignment.LEFT;
 	}
 	
 	@Override

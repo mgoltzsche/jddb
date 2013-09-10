@@ -2,6 +2,7 @@ package de.algorythm.jdoe.model.meta.propertyTypes;
 
 import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.meta.TextAlignment;
 
 public class TReal extends AbstractAttributeType<Double> {
 
@@ -21,5 +22,10 @@ public class TReal extends AbstractAttributeType<Double> {
 	public void valueToString(final Double value, final StringBuilder sb) {
 		if (value != null)
 			sb.append(String.format("%.2f", value));
+	}
+	
+	@Override
+	public TextAlignment getTextAlignment() {
+		return TextAlignment.RIGHT;
 	}
 }

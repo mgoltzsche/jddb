@@ -11,7 +11,7 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V> 
 	static protected final String EMPTY = "";
 	
 	private V value;
-	private transient final Property property;
+	private final Property property;
 	protected transient final SimpleStringProperty label = new SimpleStringProperty(EMPTY);
 	protected transient IFXPropertyValueChangeHandler changeHandler = IFXPropertyValueChangeHandler.DEFAULT;
 	

@@ -3,9 +3,7 @@ package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ListProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -23,11 +21,6 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	public FXAssociations(final Property property) {
 		super(property);
 		setValue(new LinkedList<FXEntityReference>());
-	}
-	
-	@Override
-	public void bindFrom(final ObjectProperty<String> strProperty) {
-		strProperty.bind(Bindings.size(observableValue).asString());
 	}
 	
 	@Override
@@ -76,5 +69,10 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	@Override
 	protected void addValueListener() {
 		observableValue.addListener(this);
+	}
+	
+	@Override
+	public int compareTo(final IFXPropertyValue<Collection<FXEntityReference>> propertyValue) {
+		return getValue().size() - propertyValue.getValue().size();
 	}
 }

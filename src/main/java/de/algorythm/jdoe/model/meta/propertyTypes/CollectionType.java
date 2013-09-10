@@ -9,6 +9,7 @@ import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.IPropertyType;
 import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.TextAlignment;
 
 public class CollectionType implements IPropertyType<Collection<? extends IEntityReference>>, Serializable {
 
@@ -52,8 +53,8 @@ public class CollectionType implements IPropertyType<Collection<? extends IEntit
 	}
 	
 	@Override
-	public int compare(final Collection<? extends IEntityReference> a, final Collection<? extends IEntityReference> b) {
-		return a.size() - b.size();
+	public TextAlignment getTextAlignment() {
+		return TextAlignment.RIGHT;
 	}
 	
 	@Override
