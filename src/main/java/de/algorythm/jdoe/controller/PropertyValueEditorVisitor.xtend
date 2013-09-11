@@ -100,8 +100,11 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				
 				newEntity.showEntityEditor [
 					saveContainmentTasks.put(newEntity, saveLater)
-					selectedEntities.items += newEntity
-					pristine.value = false
+					
+					if (!selectedEntities.items.contains(newEntity)) {
+						selectedEntities.items += newEntity
+						pristine.value = false
+					}
 				]
 			]
 			

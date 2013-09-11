@@ -1,5 +1,6 @@
 package de.algorythm.jdoe.model.dao;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
@@ -14,7 +15,8 @@ import de.algorythm.jdoe.model.meta.Schema;
 public interface IDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> {
 	
 	boolean isOpened();
-	void open() throws IOException;
+	boolean isRecoverable();
+	void open(File dbFile) throws IOException;
 	void close() throws IOException;
 	void addObserver(IObserver<V,P,REF> observer);
 	void removeObserver(IObserver<V,P,REF> observer);

@@ -41,8 +41,14 @@ public class FXTask implements ITask {
 		this.state.set(state);
 	}
 	
+	@Override
 	public TaskState getState() {
 		return state.get();
+	}
+	
+	@Override
+	public boolean isFailed() {
+		return state.get() == TaskState.FAILED;
 	}
 	
 	public ReadOnlyObjectProperty<TaskState> stateProperty() {

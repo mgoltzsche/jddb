@@ -1,6 +1,6 @@
 package de.algorythm.jdoe.taskQueue;
 
-public interface ITask {
+public interface ITask extends ITaskResult {
 
 	String getId();
 	String getLabel();

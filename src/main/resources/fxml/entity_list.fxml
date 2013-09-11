@@ -30,7 +30,7 @@
 		<!-- <ToolBar maxWidth="Infinity"> -->
 		<ToolBar>
 			<Label fx:id="currentDatabaseLabel"/>
-			<Button text="%open" onAction="#openDatabase" fx:id="openDbButton"/>
+			<Button text="%open" onAction="#showDatabaseOpenDialog" fx:id="openDbButton"/>
 			<Button text="%configure" onAction="#showTypeEditor" disable="${appState.dbClosed}"/>
 			<Region HBox.hgrow="ALWAYS"/>
 			<TextField fx:id="searchField" promptText="%search"

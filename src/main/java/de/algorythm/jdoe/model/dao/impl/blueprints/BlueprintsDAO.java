@@ -1,4 +1,4 @@
-package de.algorythm.jdoe.model.dao.impl.orientdb;
+package de.algorythm.jdoe.model.dao.impl.blueprints;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,11 +16,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.inject.Singleton;
-
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
@@ -28,8 +24,8 @@ import com.tinkerpop.blueprints.CloseableIterable;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Index;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.IDAOTransactionContext;
@@ -37,6 +33,8 @@ import de.algorythm.jdoe.model.dao.IModelFactory;
 import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.dao.IPropertyValueLoader;
 import de.algorythm.jdoe.model.dao.ModelChange;
+import de.algorythm.jdoe.model.dao.impl.ArchiveManager;
+import de.algorythm.jdoe.model.dao.impl.orientdb.IDAOVisitorContext;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.DeleteVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.IndexKeywordCollectingVisitor;
 import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.LoadVisitor;
@@ -48,29 +46,30 @@ import de.algorythm.jdoe.model.meta.EntityType;
 import de.algorythm.jdoe.model.meta.EntityTypeWildcard;
 import de.algorythm.jdoe.model.meta.Schema;
 
-@Singleton
-public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> implements IDAO<V,P,REF>, IDAOVisitorContext<V,P,REF>, IDAOTransactionContext<V,P,REF> {
+public abstract class BlueprintsDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> implements IDAO<V,P,REF>, IDAOVisitorContext<V,P,REF>, IDAOTransactionContext<V,P,REF> {
 
-	static private final Logger LOG = LoggerFactory.getLogger(DAO.class);
-	
-	static private final String ID = "_id";
-	static private final String TYPE_FIELD = "_type";
-	static private final String SEARCH_INDEX = "searchIndex";
+	static protected final String ID = "_id";
+	static protected final String TYPE_FIELD = "_type";
+	static protected final String SEARCH_INDEX = "searchIndex";
 	static private final Pattern WORD_PATTERN = Pattern.compile("[\\w]+");
 	
 	private final IModelFactory<V, P, REF> modelFactory;
 	private final Yaml yaml;
+	private final ArchiveManager archiveManager;
 	private Schema schema;
-	private OrientGraph graph;
+	protected TransactionalGraph graph;
+	protected Index<Vertex> searchIndex;
+	protected final File tmpDbDirectory;
 	private final HashSet<IObserver<V,P,REF>> observers = new HashSet<>();
-	private Index<Vertex> searchIndex;
 	private ModelChange<V,P,REF> change;
 	
-	public DAO(final IModelFactory<V, P, REF> modelFactory) {
+	public BlueprintsDAO(final IModelFactory<V, P, REF> modelFactory, final ArchiveManager archiveManager) {
 		this.modelFactory = modelFactory;
+		this.archiveManager = archiveManager;
 		final Representer representer = new Representer();
         representer.getPropertyUtils().setSkipMissingProperties(true);
         yaml = new Yaml(representer);
+        tmpDbDirectory = archiveManager.getTmpWorkingDirectory();
 	}
 	
 	@Override
@@ -79,25 +78,30 @@ public class DAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF 
 	}
 	
 	@Override
-	public void open() throws IOException {
+	public boolean isRecoverable() {
+		return archiveManager.isRecoverable();
+	}
+	
+	protected abstract void initGraphAndSearchIndex();
+	
+	@Override
+	public void open(final File dbArchive) throws IOException {
+		final boolean recovering = dbArchive == null;
+		
+		archiveManager.open(dbArchive);
 		loadSchema();
-		graph = new OrientGraph("local:graph.db");
+		initGraphAndSearchIndex();
 		
-		graph.setUseLightweightEdges(true);
-		graph.createKeyIndex(TYPE_FIELD, Vertex.class);
-		graph.createKeyIndex(ID, Vertex.class);
-		
-		searchIndex = graph.getIndex(SEARCH_INDEX, Vertex.class);
-		
-		if (searchIndex == null) {
-			searchIndex = graph.createIndex(SEARCH_INDEX, Vertex.class);
-			LOG.debug("New search index created");
+		if (recovering) {
+			graph.shutdown();
+			initGraphAndSearchIndex();
 		}
 	}
 	
 	@Override
-	public void close() {
+	public void close() throws IOException {
 		graph.shutdown();
+		archiveManager.close();
 	}
 	
 	private void loadSchema() throws IOException {

@@ -1,7 +1,9 @@
 package de.algorythm.jdoe
 
 import de.algorythm.jdoe.bundle.Bundle
+import de.algorythm.jdoe.controller.IEntitySaveResult
 import de.algorythm.jdoe.model.dao.IDAO
+import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
@@ -9,17 +11,17 @@ import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.util.FxmlLoaderResult
 import de.algorythm.jdoe.ui.jfx.util.GuiceFxmlLoader
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
+import java.io.File
 import java.io.IOException
+import java.util.Collection
 import javafx.application.Platform
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Stage
 import javax.inject.Inject
-import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.controller.IEntitySaveResult
 
 public class JavaDbObjectEditorFacade {
 
@@ -53,26 +55,28 @@ public class JavaDbObjectEditorFacade {
 		editorManager.closeEntityEditor(entityRef)
 	}
 	
-	def openDB(Procedure0 callback) {
-		closeDB	
+	def void openDB(File dbFile, Procedure1<Collection<EntityType>> callback) {
+		val closeTask = closeDB
+		
 		runTask('open-db', bundle.taskOpenDB) [|
-			dao.open
-			
-			runLater [|
-				callback.apply
-			]
+			if (!closeTask.failed) {
+				dao.open(dbFile)
+				
+				runLater [|
+					callback.apply(dao.schema.types)
+				]
+			}
 		]
 	}
 	
-	def closeDB() {
-		if (dao.opened) {
-			runTask('close-db', bundle.taskCloseDB) [|
+	def private closeDB() {
+		runTask('close-db', bundle.taskCloseDB) [|
+			if (dao.opened)
 				dao.close
-			]
-		}
+		]
 	}
 	
-	def stopApplication() throws IOException {
+	def stopApplication() {
 		closeDB
 		taskQueue.close
 	}

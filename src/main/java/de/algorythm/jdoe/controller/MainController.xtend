@@ -8,7 +8,6 @@ import de.algorythm.jdoe.model.dao.ModelChange
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.EntityTypeWildcard
 import de.algorythm.jdoe.model.meta.Property
-import de.algorythm.jdoe.model.meta.Schema
 import de.algorythm.jdoe.ui.jfx.cell.EntityCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.EntityRow
 import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
@@ -20,8 +19,10 @@ import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.util.ViewRegistry
+import java.io.File
 import java.io.IOException
 import java.net.URL
+import java.util.Collection
 import java.util.LinkedList
 import java.util.ResourceBundle
 import javafx.beans.property.ReadOnlyObjectWrapper
@@ -38,6 +39,8 @@ import javafx.scene.control.TabPane
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.scene.control.TextField
+import javafx.stage.FileChooser
+import javafx.stage.FileChooser.ExtensionFilter
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
@@ -57,9 +60,9 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	@FXML var TableView<FXEntity> entityList
 	@FXML var TextField searchField
 	@FXML var MenuButton newEntityButton
-	var Schema schema
 	var selectedType = EntityTypeWildcard.INSTANCE
 	var String searchPhrase
+	var Collection<EntityType> entityTypes
 	
 	override initialize(URL url, ResourceBundle resourceBundle) {
 		tabPane = tabs
@@ -88,6 +91,9 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 		]
 		
 		addObserver(this)
+		
+		if (dao.recoverable)
+			openDatabase(null)
 	}
 	
 	def SimpleStringProperty searchValueProperty() {
@@ -114,7 +120,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def private void setupTypeSelection() {
-		val types = new LinkedList<EntityType>(schema.types)
+		val types = new LinkedList<EntityType>(entityTypes)
 		
 		types.addFirst(EntityTypeWildcard.INSTANCE)
 		
@@ -125,7 +131,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	def private void setupNewEntityButton() {
 		val menuItems = new LinkedList<MenuItem>
 		
-		for (type : schema.types.filter[t|!t.embedded]) {
+		for (type : entityTypes.filter[t|!t.embedded]) {
 			val menuItem = new MenuItem
 			
 			menuItem.text = type.label
@@ -200,11 +206,26 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 		]
 	}
 	
-	def openDatabase() {
+	def showDatabaseOpenDialog() {
+		val stage = openDbButton.scene.window
+		val fc = new FileChooser
+		fc.title = 'Open database'
+		fc.extensionFilters += new ExtensionFilter('jDOE Database (*.jdoedb)', '*.jdoedb')
+		var dbFile = fc.showOpenDialog(stage)
+		
+		if (dbFile != null) {
+			if (!dbFile.absolutePath.endsWith('.jdoedb'))
+				dbFile = new File(dbFile.absolutePath + '.jdoedb')
+			
+			dbFile.openDatabase
+		}
+	}
+	
+	def private openDatabase(File dbFile) {
 		entityList.items.clear
 		
-		facade.openDB [|
-			schema = dao.schema
+		facade.openDB(dbFile) [
+			entityTypes = it
 			setupTypeSelection
 			setupNewEntityButton
 			appState.dbClosed = false
