@@ -20,8 +20,7 @@ import javafx.scene.Scene
 import javafx.stage.Stage
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
-
-import static javafx.application.Platform.*
+import static extension javafx.application.Platform.*
 
 public class JavaDbObjectEditorFacade {
 
@@ -32,7 +31,7 @@ public class JavaDbObjectEditorFacade {
 	@Inject IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	
 	def startApplication(Stage primaryStage) throws IOException {
-		Platform.runLater [|
+		runLater [|
 			val FxmlLoaderResult<Parent, Object> loaderResult = load('/fxml/entity_list.fxml')
 			
 			primaryStage.title = 'jDOE'
