@@ -90,7 +90,7 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 		}
 	}
 	
-	protected abstract void onTaskQueued(T task);
+	protected void onTaskQueued(T task) {}
 	
 	protected void onTaskStarted(final T task) {
 		task.setState(TaskState.RUNNING);

@@ -24,7 +24,6 @@ import javafx.collections.ListChangeListener.Change
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.event.EventHandler
-import static extension javafx.application.Platform.*
 
 class StatusController implements Initializable, ListChangeListener<FXTask> {
 	

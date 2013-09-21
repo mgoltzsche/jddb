@@ -14,15 +14,16 @@ import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.io.File
 import java.io.IOException
 import java.util.Collection
-import javafx.application.Platform
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Stage
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
-import static extension javafx.application.Platform.*
+import static javafx.application.Platform.*
 
 public class JavaDbObjectEditorFacade {
+
+	static val TYPE_EDITOR_FXML = '/fxml/type_editor.fxml'
 
 	@Inject extension FXTaskQueue taskQueue
 	@Inject extension GuiceFxmlLoader
@@ -81,6 +82,6 @@ public class JavaDbObjectEditorFacade {
 	}
 	
 	def showTypeEditor() throws IOException {
-		showWindow('/fxml/type_editor.fxml', 'jDOE - ' + bundle.typeDefinition, 500, 400)
+		showWindow(TYPE_EDITOR_FXML, 'jDOE - ' + bundle.typeDefinition, 500, 400)
 	}
 }

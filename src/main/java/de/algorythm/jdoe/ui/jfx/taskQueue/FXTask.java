@@ -3,8 +3,6 @@ package de.algorythm.jdoe.ui.jfx.taskQueue;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-import org.eclipse.xtext.xbase.lib.Procedures.Procedure0;
-
 import de.algorythm.jdoe.taskQueue.ITask;
 import de.algorythm.jdoe.taskQueue.TaskState;
 
@@ -12,10 +10,10 @@ public class FXTask implements ITask {
 
 	private final String id;
 	private final String label;
-	private final Procedure0 task;
+	private final Runnable task;
 	private SimpleObjectProperty<TaskState> state = new SimpleObjectProperty<>(TaskState.QUEUED);
 	
-	public FXTask(final String id, final String label, final Procedure0 task) {
+	public FXTask(final String id, final String label, final Runnable task) {
 		this.id = id;
 		this.label = label;
 		this.task = task;
@@ -32,8 +30,8 @@ public class FXTask implements ITask {
 	}
 	
 	@Override
-	public void run() throws Exception {
-		task.apply();
+	public void run() {
+		task.run();
 	}
 
 	@Override

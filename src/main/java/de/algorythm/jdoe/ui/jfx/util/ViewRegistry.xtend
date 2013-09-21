@@ -10,12 +10,14 @@ import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.layout.Region
-import javax.inject.Inject
 import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import javax.inject.Inject
 
 @Singleton
 public class ViewRegistry implements IEntityEditorManager {
+	
+	static val EDITOR_FXML = '/fxml/entity_editor.fxml'
 	
 	@Inject extension GuiceFxmlLoader
 	val viewMap = new HashMap<String, ViewData>
@@ -34,7 +36,7 @@ public class ViewRegistry implements IEntityEditorManager {
 		val existingViewData = viewMap.get(entityId)
 		
 		if (existingViewData == null) { // create tab
-			val loaderResult = <Node, EntityEditorController>load('/fxml/entity_editor.fxml')
+			val loaderResult = <Node, EntityEditorController>load(EDITOR_FXML)
 			val controller = loaderResult.controller
 			val tab = new Tab
 			val progressIndicator = new ProgressIndicator

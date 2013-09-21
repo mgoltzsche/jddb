@@ -1,6 +1,7 @@
 package de.algorythm.jdoe.ui.jfx.util;
 
 import java.io.IOException;
+import java.net.URL;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -20,10 +21,12 @@ public class GuiceFxmlLoader {
 	
 	@SuppressWarnings("unchecked")
 	public <N, C> FxmlLoaderResult<N, C> load(final String fxmlFileName) throws IOException {
+		final URL fxmlUrl = getClass().getResource(fxmlFileName);
 		final FXMLLoader loader = new FXMLLoader();
+		loader.setLocation(fxmlUrl);
 		loader.setResources(bundle.bundle);
 		loader.setControllerFactory(new ControllerFactory(injector));
-		final N node = (N) loader.load(getClass().getResourceAsStream(fxmlFileName));
+		final N node = (N) loader.load(fxmlUrl.openStream());
 		final C controller = (C) loader.getController();
 		
 		return new FxmlLoaderResult<N, C>(node, controller);
