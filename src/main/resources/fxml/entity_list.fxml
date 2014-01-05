@@ -35,7 +35,7 @@
 			<Region HBox.hgrow="ALWAYS"/>
 			<TextField fx:id="searchField" promptText="%search"
 				prefWidth="200" disable="${appState.dbClosed}"/>
-			<ComboBox fx:id="typeComboBox" disable="${appState.dbClosed}"/>
+			<ComboBox fx:id="typeComboBox" prefWidth="90" disable="${appState.dbClosed}"/>
 			<Region HBox.hgrow="ALWAYS"/>
 			<MenuButton fx:id="newEntityButton" text="%newEntity" disable="${appState.dbClosed}"/>
 		</ToolBar>

@@ -36,7 +36,7 @@ public class JavaDbObjectEditorFacade {
 			val FxmlLoaderResult<Parent, Object> loaderResult = load('/fxml/entity_list.fxml')
 			
 			primaryStage.title = 'jDOE'
-			primaryStage.scene = new Scene(loaderResult.node, 800, 600)
+			primaryStage.scene = new Scene(loaderResult.node, 900, 700)
 			primaryStage.minWidth = 300
 			primaryStage.minHeight = 400
 			primaryStage.show

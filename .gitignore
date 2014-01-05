@@ -7,3 +7,4 @@ bin/
 *.db
 schema.yaml
 pom.xml.versionsBackup
+*.jdoedb

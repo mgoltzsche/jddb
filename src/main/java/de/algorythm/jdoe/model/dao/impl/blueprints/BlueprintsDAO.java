@@ -375,6 +375,7 @@ public abstract class BlueprintsDAO<V extends IEntity<P,REF>, P extends IPropert
 		}
 		
 		notifyObservers();
+		change = null;
 	}
 	
 	private void notifyObservers() {

@@ -10,9 +10,10 @@ import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.layout.Region
+import javax.inject.Inject
 import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
-import javax.inject.Inject
+import static javafx.application.Platform.*
 
 @Singleton
 public class ViewRegistry implements IEntityEditorManager {
@@ -60,8 +61,12 @@ public class ViewRegistry implements IEntityEditorManager {
 			
 			tab.setOnClosed [
 				viewMap.remove(entityId)
-				
-				loaderResult.controller.close
+				controller.close
+				// gc workaround:
+				runLater [|
+					tab.content = null
+					tab.onClosed = null
+				]
 			]
 			
 			tabPane.selectionModel.select(tab)

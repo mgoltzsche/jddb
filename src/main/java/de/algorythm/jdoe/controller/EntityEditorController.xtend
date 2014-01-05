@@ -28,8 +28,9 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
 import de.algorythm.jdoe.ui.jfx.model.factory.AssociationRemovingVisitor
+import de.algorythm.jdoe.ui.jfx.model.IFXEntityChangeListener
 
-public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IEntitySaveResult {
+public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IEntitySaveResult, IFXEntityChangeListener {
 	
 	@Inject extension FXTaskQueue
 	@Inject extension Injector
@@ -71,6 +72,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	
 	def private initView(FXEntity entity) {
 		transientEntity = entity.copy
+		transientEntity.setChangeListener(this)
 		
 		runLater [|
 			editorState.titleProperty.bind(transientEntity.labelProperty)
@@ -87,7 +89,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 				
 				gridPane.add(label, 0, i)
 				
-				val visitor = new PropertyValueEditorVisitor(gridPane, i, entityReference, editorState.pristineProperty, saveContainmentTasks, containedNewEntities, propertyUpdateCallbacks)
+				val visitor = new PropertyValueEditorVisitor(gridPane, i, entityReference, saveContainmentTasks, containedNewEntities, propertyUpdateCallbacks)
 				
 				visitor.injectMembers
 				
@@ -215,9 +217,14 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	def close() {
 		removeObserver(this)
 		
-		runTask('close-unsaved-containment-editors-' + transientEntity.id, bundle.taskCloseTransientContainmentEditors) [|
+		runTask('close-unsaved-containment-editors-' + entityReference.id, bundle.taskCloseTransientContainmentEditors) [|
 			for (entity : containedNewEntities.filter[e|!e.exists])
 				entity.closeEntityEditor
 		]
 	}
+	
+	override changed() {
+		this.editorState.pristine = false
+	}
+	
 }

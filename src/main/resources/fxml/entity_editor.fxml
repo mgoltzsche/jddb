@@ -21,11 +21,11 @@
 <SplitPane xmlns:fx="http://javafx.com/fxml"
 		fx:controller="de.algorythm.jdoe.controller.EntityEditorController"
 		stylesheets="/styles/formstate.css"
-		dividerPositions="0.9,0.1">
+		dividerPositions="1.0, 0.3">
 	<fx:define>
 		<EditorStateModel fx:id="editorState"/>
 	</fx:define>
-	<VBox fillWidth="true" disable="${editorState.deleting}">
+	<VBox fillWidth="true" prefWidth="600" minWidth="270" disable="${editorState.deleting}">
 		<ToolBar prefHeight="33">
 			<Button text="%delete" onAction="#delete" disable="${editorState.creating}"/>
 			<Button text="%save" onAction="#save" disable="${editorState.pristine}"/>
@@ -44,6 +44,6 @@
 		<ToolBar prefHeight="33">
 			<Label text="Referring entities:"/>
 		</ToolBar>
-		<ListView fx:id="referringEntities" prefWidth="150" minWidth="150" VBox.vgrow="ALWAYS"/>
+		<ListView fx:id="referringEntities" prefWidth="150" minWidth="100" VBox.vgrow="ALWAYS"/>
 	</VBox>
 </SplitPane>

@@ -24,6 +24,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	private final transient SimpleStringProperty label = new SimpleStringProperty(EMPTY);
 	private transient SimpleListProperty<FXEntityReference> referringEntities = new SimpleListProperty<>(FXCollections.observableList(new LinkedList<FXEntityReference>()));
 	private boolean reference;
+	private IFXEntityChangeListener changeListener = IFXEntityChangeListener.DEFAULT;
 	
 	public FXEntity(final EntityType type) {
 		super(type);
@@ -59,6 +60,10 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	
 	public void setReference(final boolean reference) {
 		this.reference = reference;
+	}
+	
+	public void setChangeListener(final IFXEntityChangeListener changeListener) {
+		this.changeListener = changeListener;
 	}
 	
 	@Override
@@ -151,6 +156,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	
 	@Override
 	public void valueChanged() {
+		changeListener.changed();
 		updateLabelValue();
 	}
 	
