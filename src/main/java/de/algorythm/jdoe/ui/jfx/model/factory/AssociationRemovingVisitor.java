@@ -65,4 +65,7 @@ public class AssociationRemovingVisitor implements IFXPropertyValueVisitor {
 
 	@Override
 	public void doWithText(IPropertyValue<String, ?> propertyValue) {}
+	
+	@Override
+	public void doWithFile(IPropertyValue<String, ?> propertyValue) {}
 }

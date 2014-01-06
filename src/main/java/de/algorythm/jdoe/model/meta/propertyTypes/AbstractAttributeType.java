@@ -26,6 +26,7 @@ public abstract class AbstractAttributeType<V extends Comparable<V>> implements 
 		ATTRIBUTE_TYPES.add(new TDate());
 		ATTRIBUTE_TYPES.add(new TString());
 		ATTRIBUTE_TYPES.add(new TText());
+		ATTRIBUTE_TYPES.add(new TFile());
 	}
 	
 	private final String label;

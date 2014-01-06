@@ -60,4 +60,7 @@ public class AssociationCollectingVisitor implements IPropertyValueVisitor<FXEnt
 
 	@Override
 	public void doWithText(IPropertyValue<String, ?> propertyValue) {}
+	
+	@Override
+	public void doWithFile(IPropertyValue<String, ?> propertyValue) {}
 }

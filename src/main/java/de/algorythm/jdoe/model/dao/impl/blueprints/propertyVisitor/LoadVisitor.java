@@ -146,6 +146,11 @@ public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 		propertyValue.setValue(attributeValueAsString(propertyValue));
 	}
 	
+	@Override
+	public void doWithFile(final IPropertyValue<String,?> propertyValue) {
+		propertyValue.setValue(attributeValueAsString(propertyValue));
+	}
+	
 	private String attributeValueAsString(final IPropertyValue<?,?> propertyValue) {
 		final Object value = vertex.getProperty(propertyValue.getProperty().getName());
 		

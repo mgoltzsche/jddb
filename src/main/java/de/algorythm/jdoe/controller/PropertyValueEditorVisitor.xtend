@@ -396,6 +396,16 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		gridPane.add(textArea, 1, row)
 	}
 	
+	override doWithFile(IPropertyValue<String,?> propertyValue) {
+		val textField = new TextField
+		
+		textField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
+		
+		propertyValue.bindStringProperty(textField.textProperty)
+		GridPane.setHgrow(textField, Priority.ALWAYS)
+		gridPane.add(textField, 1, row)
+	}
+	
 	def private void bindStringProperty(IPropertyValue<String,?> propertyValue, StringProperty textProperty) {
 		textProperty.value = propertyValue.value
 		textProperty.addListener [c,o,value|

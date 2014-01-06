@@ -1,5 +1,6 @@
 package de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
@@ -59,6 +60,22 @@ public class IndexKeywordCollectingVisitor<E extends IEntityReference> implement
 	@Override
 	public void doWithText(final IPropertyValue<String,?> propertyValue) {
 		addIndexKeywords(propertyValue);
+	}
+	
+	@Override
+	public void doWithFile(final IPropertyValue<String,?> propertyValue) {
+		if (propertyValue.getProperty().isSearchable()) {
+			final String value = propertyValue.toString();
+			
+			if (!value.isEmpty()) {
+				final String fileName = new File(value).getName();
+				
+				indexKeywords.add(value);
+				
+				for (String keyword : truncatedKeywords(fileName))
+					indexKeywords.add(keyword);
+			}
+		}
 	}
 	
 	private void addIndexKeywords(IPropertyValue<?,?> propertyValue) {

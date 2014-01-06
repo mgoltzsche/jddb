@@ -10,4 +10,5 @@ public interface IAttributeValueVisitor {
 	void doWithDate(IPropertyValue<Date,?> propertyValue);
 	void doWithString(IPropertyValue<String,?> propertyValue);
 	void doWithText(IPropertyValue<String,?> propertyValue);
+	void doWithFile(IPropertyValue<String,?> propertyValue);
 }
