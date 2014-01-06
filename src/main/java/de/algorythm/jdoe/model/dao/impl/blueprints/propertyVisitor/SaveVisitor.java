@@ -1,4 +1,4 @@
-package de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor;
+package de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor;
 
 import java.util.Collection;
 import java.util.Date;
@@ -12,7 +12,6 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
-import de.algorythm.jdoe.model.dao.impl.orientdb.IDAOVisitorContext;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;

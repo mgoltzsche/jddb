@@ -1,10 +1,9 @@
-package de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor;
+package de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor;
 
 import java.util.Collection;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import de.algorythm.jdoe.model.dao.impl.orientdb.IDAOVisitorContext;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;

@@ -9,7 +9,7 @@ import de.algorythm.jdoe.bundle.Bundle;
 import de.algorythm.jdoe.cache.ObjectCache;
 import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.impl.ArchiveManager;
-import de.algorythm.jdoe.model.dao.impl.orientdb.OrientDbDAO;
+import de.algorythm.jdoe.model.dao.impl.neo4j.Neo4jDbDAO;
 import de.algorythm.jdoe.ui.jfx.model.FXEntity;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 import de.algorythm.jdoe.ui.jfx.model.factory.FXModelFactory;
@@ -27,7 +27,7 @@ public class JavaDbObjectEditorModule extends AbstractModule {
 		final File tmpDirectory = new File(prefPath + File.separator + "tmp");
 		final ArchiveManager archiveManager = new ArchiveManager(tmpDirectory);
 		
-		final IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao = new OrientDbDAO<>(modelFactory, archiveManager);
+		final IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao = new Neo4jDbDAO<>(modelFactory, archiveManager);
 		final Config cfg = new Config(preferencesDirectory, tmpDirectory);
 		
 		bind(Config.class).toInstance(cfg);

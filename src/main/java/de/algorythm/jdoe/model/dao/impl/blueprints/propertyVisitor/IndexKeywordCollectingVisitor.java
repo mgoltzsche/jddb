@@ -1,4 +1,4 @@
-package de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor;
+package de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor;
 
 import java.util.Collection;
 import java.util.Date;

@@ -34,11 +34,11 @@ import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.dao.IPropertyValueLoader;
 import de.algorythm.jdoe.model.dao.ModelChange;
 import de.algorythm.jdoe.model.dao.impl.ArchiveManager;
-import de.algorythm.jdoe.model.dao.impl.orientdb.IDAOVisitorContext;
-import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.DeleteVisitor;
-import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.IndexKeywordCollectingVisitor;
-import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.LoadVisitor;
-import de.algorythm.jdoe.model.dao.impl.orientdb.propertyVisitor.SaveVisitor;
+import de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor.DeleteVisitor;
+import de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor.IDAOVisitorContext;
+import de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor.IndexKeywordCollectingVisitor;
+import de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor.LoadVisitor;
+import de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor.SaveVisitor;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
@@ -139,7 +139,12 @@ public abstract class BlueprintsDAO<V extends IEntity<P,REF>, P extends IPropert
 	
 	private IPropertyValueLoader<REF> createLoader(final Vertex vertex) {
 		final String id = vertex.<String>getProperty(ID);
-		final EntityType type = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
+		final String typeName = vertex.<String>getProperty(TYPE_FIELD);
+		
+		if (id == null || typeName == null)
+			throw new IllegalStateException(String.format("id or type of vertex %s is null. Available keys: %s", vertex, vertex.getPropertyKeys()));
+		
+		final EntityType type = schema.getTypeByName(typeName);
 		
 		return new LoadVisitor<>(vertex, id, type, this);
 	}

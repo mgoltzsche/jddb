@@ -48,8 +48,14 @@ public class ViewRegistry implements IEntityEditorManager {
 			
 			val stateModel = controller.init(entityRef, saveCallback)
 			
-			tab.textProperty.bind(stateModel.titleProperty)
 			progressIndicator.visibleProperty.bind(stateModel.busyProperty)
+			tab.textProperty.bind(stateModel.titleProperty)
+			stateModel.pristineProperty.addListener [
+				if (stateModel.pristine)
+					tab.styleClass -= 'unsaved'
+				else
+					tab.styleClass += 'unsaved'
+			]
 			
 			tab.content = loaderResult.node
 			
