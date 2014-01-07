@@ -19,6 +19,7 @@ import javafx.scene.Scene
 import javafx.stage.Stage
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+
 import static javafx.application.Platform.*
 
 public class JavaDbObjectEditorFacade {
@@ -71,8 +72,9 @@ public class JavaDbObjectEditorFacade {
 	
 	def private closeDB() {
 		runTask('close-db', bundle.taskCloseDB) [|
-			if (dao.opened)
+			if (dao.opened) {
 				dao.close
+			}
 		]
 	}
 	

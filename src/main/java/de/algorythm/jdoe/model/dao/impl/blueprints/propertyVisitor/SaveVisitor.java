@@ -163,6 +163,12 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 		super.doWithText(propertyValue);
 	}
 	
+	@Override
+	public void doWithFile(final IPropertyValue<String,?> propertyValue) {
+		writeAttributeValue(propertyValue);
+		super.doWithFile(propertyValue);
+	}
+	
 	private void writeAttributeValue(IPropertyValue<?,?> propertyValue) {
 		final Property property = propertyValue.getProperty();
 		final String propertyName = property.getName();

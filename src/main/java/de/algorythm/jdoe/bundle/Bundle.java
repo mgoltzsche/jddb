@@ -27,6 +27,7 @@ public class Bundle {
 	public final String remove;
 	public final String create;
 	public final String edit;
+	public final String choose;
 	public final String yes;
 	public final String no;
 	
@@ -79,6 +80,7 @@ public class Bundle {
 		remove = b.getString("remove");
 		create = b.getString("create");
 		edit = b.getString("edit");
+		choose = b.getString("choose");
 		open = b.getString("open");
 		configure = b.getString("configure");
 		search = b.getString("search");

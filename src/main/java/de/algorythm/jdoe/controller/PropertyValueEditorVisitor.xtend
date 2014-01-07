@@ -40,9 +40,15 @@ import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import javafx.stage.FileChooser
+import javafx.scene.image.ImageView
+import javafx.scene.image.Image
+import java.io.File
+import org.slf4j.LoggerFactory
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
+	static val LOG = LoggerFactory.getLogger(typeof(PropertyValueEditorVisitor))
 	static val FIELD_ERROR_STYLE_CLASS = 'field-error'
 	static val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
 	static val REAL_PATTERN = Pattern.compile('^\\d+((\\.|,)\\d+)?$')
@@ -397,22 +403,69 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	}
 	
 	override doWithFile(IPropertyValue<String,?> propertyValue) {
-		val textField = new TextField
+		val VBox vBox = new VBox
+		val HBox hBox = new HBox
+		val vBoxChildren = vBox.children
+		val hBoxChildren = hBox.children
+		val imageView = new ImageView
+		val fileField = new TextField
+		val chooseBtn = new Button(bundle.choose)
+		val removeBtn = new Button(bundle.remove)
 		
-		textField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
+		imageView.preserveRatio = true
+		imageView.smooth = true
 		
-		propertyValue.bindStringProperty(textField.textProperty)
-		GridPane.setHgrow(textField, Priority.ALWAYS)
-		gridPane.add(textField, 1, row)
+		fileField.editable = false
+		fileField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
+		HBox.setHgrow(fileField, Priority.ALWAYS)
+		
+		chooseBtn.setOnAction [
+			fileField.chooseFile
+		]
+		
+		removeBtn.setOnAction [
+			fileField.text = ''
+		]
+		
+		hBoxChildren += fileField
+		hBoxChildren += chooseBtn
+		hBoxChildren += removeBtn
+		vBoxChildren += hBox
+		vBoxChildren += imageView
+		
+		fileField.textProperty.addListener [c,o,filePath|
+			imageView.image = null;
+			
+			if (!filePath?.empty && new File(filePath).exists) {
+				try {
+					imageView.image = new Image('file:' + filePath, true)
+				} catch(Throwable e) {
+					LOG.debug("Cannot load image from property " + propertyValue.property.name, e)
+				}
+			}
+		]
+		propertyValue.bindStringProperty(fileField.textProperty)
+		
+		GridPane.setHgrow(vBox, Priority.ALWAYS)
+		gridPane.add(vBox, 1, row)
+	}
+	
+	def private chooseFile(TextField fileLabel) {
+		val fc = new FileChooser
+		fc.title = 'Choose file'
+		var file = fc.showOpenDialog(gridPane.scene.window)
+		
+		if (file != null)
+			fileLabel.text = file.absolutePath
 	}
 	
 	def private void bindStringProperty(IPropertyValue<String,?> propertyValue, StringProperty textProperty) {
 		textProperty.value = propertyValue.value
 		textProperty.addListener [c,o,value|
-			propertyValue.value = if (value.empty)
-				null
-			else
+			propertyValue.value = if (!value?.empty)
 				value
+			else
+				null
 		]
 	}
 	

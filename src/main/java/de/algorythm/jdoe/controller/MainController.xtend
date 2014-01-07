@@ -207,11 +207,10 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def showDatabaseOpenDialog() {
-		val stage = openDbButton.scene.window
 		val fc = new FileChooser
-		fc.title = 'Open database'
+		fc.title = bundle.taskOpenDB
 		fc.extensionFilters += new ExtensionFilter('jDOE Database (*.jdoedb)', '*.jdoedb')
-		var dbFile = fc.showOpenDialog(stage)
+		var dbFile = fc.showOpenDialog(openDbButton.scene.window)
 		
 		if (dbFile != null) {
 			if (!dbFile.absolutePath.endsWith('.jdoedb'))
