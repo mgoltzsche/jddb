@@ -45,6 +45,8 @@ import javafx.scene.image.ImageView
 import javafx.scene.image.Image
 import java.io.File
 import org.slf4j.LoggerFactory
+import java.awt.Desktop
+import java.io.IOException
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -411,9 +413,20 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		val fileField = new TextField
 		val chooseBtn = new Button(bundle.choose)
 		val removeBtn = new Button(bundle.remove)
+		val openBtn = new Button(bundle.open)
+		val desktopSupported = Desktop.desktopSupported
+		val openButtonUnsupported = !desktopSupported
+		
+		if (!desktopSupported)
+			LOG.warn('AWT Desktop is not supported')
+		
+		openBtn.disable = true
+		removeBtn.disable = true
 		
 		imageView.preserveRatio = true
 		imageView.smooth = true
+		imageView.fitWidth = 200
+		imageView.fitHeight = 100
 		
 		fileField.editable = false
 		fileField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
@@ -427,8 +440,19 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			fileField.text = ''
 		]
 		
+		if (desktopSupported) {
+			openBtn.setOnAction [
+				fileField.text.openFileExternally
+			]
+			
+			imageView.setOnMouseClicked [
+				fileField.text.openFileExternally
+			]
+		}
+		
 		hBoxChildren += fileField
 		hBoxChildren += chooseBtn
+		hBoxChildren += openBtn
 		hBoxChildren += removeBtn
 		vBoxChildren += hBox
 		vBoxChildren += imageView
@@ -436,12 +460,20 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		fileField.textProperty.addListener [c,o,filePath|
 			imageView.image = null;
 			
-			if (!filePath?.empty && new File(filePath).exists) {
-				try {
-					imageView.image = new Image('file:' + filePath, true)
-				} catch(Throwable e) {
-					LOG.debug("Cannot load image from property " + propertyValue.property.name, e)
+			if (filePath != null && !filePath.empty) {
+				removeBtn.disable = false
+				openBtn.disable = openButtonUnsupported
+				
+				if (new File(filePath).exists) {
+					try {
+						imageView.image = new Image('file:' + filePath, true)
+					} catch(Throwable e) {
+						LOG.debug("Cannot load image from property " + propertyValue.property.name, e)
+					}
 				}
+			} else {
+				removeBtn.disable = true
+				openBtn.disable = true
 			}
 		]
 		propertyValue.bindStringProperty(fileField.textProperty)
@@ -459,13 +491,29 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			fileLabel.text = file.absolutePath
 	}
 	
+	def private void openFileExternally(String filePath) {
+		if (filePath == null || filePath.empty)
+			return;
+		
+		val file = new File(filePath)
+		
+		if (!file.exists)
+			return;
+		
+		try {
+			Desktop.desktop.open(file)
+		} catch(Throwable e) {
+			LOG.error('''Cannot open file «file.absolutePath» externally''')
+		}
+	}
+	
 	def private void bindStringProperty(IPropertyValue<String,?> propertyValue, StringProperty textProperty) {
 		textProperty.value = propertyValue.value
 		textProperty.addListener [c,o,value|
-			propertyValue.value = if (!value?.empty)
-				value
-			else
+			propertyValue.value = if (value == null || value.empty)
 				null
+			else
+				value
 		]
 	}
 	
