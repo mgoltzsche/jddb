@@ -11,6 +11,7 @@ import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.util.FxmlLoaderResult
 import de.algorythm.jdoe.ui.jfx.util.GuiceFxmlLoader
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
+import de.algorythm.jdoe.ui.jfx.util.ImageLoader
 import java.io.File
 import java.io.IOException
 import java.util.Collection
@@ -18,16 +19,19 @@ import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Stage
 import javax.inject.Inject
+import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
 
+@Singleton
 public class JavaDbObjectEditorFacade {
 
 	static val TYPE_EDITOR_FXML = '/fxml/type_editor.fxml'
 
 	@Inject extension FXTaskQueue taskQueue
 	@Inject extension GuiceFxmlLoader
+	@Inject ImageLoader imageLoader
 	@Inject IEntityEditorManager editorManager
 	@Inject Bundle bundle
 	@Inject IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
@@ -42,6 +46,11 @@ public class JavaDbObjectEditorFacade {
 			primaryStage.minHeight = 400
 			primaryStage.show
 		]
+	}
+	
+	def stopApplication() {
+		closeDB
+		taskQueue.close
 	}
 	
 	def showEntityEditor(FXEntityReference entityRef) {
@@ -78,12 +87,11 @@ public class JavaDbObjectEditorFacade {
 		]
 	}
 	
-	def stopApplication() {
-		closeDB
-		taskQueue.close
-	}
-	
 	def showTypeEditor() throws IOException {
 		showWindow(TYPE_EDITOR_FXML, 'jDOE - ' + bundle.typeDefinition, 500, 400)
+	}
+	
+	def loadImage(String filePath) {
+		imageLoader.loadImage(filePath)
 	}
 }

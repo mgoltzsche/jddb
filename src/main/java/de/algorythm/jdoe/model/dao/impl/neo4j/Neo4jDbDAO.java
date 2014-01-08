@@ -45,13 +45,15 @@ public class Neo4jDbDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF
 		Vertex first = null;
 		
 		for (Vertex v : g.getVertices()) {
+			if (v == null)
+				throw new IllegalStateException("Nullvertex");
 			if (first == null)
 				first = v;
 			else
 				return;
 		}
 		
-		if (first.getPropertyKeys().isEmpty())
+		if (first != null && first.getPropertyKeys().isEmpty())
 			first.remove();
 	}
 }

@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 
-import de.algorythm.jdoe.cache.CacheCleanDaemon;
-
 public class JavaDbObjectEditor extends Application {
 
 	static private final Logger LOG = LoggerFactory.getLogger(JavaDbObjectEditor.class);

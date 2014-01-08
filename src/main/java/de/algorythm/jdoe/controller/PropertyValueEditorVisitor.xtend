@@ -17,6 +17,8 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValueVisitor
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTransactionTask
+import java.awt.Desktop
+import java.io.File
 import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -32,21 +34,17 @@ import javafx.scene.control.Label
 import javafx.scene.control.ListView
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
+import javafx.scene.image.ImageView
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
+import javafx.stage.FileChooser
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
-import javafx.stage.FileChooser
-import javafx.scene.image.ImageView
-import javafx.scene.image.Image
-import java.io.File
 import org.slf4j.LoggerFactory
-import java.awt.Desktop
-import java.io.IOException
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -463,14 +461,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			if (filePath != null && !filePath.empty) {
 				removeBtn.disable = false
 				openBtn.disable = openButtonUnsupported
-				
-				if (new File(filePath).exists) {
-					try {
-						imageView.image = new Image('file:' + filePath, true)
-					} catch(Throwable e) {
-						LOG.debug("Cannot load image from property " + propertyValue.property.name, e)
-					}
-				}
+				imageView.image = filePath.loadImage
 			} else {
 				removeBtn.disable = true
 				openBtn.disable = true
