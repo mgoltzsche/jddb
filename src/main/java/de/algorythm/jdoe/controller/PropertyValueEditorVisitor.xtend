@@ -17,8 +17,6 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValueVisitor
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTransactionTask
-import java.awt.Desktop
-import java.io.File
 import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -44,11 +42,11 @@ import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
-import org.slf4j.LoggerFactory
+
+import static extension de.algorythm.jdoe.ui.jfx.util.OpenFileUtil.*
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
-	static val LOG = LoggerFactory.getLogger(typeof(PropertyValueEditorVisitor))
 	static val FIELD_ERROR_STYLE_CLASS = 'field-error'
 	static val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
 	static val REAL_PATTERN = Pattern.compile('^\\d+((\\.|,)\\d+)?$')
@@ -412,11 +410,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		val chooseBtn = new Button(bundle.choose)
 		val removeBtn = new Button(bundle.remove)
 		val openBtn = new Button(bundle.open)
-		val desktopSupported = Desktop.desktopSupported
-		val openButtonUnsupported = !desktopSupported
-		
-		if (!desktopSupported)
-			LOG.warn('AWT Desktop is not supported')
+		val openButtonUnsupported = !openFileSupported
 		
 		openBtn.disable = true
 		removeBtn.disable = true
@@ -438,7 +432,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			fileField.text = ''
 		]
 		
-		if (desktopSupported) {
+		if (openFileSupported) {
 			openBtn.setOnAction [
 				fileField.text.openFileExternally
 			]
@@ -480,22 +474,6 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		
 		if (file != null)
 			fileLabel.text = file.absolutePath
-	}
-	
-	def private void openFileExternally(String filePath) {
-		if (filePath == null || filePath.empty)
-			return;
-		
-		val file = new File(filePath)
-		
-		if (!file.exists)
-			return;
-		
-		try {
-			Desktop.desktop.open(file)
-		} catch(Throwable e) {
-			LOG.error('''Cannot open file «file.absolutePath» externally''')
-		}
 	}
 	
 	def private void bindStringProperty(IPropertyValue<String,?> propertyValue, StringProperty textProperty) {

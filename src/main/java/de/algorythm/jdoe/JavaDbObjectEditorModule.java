@@ -15,6 +15,7 @@ import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 import de.algorythm.jdoe.ui.jfx.model.factory.FXModelFactory;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager;
+import de.algorythm.jdoe.ui.jfx.util.ImageLoader;
 import de.algorythm.jdoe.ui.jfx.util.ViewRegistry;
 
 public class JavaDbObjectEditorModule extends AbstractModule {
@@ -34,6 +35,7 @@ public class JavaDbObjectEditorModule extends AbstractModule {
 		bind(IEntityEditorManager.class).to(ViewRegistry.class);
 		bind(Bundle.class).toInstance(Bundle.getInstance());
 		bind(new TypeLiteral<IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference>>() {}).toInstance(dao);
+		bind(ImageLoader.class).toInstance(ImageLoader.getInstance());
 		
 		modelFactory.init(dao, new ObjectCache<FXEntity>());
 	}

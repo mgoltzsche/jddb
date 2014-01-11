@@ -1,5 +1,6 @@
 package de.algorythm.jdoe.ui.jfx.model.propertyValue;
 
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -60,7 +61,12 @@ public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> im
 		
 		if (value == null) {
 			label.unbind();
-			label.set(EMPTY);
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					label.set(EMPTY);
+				}
+			});
 		} else
 			label.bind(value.labelProperty());
 	}

@@ -38,7 +38,7 @@ public class JavaDbObjectEditorFacade {
 	
 	def startApplication(Stage primaryStage) throws IOException {
 		runLater [|
-			val FxmlLoaderResult<Parent, Object> loaderResult = load('/fxml/entity_list.fxml')
+			val FxmlLoaderResult<Parent, Object> loaderResult = load('/fxml/jdoe.fxml')
 			
 			primaryStage.title = 'jDOE'
 			primaryStage.scene = new Scene(loaderResult.node, 900, 700)

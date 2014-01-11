@@ -37,7 +37,7 @@ public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityR
 	public void toString(final StringBuilder sb) {
 		sb.append(String.valueOf(getValue().size()));
 	}
-
+	
 	@Override
 	public IFXPropertyValue<Collection<FXEntityReference>> copy() {
 		final FXAssociations copy = new FXAssociations(getProperty());

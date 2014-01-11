@@ -4,19 +4,26 @@ import java.io.File;
 
 import javafx.scene.image.Image;
 
-import javax.inject.Singleton;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.algorythm.jdoe.cache.IObjectCache;
 import de.algorythm.jdoe.cache.ObjectCache;
 
-@Singleton
 public class ImageLoader {
 
 	static private final Logger LOG = LoggerFactory.getLogger(ImageLoader.class);
+	static private final ImageLoader INSTANCE = new ImageLoader();
+	
+	static public ImageLoader getInstance() {
+		return INSTANCE;
+	}
+	
+	
 	private IObjectCache<Image> cache = new ObjectCache<>();
+	
+	private ImageLoader() {
+	}
 	
 	public Image loadImage(final String filePath) {
 		Image image = cache.get(filePath);

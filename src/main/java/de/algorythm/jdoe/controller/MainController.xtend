@@ -7,12 +7,8 @@ import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.dao.ModelChange
 import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.EntityTypeWildcard
-import de.algorythm.jdoe.model.meta.Property
-import de.algorythm.jdoe.ui.jfx.cell.EntityCellValueFactory
-import de.algorythm.jdoe.ui.jfx.cell.EntityRow
-import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
-import de.algorythm.jdoe.ui.jfx.cell.PropertyValueCell
-import de.algorythm.jdoe.ui.jfx.comparator.StringComparator
+import de.algorythm.jdoe.ui.jfx.controls.FXEntityDetailView
+import de.algorythm.jdoe.ui.jfx.controls.FXEntityTableView
 import de.algorythm.jdoe.ui.jfx.model.ApplicationStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
@@ -25,9 +21,7 @@ import java.net.URL
 import java.util.Collection
 import java.util.LinkedList
 import java.util.ResourceBundle
-import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.property.SimpleStringProperty
-import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
 import javafx.scene.control.Button
@@ -36,8 +30,6 @@ import javafx.scene.control.MenuButton
 import javafx.scene.control.MenuItem
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
-import javafx.scene.control.TableColumn
-import javafx.scene.control.TableView
 import javafx.scene.control.TextField
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
@@ -57,7 +49,8 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	@FXML var ComboBox<EntityType> typeComboBox
 	@FXML var TabPane tabs
 	@FXML var Tab listTab
-	@FXML var TableView<FXEntity> entityList
+	@FXML var FXEntityTableView entityTable
+	@FXML var FXEntityDetailView entityDetails
 	@FXML var TextField searchField
 	@FXML var MenuButton newEntityButton
 	var selectedType = EntityTypeWildcard.INSTANCE
@@ -67,8 +60,13 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	override initialize(URL url, ResourceBundle resourceBundle) {
 		tabPane = tabs
 		
-		entityList.items.addListener [
-			listTab.text = '''«bundle.results» («entityList.items.size»)'''
+		entityDetails.entityProperty.bind(entityTable.selectionModel.selectedItemProperty)
+		
+		entityTable.setOnAction [
+			showEntityEditor
+		]
+		entityTable.items.addListener [
+			listTab.text = '''«bundle.results» («entityTable.items.size»)'''
 		]
 		
 		searchField.textProperty.addListener [
@@ -76,11 +74,6 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			showListTab
 			search
 		]
-		
-		entityList.cache = false
-		entityList.setRowFactory(new EntityRow.Factory [
-			showEntityEditor
-		])
 		
 		typeComboBox.valueProperty.addListener [
 			setSelectedType(typeComboBox.value)
@@ -107,10 +100,15 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 				type
 		
 		runTask('switch-search-type', '''«bundle.taskSwitchSearchType»: «selectedType.label»''') [|
-			updateTableColumns
-			
 			runLater [|
 				showListTab
+			]
+			
+			val entities = dao.list(selectedType, searchPhrase)
+			
+			runLater [|
+				entityTable.items.all = entities
+				entityTable.entityType = selectedType
 			]
 		]
 	}
@@ -146,48 +144,6 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 		newEntityButton.items.all = menuItems
 	}
 	
-	def private updateTableColumns() {
-		val columns = new LinkedList<TableColumn<FXEntity, ?>>
-		
-		if (selectedType == EntityTypeWildcard.INSTANCE) {
-			val typeColumn = new TableColumn<FXEntity, String>(bundle.type)
-			val labelColumn = new TableColumn<FXEntity, String>(bundle.entity)
-			
-			typeColumn.cellValueFactory = EntityTypeCellValueFactory.INSTANCE
-			labelColumn.cellValueFactory = EntityCellValueFactory.INSTANCE
-			
-			labelColumn.comparator = StringComparator.INSTANCE
-			typeColumn.comparator = StringComparator.INSTANCE
-			
-			columns += typeColumn
-			columns += labelColumn
-		} else {
-			var i = 0
-			
-			for (Property property : selectedType.properties) {
-				columns += createTableColumn(property.label, i)
-				i = i + 1
-			}
-		}
-		
-		val entities = dao.list(selectedType, searchPhrase)
-		
-		runLater [|
-			entityList.items.all = entities
-			entityList.columns.all = columns
-		]
-	}
-	
-	def private TableColumn<FXEntity,IFXPropertyValue<?>> createTableColumn(String label, int i) {
-		val column = new TableColumn<FXEntity,IFXPropertyValue<?>>(label)
-		column.cellFactory = new PropertyValueCell.Factory
-		column.cellValueFactory = [
-			val ObservableValue<IFXPropertyValue<?>> cell = new ReadOnlyObjectWrapper(value.getValue(i))
-			cell
-		]
-		column
-	}
-	
 	override update(ModelChange<FXEntity, IFXPropertyValue<?>, FXEntityReference> change) {
 		if (change.newOrDeleted) {
 			runLater [|
@@ -201,7 +157,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			val entities = dao.list(selectedType, searchPhrase)
 			
 			runLater [|
-				entityList.items.all = entities
+				entityTable.items.all = entities
 			]
 		]
 	}
@@ -221,7 +177,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def private openDatabase(File dbFile) {
-		entityList.items.clear
+		entityTable.items.clear
 		
 		facade.openDB(dbFile) [
 			entityTypes = it
