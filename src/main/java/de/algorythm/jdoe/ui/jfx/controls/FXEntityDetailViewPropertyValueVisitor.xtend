@@ -3,9 +3,11 @@ package de.algorythm.jdoe.ui.jfx.controls
 import de.algorythm.jdoe.model.entity.IPropertyValue
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
-import java.io.File
+import de.algorythm.jdoe.ui.jfx.util.ImageLoader
 import java.util.Collection
 import java.util.Date
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Insets
 import javafx.geometry.VPos
 import javafx.scene.control.Label
@@ -14,16 +16,17 @@ import javafx.scene.layout.GridPane
 import javafx.scene.layout.VBox
 
 import static extension de.algorythm.jdoe.ui.jfx.util.OpenFileUtil.*
-import de.algorythm.jdoe.ui.jfx.util.ImageLoader
 
 class FXEntityDetailViewPropertyValueVisitor implements IPropertyValueVisitor<FXEntityReference> {
 	
 	val GridPane gridPane
 	val int i
+	val ReadOnlyBooleanProperty visibleProperty
 	
-	new(GridPane gridPane, int i) {
+	new(GridPane gridPane, int i, ReadOnlyBooleanProperty visibleProperty) {
 		this.gridPane = gridPane
 		this.i = i
+		this.visibleProperty = visibleProperty
 	}
 	
 	override doWithAssociation(IPropertyValue<FXEntityReference,FXEntityReference> propertyValue) {
@@ -67,7 +70,9 @@ class FXEntityDetailViewPropertyValueVisitor implements IPropertyValueVisitor<FX
 		
 		if (filePath != null) {
 			val imageView = new ImageView
-			imageView.image = ImageLoader.instance.loadImage(filePath)
+			val filePathProperty = new SimpleStringProperty(filePath)
+			
+			ImageLoader.instance.bindImage(imageView, filePathProperty, visibleProperty)
 			
 			vBox.children += imageView
 			

@@ -21,7 +21,8 @@
 <SplitPane xmlns:fx="http://javafx.com/fxml"
 		fx:controller="de.algorythm.jdoe.controller.EntityEditorController"
 		stylesheets="/styles/formstate.css"
-		dividerPositions="1.0, 0.3">
+		dividerPositions="1.0, 0.3"
+		fx:id="editorPane">
 	<fx:define>
 		<EditorStateModel fx:id="editorState"/>
 	</fx:define>

@@ -47,10 +47,10 @@
 		<TabPane fx:id="tabs" disable="${appState.dbClosed}">
 			<tabs>
 				<Tab fx:id="listTab" id="list" text="%results" closable="false">
-					<SplitPane dividerPositions="1.0, 0.3">
+					<SplitPane dividerPositions="1.0, 0.3" fx:id="resultPane">
 						<FXEntityTableView fx:id="entityTable" />
 						<ScrollPane>
-							<FXEntityDetailView fx:id="entityDetails" />
+							<FXEntityDetailView fx:id="entityDetails" visible="${resultPane.visible}" />
 						</ScrollPane>
 					</SplitPane>
 				</Tab>

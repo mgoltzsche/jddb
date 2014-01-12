@@ -44,6 +44,8 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension de.algorythm.jdoe.ui.jfx.util.OpenFileUtil.*
+import javafx.beans.property.ReadOnlyBooleanProperty
+import de.algorythm.jdoe.ui.jfx.util.ImageLoader
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -63,14 +65,16 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	var Collection<FXEntityReference> containedNewEntities
 	var FXEntityReference entityRef
 	var Map<FXEntityReference, Collection<FXTransactionTask>> saveContainmentTasks
+	val ReadOnlyBooleanProperty visibleProperty
 	
-	new(GridPane gridPane, int row, FXEntityReference entityRef, Map<FXEntityReference, Collection<FXTransactionTask>> saveContainmentTasks, Collection<FXEntityReference> containedNewEntities, Collection<Procedure0> updateCallbacks) {
+	new(GridPane gridPane, int row, FXEntityReference entityRef, Map<FXEntityReference, Collection<FXTransactionTask>> saveContainmentTasks, Collection<FXEntityReference> containedNewEntities, Collection<Procedure0> updateCallbacks, ReadOnlyBooleanProperty visibleProperty) {
 		this.gridPane = gridPane
 		this.row = row
 		this.entityRef = entityRef
 		this.updateCallbacks = updateCallbacks
 		this.saveContainmentTasks = saveContainmentTasks
 		this.containedNewEntities = containedNewEntities
+		this.visibleProperty = visibleProperty
 	}
 
 	override doWithAssociations(FXAssociations propertyValue) {
@@ -455,7 +459,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			if (filePath != null && !filePath.empty) {
 				removeBtn.disable = false
 				openBtn.disable = openButtonUnsupported
-				imageView.image = filePath.loadImage
+				ImageLoader.instance.bindImage(imageView, fileField.textProperty, visibleProperty)
 			} else {
 				removeBtn.disable = true
 				openBtn.disable = true

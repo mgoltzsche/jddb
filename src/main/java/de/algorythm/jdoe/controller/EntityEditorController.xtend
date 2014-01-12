@@ -29,6 +29,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import static javafx.application.Platform.*
 import de.algorythm.jdoe.ui.jfx.model.factory.AssociationRemovingVisitor
 import de.algorythm.jdoe.ui.jfx.model.IFXEntityChangeListener
+import javafx.scene.control.SplitPane
 
 public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IEntitySaveResult, IFXEntityChangeListener {
 	
@@ -38,6 +39,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	@Inject extension JavaDbObjectEditorFacade facade
 	@Inject Bundle bundle
 	@FXML EditorStateModel editorState
+	@FXML SplitPane editorPane
 	@FXML GridPane gridPane
 	@FXML ListView<FXEntityReference> referringEntities
 	var FXEntityReference entityReference
@@ -89,7 +91,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 				
 				gridPane.add(label, 0, i)
 				
-				val visitor = new PropertyValueEditorVisitor(gridPane, i, entityReference, saveContainmentTasks, containedNewEntities, propertyUpdateCallbacks)
+				val visitor = new PropertyValueEditorVisitor(gridPane, i, entityReference, saveContainmentTasks, containedNewEntities, propertyUpdateCallbacks, editorPane.visibleProperty)
 				
 				visitor.injectMembers
 				

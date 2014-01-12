@@ -49,7 +49,7 @@ class FXEntityDetailView extends GridPane {
 				
 				gridPane.add(label, 0, i)
 				
-				value.visit(new FXEntityDetailViewPropertyValueVisitor(gridPane, i))
+				value.visit(new FXEntityDetailViewPropertyValueVisitor(gridPane, i, visibleProperty))
 				
 				i = i + 1
 			}
