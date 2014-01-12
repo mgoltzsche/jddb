@@ -33,7 +33,6 @@ import de.algorythm.jdoe.model.dao.IModelFactory;
 import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.dao.IPropertyValueLoader;
 import de.algorythm.jdoe.model.dao.ModelChange;
-import de.algorythm.jdoe.model.dao.impl.ArchiveManager;
 import de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor.DeleteVisitor;
 import de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor.IDAOVisitorContext;
 import de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor.IndexKeywordCollectingVisitor;
@@ -55,21 +54,18 @@ public abstract class BlueprintsDAO<V extends IEntity<P,REF>, P extends IPropert
 	
 	private final IModelFactory<V, P, REF> modelFactory;
 	private final Yaml yaml;
-	private final ArchiveManager archiveManager;
 	private Schema schema;
+	private File dbDirectory;
 	protected TransactionalGraph graph;
 	protected Index<Vertex> searchIndex;
-	protected final File tmpDbDirectory;
 	private final HashSet<IObserver<V,P,REF>> observers = new HashSet<>();
 	private ModelChange<V,P,REF> change;
 	
-	public BlueprintsDAO(final IModelFactory<V, P, REF> modelFactory, final ArchiveManager archiveManager) {
+	public BlueprintsDAO(final IModelFactory<V, P, REF> modelFactory) {
 		this.modelFactory = modelFactory;
-		this.archiveManager = archiveManager;
 		final Representer representer = new Representer();
         representer.getPropertyUtils().setSkipMissingProperties(true);
         yaml = new Yaml(representer);
-        tmpDbDirectory = archiveManager.getTmpWorkingDirectory();
 	}
 	
 	@Override
@@ -77,31 +73,22 @@ public abstract class BlueprintsDAO<V extends IEntity<P,REF>, P extends IPropert
 		return graph != null;
 	}
 	
-	@Override
-	public boolean isRecoverable() {
-		return archiveManager.isRecoverable();
-	}
-	
 	protected abstract void initGraphAndSearchIndex();
 	
+	protected File getDbDirectory() {
+		return dbDirectory;
+	}
+	
 	@Override
-	public void open(final File dbArchive) throws IOException {
-		final boolean recovering = dbArchive == null;
-		
-		archiveManager.open(dbArchive);
+	public void open(final File dbDirectory) throws IOException {
+		this.dbDirectory = dbDirectory;
 		loadSchema();
 		initGraphAndSearchIndex();
-		
-		if (recovering) {
-			graph.shutdown();
-			initGraphAndSearchIndex();
-		}
 	}
 	
 	@Override
 	public void close() throws IOException {
 		graph.shutdown();
-		archiveManager.close();
 	}
 	
 	private void loadSchema() throws IOException {

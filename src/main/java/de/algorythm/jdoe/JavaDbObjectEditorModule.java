@@ -8,7 +8,6 @@ import com.google.inject.TypeLiteral;
 import de.algorythm.jdoe.bundle.Bundle;
 import de.algorythm.jdoe.cache.ObjectCache;
 import de.algorythm.jdoe.model.dao.IDAO;
-import de.algorythm.jdoe.model.dao.impl.ArchiveManager;
 import de.algorythm.jdoe.model.dao.impl.neo4j.Neo4jDbDAO;
 import de.algorythm.jdoe.ui.jfx.model.FXEntity;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
@@ -25,11 +24,9 @@ public class JavaDbObjectEditorModule extends AbstractModule {
 		final FXModelFactory modelFactory = new FXModelFactory();
 		final String prefPath = System.getProperty("user.home") + File.separator + ".jdoe";
 		final File preferencesDirectory = new File(prefPath);
-		final File tmpDirectory = new File(prefPath + File.separator + "tmp");
-		final ArchiveManager archiveManager = new ArchiveManager(tmpDirectory);
 		
-		final IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao = new Neo4jDbDAO<>(modelFactory, archiveManager);
-		final Config cfg = new Config(preferencesDirectory, tmpDirectory);
+		final IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao = new Neo4jDbDAO<>(modelFactory);
+		final Config cfg = new Config(preferencesDirectory);
 		
 		bind(Config.class).toInstance(cfg);
 		bind(IEntityEditorManager.class).to(ViewRegistry.class);

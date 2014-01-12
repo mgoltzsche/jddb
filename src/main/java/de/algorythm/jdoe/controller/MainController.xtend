@@ -36,6 +36,7 @@ import javafx.stage.FileChooser.ExtensionFilter
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
+import javafx.stage.DirectoryChooser
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -84,9 +85,6 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 		]
 		
 		addObserver(this)
-		
-		if (dao.recoverable)
-			openDatabase(null)
 	}
 	
 	def SimpleStringProperty searchValueProperty() {
@@ -163,10 +161,9 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def showDatabaseOpenDialog() {
-		val fc = new FileChooser
-		fc.title = bundle.taskOpenDB
-		fc.extensionFilters += new ExtensionFilter('jDOE Database (*.jdoedb)', '*.jdoedb')
-		var dbFile = fc.showOpenDialog(openDbButton.scene.window)
+		val dc = new DirectoryChooser
+		dc.title = bundle.taskOpenDB
+		var dbFile = dc.showDialog(openDbButton.scene.window)
 		
 		if (dbFile != null) {
 			if (!dbFile.absolutePath.endsWith('.jdoedb'))

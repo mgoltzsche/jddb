@@ -10,7 +10,6 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import de.algorythm.jdoe.model.dao.IModelFactory;
-import de.algorythm.jdoe.model.dao.impl.ArchiveManager;
 import de.algorythm.jdoe.model.dao.impl.blueprints.BlueprintsDAO;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
@@ -22,14 +21,14 @@ public class OrientDbDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,RE
 	static private final Logger LOG = LoggerFactory.getLogger(OrientDbDAO.class);
 	
 	
-	public OrientDbDAO(final IModelFactory<V, P, REF> modelFactory, final ArchiveManager archiveManager) {
-		super(modelFactory, archiveManager);
+	public OrientDbDAO(final IModelFactory<V, P, REF> modelFactory) {
+		super(modelFactory);
 		OGlobalConfiguration.STORAGE_KEEP_OPEN.setValue(Boolean.FALSE);
 	}
 
 	@Override
 	protected void initGraphAndSearchIndex() {
-		final OrientGraph g = new OrientGraph("local:" + tmpDbDirectory.getAbsolutePath());
+		final OrientGraph g = new OrientGraph("local:" + getDbDirectory().getAbsolutePath());
 		
 		g.setUseLightweightEdges(true);
 		g.createKeyIndex(TYPE_FIELD, Vertex.class);

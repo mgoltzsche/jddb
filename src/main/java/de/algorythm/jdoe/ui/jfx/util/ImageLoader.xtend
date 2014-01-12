@@ -2,12 +2,11 @@ package de.algorythm.jdoe.ui.jfx.util
 
 import de.algorythm.jdoe.cache.ObjectCache
 import java.io.File
-import javafx.scene.image.Image
-import org.slf4j.LoggerFactory
-import javafx.scene.image.ImageView
-import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.ReadOnlyBooleanProperty
-import javax.imageio.ImageIO
+import javafx.beans.property.ReadOnlyStringProperty
+import javafx.scene.image.Image
+import javafx.scene.image.ImageView
+import org.slf4j.LoggerFactory
 
 class ImageLoader {
 

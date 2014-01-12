@@ -7,7 +7,6 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.neo4j.Neo4jGraph;
 
 import de.algorythm.jdoe.model.dao.IModelFactory;
-import de.algorythm.jdoe.model.dao.impl.ArchiveManager;
 import de.algorythm.jdoe.model.dao.impl.blueprints.BlueprintsDAO;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
@@ -18,13 +17,13 @@ public class Neo4jDbDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF
 	static private final Logger LOG = LoggerFactory.getLogger(Neo4jDbDAO.class);
 	
 	
-	public Neo4jDbDAO(final IModelFactory<V, P, REF> modelFactory, final ArchiveManager archiveManager) {
-		super(modelFactory, archiveManager);
+	public Neo4jDbDAO(final IModelFactory<V, P, REF> modelFactory) {
+		super(modelFactory);
 	}
 	
 	@Override
 	protected void initGraphAndSearchIndex() {
-		final Neo4jGraph g = new Neo4jGraph(tmpDbDirectory.getAbsolutePath());
+		final Neo4jGraph g = new Neo4jGraph(getDbDirectory().getAbsolutePath());
 		
 		removeInitialDemoNode(g);
 		
