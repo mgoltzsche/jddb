@@ -419,11 +419,6 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		openBtn.disable = true
 		removeBtn.disable = true
 		
-		imageView.preserveRatio = true
-		imageView.smooth = true
-		imageView.fitWidth = 200
-		imageView.fitHeight = 100
-		
 		fileField.editable = false
 		fileField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
 		HBox.setHgrow(fileField, Priority.ALWAYS)

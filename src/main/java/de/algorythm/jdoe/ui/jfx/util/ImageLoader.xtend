@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import javafx.scene.image.ImageView
 import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.ReadOnlyBooleanProperty
+import javax.imageio.ImageIO
 
 class ImageLoader {
 
@@ -50,10 +51,8 @@ class ImageLoader {
 		
 		if (image == null && new File(filePath).exists) {
 			try {
-				System.gc();
-				image = new Image('file:' + filePath, 200, 100, true, true, true)
+				image = new Image('file:' + filePath, 300, 200, true, true, true)
 				cache.put(filePath, image)
-				System.gc();
 			} catch(Exception e) {
 				LOG.debug('Cannot load image ' + filePath, e)
 			}
