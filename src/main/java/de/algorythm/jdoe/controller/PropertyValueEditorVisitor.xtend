@@ -17,6 +17,7 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValueVisitor
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTransactionTask
+import de.algorythm.jdoe.ui.jfx.loader.image.ImageLoader
 import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -24,6 +25,7 @@ import java.util.Collection
 import java.util.Date
 import java.util.Map
 import java.util.regex.Pattern
+import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.StringProperty
 import javafx.geometry.Insets
 import javafx.scene.control.Button
@@ -44,8 +46,6 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension de.algorythm.jdoe.ui.jfx.util.OpenFileUtil.*
-import javafx.beans.property.ReadOnlyBooleanProperty
-import de.algorythm.jdoe.ui.jfx.util.ImageLoader
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 

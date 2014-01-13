@@ -1,4 +1,4 @@
-package de.algorythm.jdoe.ui.jfx.util;
+package de.algorythm.jdoe.ui.jfx.loader.fxml;
 
 public class FxmlLoaderResult<N, C> {
 

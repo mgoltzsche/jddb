@@ -1,31 +1,31 @@
 package de.algorythm.jdoe.controller
 
-import javafx.fxml.FXML
-import javafx.scene.control.Label
-import javafx.scene.control.ProgressBar
-import javafx.fxml.Initializable
-import java.net.URL
-import java.util.ResourceBundle
-import javax.inject.Inject
-import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.bundle.Bundle
-import javafx.collections.ListChangeListener
+import de.algorythm.jdoe.taskQueue.TaskState
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTask
+import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
+import de.algorythm.jdoe.ui.jfx.loader.fxml.FxmlLoaderResult
+import de.algorythm.jdoe.ui.jfx.loader.fxml.GuiceFxmlLoader
+import java.net.URL
+import java.util.LinkedList
+import java.util.ResourceBundle
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
-import java.util.LinkedList
-import de.algorythm.jdoe.taskQueue.TaskState
-import de.algorythm.jdoe.ui.jfx.util.FxmlLoaderResult
-import javafx.scene.Parent
-import de.algorythm.jdoe.ui.jfx.util.GuiceFxmlLoader
-import javafx.stage.Stage
-import javafx.scene.Scene
+import javafx.collections.ListChangeListener
 import javafx.collections.ListChangeListener.Change
+import javafx.event.EventHandler
+import javafx.fxml.FXML
+import javafx.fxml.Initializable
+import javafx.scene.Parent
+import javafx.scene.Scene
+import javafx.scene.control.Label
+import javafx.scene.control.ProgressBar
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
-import javafx.event.EventHandler
+import javafx.stage.Stage
+import javax.inject.Inject
 
-class StatusController implements Initializable, ListChangeListener<FXTask> {
+class StatusController implements Initializable {
 	
 	@Inject extension FXTaskQueue
 	@Inject extension GuiceFxmlLoader
@@ -46,7 +46,9 @@ class StatusController implements Initializable, ListChangeListener<FXTask> {
 		statusPane.addEventHandler(MouseEvent.MOUSE_CLICKED, statusClickListener)
 		progress.addEventHandler(MouseEvent.MOUSE_CLICKED, statusClickListener) 
 		
-		taskListProperty.addListener(this)
+		taskListProperty.addListener([Change<? extends FXTask> it|
+			taskListChanged
+		] as ListChangeListener<FXTask>)
 		
 		status.text = bundle.stateReady
 		
@@ -66,11 +68,11 @@ class StatusController implements Initializable, ListChangeListener<FXTask> {
 		taskDetails.show
 	}
 	
-	override onChanged(Change<? extends FXTask> change) {
-		while (change.next) {
-			taskCount = taskCount + change.addedSize
+	def private void taskListChanged(Change<? extends FXTask> it) {
+		while (next) {
+			taskCount = taskCount + addedSize
 			
-			for (task : change.removed) {
+			for (task : removed) {
 				if (task.state == TaskState.FAILED)
 					failedTasks += task
 				
@@ -95,5 +97,4 @@ class StatusController implements Initializable, ListChangeListener<FXTask> {
 		else
 			taskFinishedCount / taskCount as double
 	}
-	
 }

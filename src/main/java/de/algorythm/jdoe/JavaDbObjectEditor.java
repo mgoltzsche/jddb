@@ -37,5 +37,6 @@ public class JavaDbObjectEditor extends Application {
 	@Override
 	public void stop() throws Exception {
 		facade.stopApplication();
+		System.exit(0);
 	}
 }

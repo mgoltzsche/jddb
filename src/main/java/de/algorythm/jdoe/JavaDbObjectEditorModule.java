@@ -7,14 +7,16 @@ import com.google.inject.TypeLiteral;
 
 import de.algorythm.jdoe.bundle.Bundle;
 import de.algorythm.jdoe.cache.ObjectCache;
+import de.algorythm.jdoe.cache.SoftCacheReferenceFactory;
 import de.algorythm.jdoe.model.dao.IDAO;
 import de.algorythm.jdoe.model.dao.impl.neo4j.Neo4jDbDAO;
+import de.algorythm.jdoe.ui.jfx.loader.image.ImageLoader;
 import de.algorythm.jdoe.ui.jfx.model.FXEntity;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 import de.algorythm.jdoe.ui.jfx.model.factory.FXModelFactory;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
+import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue;
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager;
-import de.algorythm.jdoe.ui.jfx.util.ImageLoader;
 import de.algorythm.jdoe.ui.jfx.util.ViewRegistry;
 
 public class JavaDbObjectEditorModule extends AbstractModule {
@@ -26,14 +28,14 @@ public class JavaDbObjectEditorModule extends AbstractModule {
 		final File preferencesDirectory = new File(prefPath);
 		
 		final IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao = new Neo4jDbDAO<>(modelFactory);
-		final Config cfg = new Config(preferencesDirectory);
 		
-		bind(Config.class).toInstance(cfg);
+		bind(Config.class).toInstance(new Config(preferencesDirectory));
+		bind(FXTaskQueue.class).toInstance(new FXTaskQueue("entity-loader-queue"));
 		bind(IEntityEditorManager.class).to(ViewRegistry.class);
 		bind(Bundle.class).toInstance(Bundle.getInstance());
 		bind(new TypeLiteral<IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference>>() {}).toInstance(dao);
 		bind(ImageLoader.class).toInstance(ImageLoader.getInstance());
 		
-		modelFactory.init(dao, new ObjectCache<FXEntity>());
+		modelFactory.init(dao, new ObjectCache<FXEntity>("entity-cache", new SoftCacheReferenceFactory<FXEntity>()));
 	}
 }

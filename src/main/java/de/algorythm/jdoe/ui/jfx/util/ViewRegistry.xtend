@@ -14,6 +14,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.ui.jfx.loader.fxml.GuiceFxmlLoader
 
 @Singleton
 public class ViewRegistry implements IEntityEditorManager {

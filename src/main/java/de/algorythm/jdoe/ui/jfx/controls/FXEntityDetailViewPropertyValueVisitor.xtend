@@ -3,7 +3,7 @@ package de.algorythm.jdoe.ui.jfx.controls
 import de.algorythm.jdoe.model.entity.IPropertyValue
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
-import de.algorythm.jdoe.ui.jfx.util.ImageLoader
+import de.algorythm.jdoe.ui.jfx.loader.image.ImageLoader
 import java.util.Collection
 import java.util.Date
 import javafx.beans.property.ReadOnlyBooleanProperty

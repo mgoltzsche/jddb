@@ -7,10 +7,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.algorythm.jdoe.cache.ObjectCache;
+import de.algorythm.jdoe.cache.WeakCacheReferenceFactory;
 
 public class CacheTest {
 
-	private final ObjectCache<Object> cache = new ObjectCache<>();
+	private final ObjectCache<Object> cache = new ObjectCache<>("object-cache", new WeakCacheReferenceFactory<>());
 	
 	@Test
 	public void GetShouldReturnCachedObject() {

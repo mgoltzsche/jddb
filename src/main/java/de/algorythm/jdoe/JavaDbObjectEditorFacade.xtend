@@ -8,8 +8,8 @@ import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
-import de.algorythm.jdoe.ui.jfx.util.FxmlLoaderResult
-import de.algorythm.jdoe.ui.jfx.util.GuiceFxmlLoader
+import de.algorythm.jdoe.ui.jfx.loader.fxml.FxmlLoaderResult
+import de.algorythm.jdoe.ui.jfx.loader.fxml.GuiceFxmlLoader
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.io.File
 import java.io.IOException
@@ -48,7 +48,6 @@ public class JavaDbObjectEditorFacade {
 	
 	def stopApplication() {
 		closeDB
-		taskQueue.close
 	}
 	
 	def showEntityEditor(FXEntityReference entityRef) {

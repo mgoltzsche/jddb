@@ -10,6 +10,8 @@ import de.algorythm.jdoe.ui.jfx.cell.ReferringEntityCell
 import de.algorythm.jdoe.ui.jfx.model.EditorStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
+import de.algorythm.jdoe.ui.jfx.model.IFXEntityChangeListener
+import de.algorythm.jdoe.ui.jfx.model.factory.AssociationRemovingVisitor
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTransactionTask
@@ -21,15 +23,13 @@ import javafx.geometry.Insets
 import javafx.geometry.VPos
 import javafx.scene.control.Label
 import javafx.scene.control.ListView
+import javafx.scene.control.SplitPane
 import javafx.scene.layout.GridPane
 import javax.inject.Inject
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.ui.jfx.model.factory.AssociationRemovingVisitor
-import de.algorythm.jdoe.ui.jfx.model.IFXEntityChangeListener
-import javafx.scene.control.SplitPane
 
 public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IEntitySaveResult, IFXEntityChangeListener {
 	

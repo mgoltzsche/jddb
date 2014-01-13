@@ -31,12 +31,10 @@ import javafx.scene.control.MenuItem
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.control.TextField
-import javafx.stage.FileChooser
-import javafx.stage.FileChooser.ExtensionFilter
+import javafx.stage.DirectoryChooser
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
-import javafx.stage.DirectoryChooser
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	

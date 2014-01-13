@@ -1,4 +1,4 @@
-package de.algorythm.jdoe.ui.jfx.util;
+package de.algorythm.jdoe.ui.jfx.loader.fxml;
 
 import java.io.IOException;
 import java.net.URL;
@@ -13,6 +13,7 @@ import javax.inject.Inject;
 import com.google.inject.Injector;
 
 import de.algorythm.jdoe.bundle.Bundle;
+import de.algorythm.jdoe.ui.jfx.util.ControllerFactory;
 
 public class GuiceFxmlLoader {
 

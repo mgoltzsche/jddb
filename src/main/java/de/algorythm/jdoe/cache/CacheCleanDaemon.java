@@ -1,6 +1,5 @@
 package de.algorythm.jdoe.cache;
 
-import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.util.Map;
 
@@ -9,15 +8,14 @@ import org.slf4j.LoggerFactory;
 
 public class CacheCleanDaemon<V> extends Thread {
 
-	static private final Logger LOG = LoggerFactory.getLogger(CacheCleanDaemon.class);
-	static private int instanceCount = 0;	
+	static private final Logger LOG = LoggerFactory.getLogger(CacheCleanDaemon.class);	
 	
 	private final Object syncMonitor;
 	private final ReferenceQueue<V> removalQueue;
-	private final Map<String, Reference<V>> cacheMap;
+	private final Map<String, ICacheReference<V>> cacheMap;
 	
-	public CacheCleanDaemon(final Object syncMonitor, final ReferenceQueue<V> removalQueue, final Map<String, Reference<V>> cacheMap) {
-		super("cache-clean-daemon-" + (instanceCount++));
+	public CacheCleanDaemon(final String name, final Object syncMonitor, final ReferenceQueue<V> removalQueue, final Map<String, ICacheReference<V>> cacheMap) {
+		super(name + "-clean-daemon");
 		
 		this.syncMonitor = syncMonitor;
 		this.removalQueue = removalQueue;
@@ -30,7 +28,8 @@ public class CacheCleanDaemon<V> extends Thread {
 	public void run() {
 		try {
 			while(true) {
-				final CacheObjectReference<? extends V> removeObj = (CacheObjectReference<? extends V>) removalQueue.remove();
+				@SuppressWarnings("unchecked")
+				final ICacheReference<? extends V> removeObj = (ICacheReference<? extends V>) removalQueue.remove();
 				
 				synchronized(syncMonitor) {
 					final String key = removeObj.getKey();
