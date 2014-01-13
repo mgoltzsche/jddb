@@ -6,7 +6,6 @@ import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.dao.ModelChange
-import de.algorythm.jdoe.ui.jfx.cell.ReferringEntityCell
 import de.algorythm.jdoe.ui.jfx.model.EditorStateModel
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
@@ -30,6 +29,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.ui.jfx.cell.EntityReferenceCell
 
 public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IEntitySaveResult, IFXEntityChangeListener {
 	
@@ -100,7 +100,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 				i = i + 1
 			}
 			
-			referringEntities.cellFactory = new ReferringEntityCell.Factory(facade)
+			referringEntities.cellFactory = new EntityReferenceCell.Factory(facade)
 			referringEntities.itemsProperty.bind(entity.referringEntitiesProperty)
 			
 			addObserver(this)

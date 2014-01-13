@@ -25,28 +25,28 @@ class FXEntityTableView extends TableView<FXEntity> {
 	
 	val bundle = Bundle.instance
 	val entityTypeProperty = new SimpleObjectProperty<EntityType>()
-	var Procedure1<FXEntity> onMouseClick = []
-	var Procedure2<FXEntity, Node> onMouseEnter = [entity,node|]
+	var Procedure1<FXEntity> onRowClick = []
+	var Procedure2<FXEntity, Node> onRowEnter = [entity,node|]
 	
 	new() {
 		super()
 		cache = false
 		setRowFactory(new EntityRowFactory([
-			onMouseClick.apply(it)
+			onRowClick.apply(it)
 		], [e,n|
-			onMouseEnter.apply(e,n) 
+			onRowEnter.apply(e,n) 
 		]))
 		entityTypeProperty.addListener [c,o,it|
 			updateTableColumns
 		]
 	}
 	
-	def setOnMouseClick(Procedure1<FXEntity> onMouseClick) {
-		this.onMouseClick = onMouseClick
+	def setOnRowClick(Procedure1<FXEntity> onRowClick) {
+		this.onRowClick = onRowClick
 	}
 	
-	def setOnMouseEnter(Procedure2<FXEntity, Node> onMouseEnter) {
-		this.onMouseEnter = onMouseEnter
+	def setOnRowEnter(Procedure2<FXEntity, Node> onRowEnter) {
+		this.onRowEnter = onRowEnter
 	}
 	
 	def getEntityTypeProperty() {

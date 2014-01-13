@@ -8,7 +8,7 @@ import javafx.util.Callback;
 import de.algorythm.jdoe.JavaDbObjectEditorFacade;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 
-public class ReferringEntityCell extends ListCell<FXEntityReference> {
+public class EntityReferenceCell extends ListCell<FXEntityReference> {
 	
 	static public class Factory implements Callback<ListView<FXEntityReference>, ListCell<FXEntityReference>> {
 		
@@ -20,19 +20,28 @@ public class ReferringEntityCell extends ListCell<FXEntityReference> {
 		
 		@Override
 		public ListCell<FXEntityReference> call(final ListView<FXEntityReference> view) {
-			return new ReferringEntityCell(facade);
+			return new EntityReferenceCell(facade);
 		}
 	};
 	
 	
-	private FXEntityReference entityRef;
-	
-	private ReferringEntityCell(final JavaDbObjectEditorFacade facade) {
+	protected EntityReferenceCell(final JavaDbObjectEditorFacade facade) {
 		setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(final MouseEvent evt) {
+				final FXEntityReference entityRef = getItem();
+				
 				if (entityRef != null)
 					facade.showEntityEditor(entityRef);
+			}
+		});
+		setOnMouseEntered(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(final MouseEvent evt) {
+				final FXEntityReference entityRef = getItem();
+				
+				if (entityRef != null)
+					facade.showEntityDetails(entityRef, EntityReferenceCell.this);
 			}
 		});
 	}
@@ -40,8 +49,6 @@ public class ReferringEntityCell extends ListCell<FXEntityReference> {
 	@Override
 	public void updateItem(final FXEntityReference entityRef, final boolean empty) {
 		super.updateItem(entityRef, empty);
-		
-		this.entityRef = entityRef;
 		
 		if (empty)
 			textProperty().unbind();

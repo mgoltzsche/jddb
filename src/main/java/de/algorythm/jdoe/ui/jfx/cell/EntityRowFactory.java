@@ -26,8 +26,8 @@ public class EntityRowFactory implements Callback<TableView<FXEntity>, TableRow<
 	@Override
 	public TableRow<FXEntity> call(TableView<FXEntity> view) {
 		TableRow<FXEntity> row = new TableRow<FXEntity>();
-		row.addEventHandler(MouseEvent.MOUSE_CLICKED, new MouseClickListener(row, mouseClickHandler));
-		row.addEventHandler(MouseEvent.MOUSE_ENTERED, new MouseEnterListener(row, mouseEnterHandler));
+		row.setOnMouseClicked(new MouseClickListener(row, mouseClickHandler));
+		row.setOnMouseEntered(new MouseEnterListener(row, mouseEnterHandler));
 		return row;
 	}
 	

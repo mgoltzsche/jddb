@@ -69,13 +69,19 @@ class ImageLoader {
 	}
 	
 	def private loadImage(String filePath) {
-		System.gc();
+//		System.gc
 		var Image image
 		try {
 			image = new Image('file:' + filePath, 300, 200, true, true, true)
+			image.progressProperty.addListener [c,o,p|
+//				if (p == 1.0)
+//					System.gc
+			]
 			image.errorProperty.addListener [c,o,error|
-				if (error)
+				if (error) {
 					LOG.debug('Failed to load image: ' + filePath)
+//					System.gc
+				}
 			]
 		} catch(Exception e) {
 			LOG.debug('Cannot load image ' + filePath, e)

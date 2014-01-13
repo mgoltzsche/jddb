@@ -61,11 +61,11 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 		
 		entityDetails.entityProperty.bind(entityTable.selectionModel.selectedItemProperty)
 		
-		entityTable.setOnMouseClick [
+		entityTable.setOnRowClick [
 			showEntityEditor
 		]
-		entityTable.setOnMouseEnter [it,node|
-			showEntityDetailPopup(node)
+		entityTable.setOnRowEnter [it, node|
+			showEntityDetails(node)
 		]
 		entityTable.items.addListener [
 			listTab.text = '''«bundle.results» («entityTable.items.size»)'''
