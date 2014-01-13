@@ -22,6 +22,10 @@ import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.ui.jfx.controls.FXEntityDetailPopup
+import javafx.scene.Node
+import javafx.scene.input.MouseEvent
+import javafx.event.EventHandler
 
 @Singleton
 public class JavaDbObjectEditorFacade {
@@ -33,16 +37,23 @@ public class JavaDbObjectEditorFacade {
 	@Inject IEntityEditorManager editorManager
 	@Inject Bundle bundle
 	@Inject IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
+	var Stage stage
+	var FXEntityDetailPopup entityPopup = new FXEntityDetailPopup
+	val EventHandler<? super MouseEvent> mouseExitHandler = [
+		entityPopup.hide
+	]
 	
 	def startApplication(Stage primaryStage) throws IOException {
+		this.stage = primaryStage
+		
 		runLater [|
 			val FxmlLoaderResult<Parent, Object> loaderResult = load('/fxml/jdoe.fxml')
 			
-			primaryStage.title = 'jDOE'
-			primaryStage.scene = new Scene(loaderResult.node, 900, 700)
-			primaryStage.minWidth = 300
-			primaryStage.minHeight = 400
-			primaryStage.show
+			stage.title = 'jDOE'
+			stage.scene = new Scene(loaderResult.node, 900, 700)
+			stage.minWidth = 300
+			stage.minHeight = 400
+			stage.show
 		]
 	}
 	
@@ -60,6 +71,18 @@ public class JavaDbObjectEditorFacade {
 	
 	def closeEntityEditor(FXEntityReference entityRef) {
 		editorManager.closeEntityEditor(entityRef)
+	}
+	
+	def showEntityDetailPopup(FXEntity entity, Node node) {
+		val pos = node.localToScene(0, 0)
+		entityPopup.entity = entity
+		entityPopup.x = stage.x + pos.x + 3
+		entityPopup.y = stage.y + pos.y + 3
+		
+		entityPopup.show(stage)
+		
+		node.removeEventHandler(MouseEvent.MOUSE_EXITED, mouseExitHandler)
+		node.addEventHandler(MouseEvent.MOUSE_EXITED, mouseExitHandler)
 	}
 	
 	def void openDB(File dbFile, Procedure1<Collection<EntityType>> callback) {

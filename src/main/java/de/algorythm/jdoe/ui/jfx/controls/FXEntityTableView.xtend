@@ -5,7 +5,7 @@ import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.EntityTypeWildcard
 import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.ui.jfx.cell.EntityCellValueFactory
-import de.algorythm.jdoe.ui.jfx.cell.EntityRow
+import de.algorythm.jdoe.ui.jfx.cell.EntityRowFactory
 import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.PropertyValueCell
 import de.algorythm.jdoe.ui.jfx.comparator.StringComparator
@@ -18,26 +18,35 @@ import javafx.beans.value.ObservableValue
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure2
+import javafx.scene.Node
 
 class FXEntityTableView extends TableView<FXEntity> {
 	
 	val bundle = Bundle.instance
 	val entityTypeProperty = new SimpleObjectProperty<EntityType>()
-	var Procedure1<FXEntity> onAction = []
+	var Procedure1<FXEntity> onMouseClick = []
+	var Procedure2<FXEntity, Node> onMouseEnter = [entity,node|]
 	
 	new() {
 		super()
 		cache = false
-		setRowFactory(new EntityRow.Factory [
-			onAction.apply(it)
-		])
+		setRowFactory(new EntityRowFactory([
+			onMouseClick.apply(it)
+		], [e,n|
+			onMouseEnter.apply(e,n) 
+		]))
 		entityTypeProperty.addListener [c,o,it|
 			updateTableColumns
 		]
 	}
 	
-	def setOnAction(Procedure1<FXEntity> onAction) {
-		this.onAction = onAction
+	def setOnMouseClick(Procedure1<FXEntity> onMouseClick) {
+		this.onMouseClick = onMouseClick
+	}
+	
+	def setOnMouseEnter(Procedure2<FXEntity, Node> onMouseEnter) {
+		this.onMouseEnter = onMouseEnter
 	}
 	
 	def getEntityTypeProperty() {
