@@ -3,20 +3,19 @@ package de.algorythm.jdoe.ui.jfx.cell;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
-import de.algorythm.jdoe.model.meta.IPropertyType;
-import de.algorythm.jdoe.ui.jfx.model.meta.FXPropertyType;
+import de.algorythm.jdoe.ui.jfx.model.meta.IFXPropertyType;
 
-public class PropertyTypeSelectionCell extends ListCell<FXPropertyType<? extends IPropertyType<?>>> {
+public class PropertyTypeSelectionCell extends ListCell<IFXPropertyType> {
 
-	static public final Callback<ListView<FXPropertyType<? extends IPropertyType<?>>>, ListCell<FXPropertyType<? extends IPropertyType<?>>>> FACTORY = new Callback<ListView<FXPropertyType<? extends IPropertyType<?>>>, ListCell<FXPropertyType<? extends IPropertyType<?>>>>() {
+	static public final Callback<ListView<IFXPropertyType>, ListCell<IFXPropertyType>> FACTORY = new Callback<ListView<IFXPropertyType>, ListCell<IFXPropertyType>>() {
 		@Override
-		public ListCell<FXPropertyType<? extends IPropertyType<?>>> call(final ListView<FXPropertyType<? extends IPropertyType<?>>> view) {
+		public ListCell<IFXPropertyType> call(final ListView<IFXPropertyType> view) {
 			return new PropertyTypeSelectionCell();
 		}
 	};
 	
 	@Override
-	public void updateItem(final FXPropertyType<? extends IPropertyType<?>> type, final boolean empty) {
+	public void updateItem(final IFXPropertyType type, final boolean empty) {
 		super.updateItem(type, empty);
 		
 		if (empty)

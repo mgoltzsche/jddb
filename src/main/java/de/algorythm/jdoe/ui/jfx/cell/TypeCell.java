@@ -13,16 +13,16 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import de.algorythm.jdoe.bundle.Bundle;
-import de.algorythm.jdoe.ui.jfx.model.meta.FXType;
+import de.algorythm.jdoe.ui.jfx.model.meta.FXEntityType;
 
-public class TypeCell extends AbstractLabeledListCell<FXType> implements ChangeListener<Boolean> {
+public class TypeCell extends AbstractLabeledListCell<FXEntityType> implements ChangeListener<Boolean> {
 	
 	static private final Bundle bundle = Bundle.getInstance();
 	
-	static public class Factory implements Callback<ListView<FXType>, ListCell<FXType>> {
+	static public class Factory implements Callback<ListView<FXEntityType>, ListCell<FXEntityType>> {
 	
 		@Override
-		public ListCell<FXType> call(ListView<FXType> view) {
+		public ListCell<FXEntityType> call(ListView<FXEntityType> view) {
 			return new TypeCell();
 		}
 	}
@@ -57,7 +57,7 @@ public class TypeCell extends AbstractLabeledListCell<FXType> implements ChangeL
 	}
 	
 	@Override
-	public void updateItem(FXType type, boolean empty) {
+	public void updateItem(FXEntityType type, boolean empty) {
 		super.updateItem(type, empty);
 		
 		if (type != null) {

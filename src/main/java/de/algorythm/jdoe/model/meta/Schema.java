@@ -19,6 +19,7 @@ public class Schema implements Serializable {
 
 	public void setTypes(final Collection<MEntityType> types) {
 		this.types = types;
+		typeIndex = null;
 	}
 	
 	public MEntityType getTypeByName(final String name) {
@@ -31,4 +32,11 @@ public class Schema implements Serializable {
 		
 		return typeIndex.get(name);
 	}
+	
+	/*public Schema copy() {
+		final Schema copy = new Schema();
+		
+		for (MEntityType type : types)
+			copy.getTypes().add(type.copy());
+	}*/
 }

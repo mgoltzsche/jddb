@@ -1,21 +1,22 @@
 package de.algorythm.jdoe.ui.jfx.model.meta;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType;
+import de.algorythm.jdoe.bundle.Bundle;
 
-public class FXCollectionType extends FXPropertyType<CollectionType> {
+public class FXCollectionType extends FXAbstractLabeledElement implements IFXPropertyType {
 
-	public FXCollectionType(final FXType fxType, final CollectionType businessModel) {
-		super(businessModel);
-		labelProperty.setValue(businessModel.getLabel());
-		
-		fxType.labelProperty().addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(ObservableValue<? extends String> valueContainer,
-					String oldValue, String newValue) {
-				labelProperty.setValue(businessModel.getLabel());
-			}
-		});
+	private final FXEntityType itemType;
+	
+	public FXCollectionType(final FXEntityType itemType) {
+		this.itemType = itemType;
+		label.bind(itemType.labelProperty().concat(" (" + Bundle.getInstance().dataSet + ")"));
+	}
+	
+	public FXEntityType getItemType() {
+		return itemType;
+	}
+	
+	@Override
+	public boolean isUserDefined() {
+		return Boolean.TRUE;
 	}
 }

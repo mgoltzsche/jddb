@@ -4,9 +4,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
-import de.algorythm.jdoe.model.meta.ILabeledElement;
+import de.algorythm.jdoe.ui.jfx.model.meta.FXAbstractLabeledElement;
 
-public abstract class AbstractLabeledListCell<T extends ILabeledElement> extends ListCell<T> {
+public abstract class AbstractLabeledListCell<T extends FXAbstractLabeledElement> extends ListCell<T> {
 
 	protected TextField labelInput = new TextField();
 	protected T object;

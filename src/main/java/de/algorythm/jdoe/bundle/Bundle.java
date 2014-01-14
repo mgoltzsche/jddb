@@ -21,6 +21,7 @@ public class Bundle {
 	public final String embedded;
 	public final String searchable;
 	public final String contained;
+	public final String dataSet;
 	public final String add;
 	public final String save;
 	public final String delete;
@@ -74,6 +75,7 @@ public class Bundle {
 		embedded = b.getString("embedded");
 		searchable = b.getString("searchable");
 		contained = b.getString("contained");
+		dataSet = b.getString("dataSet");
 		add = b.getString("add");
 		save = b.getString("save");
 		delete = b.getString("delete");
