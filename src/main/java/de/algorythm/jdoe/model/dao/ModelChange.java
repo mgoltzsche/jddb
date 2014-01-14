@@ -9,7 +9,7 @@ import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 
-public class ModelChange<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> {
+public class ModelChange<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> {
 
 	private final Map<String,V> saved = new HashMap<>();
 	private final Set<V> deleted = new HashSet<>();

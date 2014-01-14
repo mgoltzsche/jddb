@@ -5,7 +5,7 @@ import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 import de.algorythm.jdoe.model.meta.propertyTypes.TString;
 
-public class Property extends AbstractLabeledElement {
+public class MProperty extends AbstractLabeledElement {
 	
 	static private final long serialVersionUID = -1803072858495973198L;
 	
@@ -14,7 +14,7 @@ public class Property extends AbstractLabeledElement {
 	private IPropertyType<?> type = DEFAULT_TYPE;
 	private boolean containment, searchable = true;
 	
-	public Property() {
+	public MProperty() {
 		setLabel("New property");
 	}
 	
@@ -42,7 +42,7 @@ public class Property extends AbstractLabeledElement {
 		this.searchable = searchable;
 	}
 	
-	public <REF extends IEntityReference, P extends IPropertyValue<?,REF>> P createPropertyValue(final IPropertyValueFactory<P,REF> factory) {
+	public <P extends IPropertyValue<?, ? extends IEntityReference>> P createPropertyValue(final IPropertyValueFactory<P> factory) {
 		return type.createPropertyValue(this, factory);
 	}
 	

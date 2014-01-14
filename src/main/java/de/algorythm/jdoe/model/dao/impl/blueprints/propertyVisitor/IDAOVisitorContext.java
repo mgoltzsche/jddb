@@ -9,7 +9,7 @@ import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 
-public interface IDAOVisitorContext<V extends IEntity<P, REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> {
+public interface IDAOVisitorContext<V extends IEntity<P, REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> {
 
 	REF createEntityReference(Vertex vertex);
 	Collection<REF> loadReferringEntities(String entityId, Vertex vertex);

@@ -5,7 +5,7 @@ import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 import de.algorythm.jdoe.ui.jfx.model.IFXPropertyValueChangeHandler;
 
-public interface IFXPropertyValue<V> extends IPropertyValue<V,FXEntityReference>, Comparable<IFXPropertyValue<V>> {
+public interface IFXPropertyValue<V> extends IPropertyValue<V,FXEntityReference> {
 
 	ReadOnlyStringProperty labelProperty();
 	IFXPropertyValue<V> copy();

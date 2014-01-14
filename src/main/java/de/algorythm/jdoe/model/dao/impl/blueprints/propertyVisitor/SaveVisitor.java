@@ -15,9 +15,9 @@ import com.tinkerpop.blueprints.Vertex;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.MProperty;
 
-public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> extends IndexKeywordCollectingVisitor<REF> {
+public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> extends IndexKeywordCollectingVisitor<REF> {
 	
 	private final Vertex vertex;
 	private final Map<V, Vertex> savedEntities;
@@ -33,7 +33,7 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	@Override
 	@SuppressWarnings("unchecked")
 	public void doWithAssociations(final IPropertyValue<Collection<REF>,REF> propertyValue) {
-		final Property property = propertyValue.getProperty();
+		final MProperty property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		final LinkedList<Edge> existingEdges = new LinkedList<Edge>();
 		
@@ -88,7 +88,7 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	@Override
 	@SuppressWarnings("unchecked")
 	public void doWithAssociation(final IPropertyValue<REF,REF> propertyValue) {
-		final Property property = propertyValue.getProperty();
+		final MProperty property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		final REF entityRef = propertyValue.getValue();
 		Vertex refVertex = null;
@@ -170,7 +170,7 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	}
 	
 	private void writeAttributeValue(IPropertyValue<?,?> propertyValue) {
-		final Property property = propertyValue.getProperty();
+		final MProperty property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		final Object newValue = propertyValue.getValue();
 		final Object oldValue = vertex.getProperty(propertyName);
@@ -185,7 +185,7 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 			vertex.setProperty(propertyName, newValue);
 	}
 	
-	private void deleteEdge(final Property property, final Edge edge) {
+	private void deleteEdge(final MProperty property, final Edge edge) {
 		System.out.println("delete edge " + property.getLabel() + ", containment: " + property.isContainment());
 		final Vertex referredVertex = edge.getVertex(Direction.IN);
 		

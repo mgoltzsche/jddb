@@ -12,7 +12,7 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
 
-public class IndexKeywordCollectingVisitor<E extends IEntityReference> implements IPropertyValueVisitor<E> {
+public class IndexKeywordCollectingVisitor<REF extends IEntityReference> implements IPropertyValueVisitor<REF> {
 	
 	private final Set<String> indexKeywords;
 	private final Pattern wordPattern;
@@ -22,15 +22,15 @@ public class IndexKeywordCollectingVisitor<E extends IEntityReference> implement
 		this.indexKeywords = indexKeywords;
 	}
 	
-	protected boolean valueChanged(final E oldValue, final E newValue) {
+	protected boolean valueChanged(final IEntityReference oldValue, final IEntityReference newValue) {
 		return oldValue == null && newValue != null || oldValue != null && !oldValue.equals(newValue);
 	}
 	
 	@Override
-	public void doWithAssociations(final IPropertyValue<Collection<E>,E> propertyValue) {}
+	public void doWithAssociations(final IPropertyValue<Collection<REF>,REF> propertyValue) {}
 	
 	@Override
-	public void doWithAssociation(final IPropertyValue<E,E> propertyValue) {}
+	public void doWithAssociation(final IPropertyValue<REF,REF> propertyValue) {}
 
 	@Override
 	public void doWithBoolean(final IPropertyValue<Boolean,?> propertyValue) {

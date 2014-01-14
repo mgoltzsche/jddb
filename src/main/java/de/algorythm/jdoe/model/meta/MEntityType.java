@@ -8,26 +8,26 @@ import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 
-public class EntityType extends AbstractLabeledElement implements IPropertyType<IEntityReference>, Serializable {
+public class MEntityType extends AbstractLabeledElement implements IPropertyType<IEntityReference>, Serializable {
 
 	static private final long serialVersionUID = 2546803693147036351L;
 	
-	private Collection<Property> properties = new LinkedList<>();
+	private Collection<MProperty> properties = new LinkedList<>();
 	private boolean embedded;
 
-	public EntityType() {
+	public MEntityType() {
 		setLabel("New type");
 	}
 	
-	public EntityType(final String label) {
+	public MEntityType(final String label) {
 		setLabel(label);
 	}
 	
-	public Collection<Property> getProperties() {
+	public Collection<MProperty> getProperties() {
 		return properties;
 	}
 	
-	public void setProperties(final Collection<Property> properties) {
+	public void setProperties(final Collection<MProperty> properties) {
 		this.properties = properties;
 	}
 	
@@ -45,7 +45,7 @@ public class EntityType extends AbstractLabeledElement implements IPropertyType<
 	}
 	
 	@Override
-	public <P extends IPropertyValue<?,REF>, REF extends IEntityReference> P createPropertyValue(final Property property, final IPropertyValueFactory<P,REF> factory) {
+	public <P extends IPropertyValue<?,? extends IEntityReference>> P createPropertyValue(final MProperty property, final IPropertyValueFactory<P> factory) {
 		return factory.createAssociationValue(property);
 	}
 	

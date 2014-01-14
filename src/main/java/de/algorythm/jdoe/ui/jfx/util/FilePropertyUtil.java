@@ -1,18 +1,23 @@
 package de.algorythm.jdoe.ui.jfx.util;
 
-import java.util.Collection;
-import java.util.Date;
 import java.util.LinkedList;
 
-import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
-import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.BooleanFXAttributeValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.DateFXAttributeValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.DecimalFXAttributeValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociation;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociations;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.FileFXAttributeValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValueVisitor;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.RealFXAttributeValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.StringFXAttributeValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.TextFXAttributeValue;
 
 public class FilePropertyUtil {
 
-	static private class FilePathCollector<REF extends IEntityReference>
-			implements IPropertyValueVisitor<REF> {
+	static private class FilePathCollector implements IFXPropertyValueVisitor {
 
 		private final LinkedList<String> filePathes;
 
@@ -21,40 +26,39 @@ public class FilePropertyUtil {
 		}
 
 		@Override
-		public void doWithBoolean(IPropertyValue<Boolean, ?> propertyValue) {
+		public void doWithBoolean(BooleanFXAttributeValue propertyValue) {
 		}
 
 		@Override
-		public void doWithDecimal(IPropertyValue<Long, ?> propertyValue) {
+		public void doWithDecimal(DecimalFXAttributeValue propertyValue) {
 		}
 
 		@Override
-		public void doWithReal(IPropertyValue<Double, ?> propertyValue) {
+		public void doWithReal(RealFXAttributeValue propertyValue) {
 		}
 
 		@Override
-		public void doWithDate(IPropertyValue<Date, ?> propertyValue) {
+		public void doWithDate(DateFXAttributeValue propertyValue) {
 		}
 
 		@Override
-		public void doWithString(IPropertyValue<String, ?> propertyValue) {
+		public void doWithString(StringFXAttributeValue propertyValue) {
 		}
 
 		@Override
-		public void doWithText(IPropertyValue<String, ?> propertyValue) {
+		public void doWithText(TextFXAttributeValue propertyValue) {
 		}
 
 		@Override
-		public void doWithAssociation(IPropertyValue<REF, REF> propertyValue) {
+		public void doWithAssociation(FXAssociation propertyValue) {
 		}
 
 		@Override
-		public void doWithAssociations(
-				IPropertyValue<Collection<REF>, REF> propertyValue) {
+		public void doWithAssociations(FXAssociations propertyValue) {
 		}
 
 		@Override
-		public void doWithFile(IPropertyValue<String, ?> propertyValue) {
+		public void doWithFile(FileFXAttributeValue propertyValue) {
 			final String value = propertyValue.getValue();
 
 			if (value != null)
@@ -63,12 +67,10 @@ public class FilePropertyUtil {
 	}
 
 	public <REF extends IEntityReference> Iterable<String> getFilePathes(
-			final IEntity<? extends IPropertyValue<?, REF>, REF> entity) {
+			final FXEntityReference entityRef) {
 		final LinkedList<String> filePathes = new LinkedList<>();
-		final IPropertyValueVisitor<REF> visitor = new FilePathCollector<REF>(filePathes);
-
-		for (IPropertyValue<?, REF> propertyValue : entity.getValues())
-			propertyValue.visit(visitor);
+		
+		entityRef.visit(new FilePathCollector(filePathes));
 
 		return filePathes;
 	}

@@ -5,15 +5,16 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
-import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.MProperty;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 
 public class FXAssociation extends AbstractFXPropertyValue<FXEntityReference> implements ChangeListener<FXEntityReference> {
 
 	static private final long serialVersionUID = -6560312410138927130L;
+	
 	private final SimpleObjectProperty<FXEntityReference> observableValue = new SimpleObjectProperty<>();
 
-	public FXAssociation(final Property property) {
+	public FXAssociation(final MProperty property) {
 		super(property);
 	}
 	

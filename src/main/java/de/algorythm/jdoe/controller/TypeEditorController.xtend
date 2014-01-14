@@ -1,8 +1,6 @@
 package de.algorythm.jdoe.controller
 
 import de.algorythm.jdoe.model.dao.IDAO
-import de.algorythm.jdoe.model.meta.EntityType
-import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.model.meta.Schema
 import de.algorythm.jdoe.ui.jfx.cell.PropertyEditCell
 import de.algorythm.jdoe.ui.jfx.cell.TypeCell
@@ -21,6 +19,8 @@ import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import javafx.fxml.Initializable
 import java.net.URL
 import java.util.ResourceBundle
+import de.algorythm.jdoe.model.meta.MEntityType
+import de.algorythm.jdoe.model.meta.MProperty
 
 class TypeEditorController implements Initializable {
 
@@ -28,11 +28,11 @@ class TypeEditorController implements Initializable {
 	
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@FXML var ListView<FXType> typeList
-	@FXML var ListView<Property> propertyList
+	@FXML var ListView<MProperty> propertyList
 	@FXML var Button btnAddProperty
 	var ObservableList<FXType> types
-	var ObservableList<Property> properties
-	var EntityType selectedType
+	var ObservableList<MProperty> properties
+	var MEntityType selectedType
 	var Schema schema
 	
 	override initialize(URL url, ResourceBundle bundle) {
@@ -69,7 +69,7 @@ class TypeEditorController implements Initializable {
 		properties = propertyList.items
 		
 		properties.addListener [
-			val typeProperties = selectedType.properties
+			val typeProperties = selectedType.getProperties
 			
 			typeProperties.clear
 			typeProperties += properties
@@ -85,21 +85,21 @@ class TypeEditorController implements Initializable {
 	}
 	
 	def addType() {
-		types += new FXType(new EntityType)
+		types += new FXType(new MEntityType)
 	}
 	
 	def addProperty() {
 		if (selectedType != null)
-			properties += new Property
+			properties += new MProperty
 	}
 	
-	def private selectType(EntityType type) {
+	def private selectType(MEntityType type) {
 		selectedType = type
 		
 		if (selectedType == null) {
 			properties.clear
 		} else {
-			properties.all = selectedType.properties
+			properties.all = selectedType.getProperties
 			
 			btnAddProperty.disable = false		
 		}

@@ -20,18 +20,18 @@ import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import de.algorythm.jdoe.bundle.Bundle;
 import de.algorythm.jdoe.model.meta.IPropertyType;
-import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.MProperty;
 import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
 import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType;
 import de.algorythm.jdoe.ui.jfx.model.meta.FXCollectionType;
 import de.algorythm.jdoe.ui.jfx.model.meta.FXPropertyType;
 import de.algorythm.jdoe.ui.jfx.model.meta.FXType;
 
-public class PropertyEditCell extends AbstractLabeledListCell<Property> implements ChangeListener<FXPropertyType<? extends IPropertyType<?>>> {
+public class PropertyEditCell extends AbstractLabeledListCell<MProperty> implements ChangeListener<FXPropertyType<? extends IPropertyType<?>>> {
 	
 	static private final Bundle bundle = Bundle.getInstance();
 	
-	static public class Factory implements Callback<ListView<Property>, ListCell<Property>> {
+	static public class Factory implements Callback<ListView<MProperty>, ListCell<MProperty>> {
 
 		private final ObservableList<FXType> types;
 		
@@ -40,7 +40,7 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 		}
 		
 		@Override
-		public ListCell<Property> call(ListView<Property> view) {
+		public ListCell<MProperty> call(ListView<MProperty> view) {
 			return new PropertyEditCell(types);
 		}
 	}
@@ -137,7 +137,7 @@ public class PropertyEditCell extends AbstractLabeledListCell<Property> implemen
 	}
 	
 	@Override
-	public void updateItem(Property property, boolean empty) {
+	public void updateItem(MProperty property, boolean empty) {
 		super.updateItem(property, empty);
 		
 		if (!empty) {

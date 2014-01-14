@@ -10,22 +10,22 @@ public class Schema implements Serializable {
 
 	private static final long serialVersionUID = 6465812673182870098L;
 	
-	private Collection<EntityType> types = new LinkedList<>();
-	private transient Map<String, EntityType> typeIndex;
+	private Collection<MEntityType> types = new LinkedList<>();
+	private transient Map<String, MEntityType> typeIndex;
 
-	public Collection<EntityType> getTypes() {
+	public Collection<MEntityType> getTypes() {
 		return types;
 	}
 
-	public void setTypes(final Collection<EntityType> types) {
+	public void setTypes(final Collection<MEntityType> types) {
 		this.types = types;
 	}
 	
-	public EntityType getTypeByName(final String name) {
+	public MEntityType getTypeByName(final String name) {
 		if (typeIndex == null) {
-			typeIndex = new HashMap<String, EntityType>();
+			typeIndex = new HashMap<String, MEntityType>();
 			
-			for (EntityType type : types)
+			for (MEntityType type : types)
 				typeIndex.put(type.getName(), type);
 		}
 		

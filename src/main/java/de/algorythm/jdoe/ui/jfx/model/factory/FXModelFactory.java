@@ -2,6 +2,7 @@ package de.algorythm.jdoe.ui.jfx.model.factory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -14,18 +15,24 @@ import de.algorythm.jdoe.model.dao.IObserver;
 import de.algorythm.jdoe.model.dao.IPropertyValueLoader;
 import de.algorythm.jdoe.model.dao.ModelChange;
 import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
-import de.algorythm.jdoe.model.meta.EntityType;
-import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.MEntityType;
+import de.algorythm.jdoe.model.meta.MProperty;
 import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
 import de.algorythm.jdoe.ui.jfx.model.FXEntity;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 import de.algorythm.jdoe.ui.jfx.model.IFXPropertyValueChangeHandler;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.BooleanFXAttributeValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.DateFXAttributeValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.DecimalFXAttributeValue;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociation;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociations;
-import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAttribute;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.FileFXAttributeValue;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.RealFXAttributeValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.StringFXAttributeValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.TextFXAttributeValue;
 
-public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IPropertyValueFactory<IFXPropertyValue<?>, FXEntityReference>, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
+public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IPropertyValueFactory<IFXPropertyValue<?>>, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 
 	private IObjectCache<FXEntity> entityCache;
 	
@@ -36,12 +43,12 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 	}
 	
 	@Override
-	public FXEntity createNewEntity(final EntityType type) {
+	public FXEntity createNewEntity(final MEntityType type) {
 		final FXEntity entity = new FXEntity(type);
-		final Collection<Property> properties = type.getProperties();
+		final Collection<MProperty> properties = type.getProperties();
 		final ArrayList<IFXPropertyValue<?>> values = new ArrayList<>(properties.size());
 		
-		for (Property property : properties)
+		for (MProperty property : properties)
 			values.add(property.createPropertyValue(this));
 		
 		entity.setValues(values);
@@ -63,8 +70,8 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 
 	private FXEntity createEntity(final IPropertyValueLoader<FXEntityReference> loader, final boolean withAssociations) {
 		final String id = loader.getId();
-		final EntityType type = loader.getType();
-		final Collection<Property> properties = type.getProperties();
+		final MEntityType type = loader.getType();
+		final Collection<MProperty> properties = type.getProperties();
 		final FXEntity cachedEntity;
 		FXEntity entity = null;
 		final boolean instantiateEntity;
@@ -83,7 +90,7 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 		if (instantiateEntity) {
 			final ArrayList<IFXPropertyValue<?>> values = new ArrayList<>(properties.size());
 			
-			for (Property property : properties) {
+			for (MProperty property : properties) {
 				final IFXPropertyValue<?> propertyValue = property.createPropertyValue(this);
 				
 				if (withAssociations || !property.getType().isUserDefined())
@@ -125,25 +132,61 @@ public class FXModelFactory implements IModelFactory<FXEntity, IFXPropertyValue<
 			}
 		});
 	}
-	
-	@Override
-	public <V extends Comparable<V>> IFXPropertyValue<?> createAttributeValue(final Property property,
-			AbstractAttributeType<V> type) {
-		return new FXAttribute<V>(property, type);
-	}
 
 	@Override
-	public IFXPropertyValue<?> createAssociationValue(final Property property) {
+	public IFXPropertyValue<?> createAssociationValue(final MProperty property) {
 		return new FXAssociation(property);
 	}
 
 	@Override
-	public IFXPropertyValue<?> createAssociationsValue(final Property property) {
+	public IFXPropertyValue<?> createAssociationsValue(final MProperty property) {
 		return new FXAssociations(property);
 	}
 	
 	@Override
-	public void update(final ModelChange<FXEntity,IFXPropertyValue<? extends Object>,FXEntityReference> change) {
+	public IFXPropertyValue<?> createBooleanAttributeValue(MProperty property,
+			AbstractAttributeType<Boolean> type) {
+		return new BooleanFXAttributeValue(property, type);
+	}
+
+	@Override
+	public IFXPropertyValue<?> createDecimalAttributeValue(MProperty property,
+			AbstractAttributeType<Long> type) {
+		return new DecimalFXAttributeValue(property, type);
+	}
+
+	@Override
+	public IFXPropertyValue<?> createRealAttributeValue(MProperty property,
+			AbstractAttributeType<Double> type) {
+		return new RealFXAttributeValue(property, type);
+	}
+
+	@Override
+	public IFXPropertyValue<?> createDateAttributeValue(MProperty property,
+			AbstractAttributeType<Date> type) {
+		return new DateFXAttributeValue(property, type);
+	}
+
+	@Override
+	public IFXPropertyValue<?> createStringAttributeValue(MProperty property,
+			AbstractAttributeType<String> type) {
+		return new StringFXAttributeValue(property, type);
+	}
+
+	@Override
+	public IFXPropertyValue<?> createTextAttributeValue(MProperty property,
+			AbstractAttributeType<String> type) {
+		return new TextFXAttributeValue(property, type);
+	}
+
+	@Override
+	public IFXPropertyValue<?> createFileAttributeValue(MProperty property,
+			AbstractAttributeType<String> type) {
+		return new FileFXAttributeValue(property, type);
+	}
+	
+	@Override
+	public void update(final ModelChange<FXEntity,IFXPropertyValue<?>,FXEntityReference> change) {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {

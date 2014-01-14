@@ -12,9 +12,10 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import de.algorythm.jdoe.model.entity.impl.AbstractEntity;
-import de.algorythm.jdoe.model.meta.EntityType;
+import de.algorythm.jdoe.model.meta.MEntityType;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.AbstractFXPropertyValue;
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue;
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValueVisitor;
 
 public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityReference> implements FXEntityReference, IFXPropertyValueChangeHandler {
 
@@ -26,11 +27,11 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	private boolean reference;
 	private IFXEntityChangeListener changeListener = IFXEntityChangeListener.DEFAULT;
 	
-	public FXEntity(final EntityType type) {
+	public FXEntity(final MEntityType type) {
 		super(type);
 	}
 	
-	public FXEntity(final String id, final EntityType type, final boolean reference) {
+	public FXEntity(final String id, final MEntityType type, final boolean reference) {
 		super(id, type);
 		this.reference = reference;
 	}
@@ -90,6 +91,12 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	
 	public ReadOnlyStringProperty labelProperty() {
 		return label;
+	}
+	
+	@Override
+	public void visit(IFXPropertyValueVisitor propertyVisitor) {
+		for (IFXPropertyValue<?> value : getValues())
+			value.visit(propertyVisitor);
 	}
 	
 	@Override

@@ -2,12 +2,11 @@ package de.algorythm.jdoe.model.entity;
 
 import java.io.Serializable;
 
-import de.algorythm.jdoe.model.meta.EntityType;
-import de.algorythm.jdoe.model.meta.IPropertyType;
+import de.algorythm.jdoe.model.meta.MEntityType;
 
 public interface IEntityReference extends Serializable {
 
 	String getId();
-	EntityType getType();
+	MEntityType getType();
 	void toString(StringBuilder sb);
 }

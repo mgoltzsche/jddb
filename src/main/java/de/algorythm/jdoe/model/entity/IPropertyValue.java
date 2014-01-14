@@ -2,11 +2,11 @@ package de.algorythm.jdoe.model.entity;
 
 import java.io.Serializable;
 
-import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.MProperty;
 
-public interface IPropertyValue<V,REF extends IEntityReference> extends Serializable {
+public interface IPropertyValue<V, REF extends IEntityReference> extends Serializable {
 	
-	Property getProperty();
+	MProperty getProperty();
 	void visit(IPropertyValueVisitor<REF> visitor);
 	V getValue();
 	void setValue(V v);

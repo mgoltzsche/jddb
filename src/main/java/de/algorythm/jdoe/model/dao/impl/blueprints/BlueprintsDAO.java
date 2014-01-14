@@ -41,8 +41,8 @@ import de.algorythm.jdoe.model.dao.impl.blueprints.propertyVisitor.SaveVisitor;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.meta.EntityType;
-import de.algorythm.jdoe.model.meta.EntityTypeWildcard;
+import de.algorythm.jdoe.model.meta.MEntityType;
+import de.algorythm.jdoe.model.meta.MEntityTypeWildcard;
 import de.algorythm.jdoe.model.meta.Schema;
 
 public abstract class BlueprintsDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> implements IDAO<V,P,REF>, IDAOVisitorContext<V,P,REF>, IDAOTransactionContext<V,P,REF> {
@@ -111,7 +111,7 @@ public abstract class BlueprintsDAO<V extends IEntity<P,REF>, P extends IPropert
 	}
 
 	@Override
-	public V createNewEntity(final EntityType type) {
+	public V createNewEntity(final MEntityType type) {
 		return modelFactory.createNewEntity(type);
 	}
 	
@@ -131,7 +131,7 @@ public abstract class BlueprintsDAO<V extends IEntity<P,REF>, P extends IPropert
 		if (id == null || typeName == null)
 			throw new IllegalStateException(String.format("id or type of vertex %s is null. Available keys: %s", vertex, vertex.getPropertyKeys()));
 		
-		final EntityType type = schema.getTypeByName(typeName);
+		final MEntityType type = schema.getTypeByName(typeName);
 		
 		return new LoadVisitor<>(vertex, id, type, this);
 	}
@@ -246,9 +246,9 @@ public abstract class BlueprintsDAO<V extends IEntity<P,REF>, P extends IPropert
 	}
 	
 	@Override
-	public Set<V> list(final EntityType type) {
+	public Set<V> list(final MEntityType type) {
 		final LinkedHashSet<V> result = new LinkedHashSet<>();
-		final Iterable<Vertex> vertices = type == EntityTypeWildcard.INSTANCE
+		final Iterable<Vertex> vertices = type == MEntityTypeWildcard.INSTANCE
 				? graph.getVertices()
 				: graph.getVertices(TYPE_FIELD, type.getName());
 		
@@ -259,7 +259,7 @@ public abstract class BlueprintsDAO<V extends IEntity<P,REF>, P extends IPropert
 	}
 	
 	@Override
-	public Set<V> list(final EntityType type, final String search) {
+	public Set<V> list(final MEntityType type, final String search) {
 		if (search == null || search.isEmpty())
 			return list(type);
 		
@@ -288,14 +288,14 @@ public abstract class BlueprintsDAO<V extends IEntity<P,REF>, P extends IPropert
 		
 		if (foundVertices != null) {
 			for (Vertex vertex : foundVertices) {
-				final EntityType vertexType = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
+				final MEntityType vertexType = schema.getTypeByName(vertex.<String>getProperty(TYPE_FIELD));
 				
 				if (type.isConform(vertexType))
 					result.add(createEntity(vertex));
 				
 				if (vertexType.isEmbedded()) {
 					for (Vertex referringVertex : vertex.getVertices(Direction.IN)) {
-						final EntityType referringVertexType = schema.getTypeByName(referringVertex.<String>getProperty(TYPE_FIELD));
+						final MEntityType referringVertexType = schema.getTypeByName(referringVertex.<String>getProperty(TYPE_FIELD));
 						
 						if (type.isConform(referringVertexType) && !foundVertices.contains(referringVertex))
 							result.add(createEntity(referringVertex));

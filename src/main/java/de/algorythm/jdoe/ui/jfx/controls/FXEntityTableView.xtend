@@ -1,9 +1,6 @@
 package de.algorythm.jdoe.ui.jfx.controls
 
 import de.algorythm.jdoe.bundle.Bundle
-import de.algorythm.jdoe.model.meta.EntityType
-import de.algorythm.jdoe.model.meta.EntityTypeWildcard
-import de.algorythm.jdoe.model.meta.Property
 import de.algorythm.jdoe.ui.jfx.cell.EntityCellValueFactory
 import de.algorythm.jdoe.ui.jfx.cell.EntityRowFactory
 import de.algorythm.jdoe.ui.jfx.cell.EntityTypeCellValueFactory
@@ -20,11 +17,14 @@ import javafx.scene.control.TableView
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2
 import javafx.scene.Node
+import de.algorythm.jdoe.model.meta.MEntityType
+import de.algorythm.jdoe.model.meta.MEntityTypeWildcard
+import de.algorythm.jdoe.model.meta.MProperty
 
 class FXEntityTableView extends TableView<FXEntity> {
 	
 	val bundle = Bundle.instance
-	val entityTypeProperty = new SimpleObjectProperty<EntityType>()
+	val entityTypeProperty = new SimpleObjectProperty<MEntityType>()
 	var Procedure1<FXEntity> onRowClick = []
 	var Procedure2<FXEntity, Node> onRowEnter = [entity,node|]
 	
@@ -57,14 +57,14 @@ class FXEntityTableView extends TableView<FXEntity> {
 		entityTypeProperty.value
 	}
 	
-	def setEntityType(EntityType entityType) {
+	def setEntityType(MEntityType entityType) {
 		entityTypeProperty.value = entityType
 	}
 	
-	def private updateTableColumns(EntityType entityType) {
+	def private updateTableColumns(MEntityType entityType) {
 		val columns = new LinkedList<TableColumn<FXEntity, ?>>
 		
-		if (entityType == EntityTypeWildcard.INSTANCE) {
+		if (entityType == MEntityTypeWildcard.INSTANCE) {
 			val typeColumn = new TableColumn<FXEntity, String>(bundle.type)
 			val labelColumn = new TableColumn<FXEntity, String>(bundle.entity)
 			
@@ -79,7 +79,7 @@ class FXEntityTableView extends TableView<FXEntity> {
 		} else {
 			var i = 0
 			
-			for (Property property : entityType.properties) {
+			for (MProperty property : entityType.getProperties) {
 				columns += createTableColumn(property.label, i)
 				i = i + 1
 			}

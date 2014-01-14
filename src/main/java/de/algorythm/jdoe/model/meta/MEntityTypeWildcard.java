@@ -2,12 +2,12 @@ package de.algorythm.jdoe.model.meta;
 
 import de.algorythm.jdoe.bundle.Bundle;
 
-public class EntityTypeWildcard extends EntityType {
+public class MEntityTypeWildcard extends MEntityType {
 
 	static private final long serialVersionUID = 659038941492670930L;
-	static public final EntityType INSTANCE = new EntityTypeWildcard();
+	static public final MEntityType INSTANCE = new MEntityTypeWildcard();
 	
-	private EntityTypeWildcard() {
+	private MEntityTypeWildcard() {
 		setLabel(Bundle.getInstance().all);
 	}
 	

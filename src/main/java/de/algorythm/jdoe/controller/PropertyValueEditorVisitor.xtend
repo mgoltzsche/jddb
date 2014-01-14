@@ -3,21 +3,27 @@ package de.algorythm.jdoe.controller
 import de.algorythm.jdoe.JavaDbObjectEditorFacade
 import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.model.dao.IDAO
-import de.algorythm.jdoe.model.entity.IPropertyValue
-import de.algorythm.jdoe.model.meta.EntityType
 import de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
 import de.algorythm.jdoe.ui.jfx.cell.AssociationCell
 import de.algorythm.jdoe.ui.jfx.controls.EntityField
+import de.algorythm.jdoe.ui.jfx.loader.image.ImageLoader
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.ValueContainer
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.AbstractFXAttributeValue
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.BooleanFXAttributeValue
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.DateFXAttributeValue
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.DecimalFXAttributeValue
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociation
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.FXAssociations
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.FileFXAttributeValue
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValueVisitor
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.RealFXAttributeValue
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.StringFXAttributeValue
+import de.algorythm.jdoe.ui.jfx.model.propertyValue.TextFXAttributeValue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTransactionTask
-import de.algorythm.jdoe.ui.jfx.loader.image.ImageLoader
 import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -46,6 +52,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension de.algorythm.jdoe.ui.jfx.util.OpenFileUtil.*
+import de.algorythm.jdoe.model.meta.MEntityType
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -79,7 +86,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
 	override doWithAssociations(FXAssociations propertyValue) {
 		val property = propertyValue.property
-		val collectionType = property.type as CollectionType
+		val collectionType = property.getType as CollectionType
 		val entityType = collectionType.itemType
 		val vBox = new VBox
 		val selectedEntities = new ListView<FXEntityReference>
@@ -87,7 +94,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		val vBoxChildren = vBox.children
 		var Procedure1<FXEntityReference> onRemove
 		
-		if (property.containment) {
+		if (property.isContainment) {
 			vBoxChildren += selectedEntities
 			vBoxChildren += addButton
 			
@@ -184,7 +191,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	
 	override doWithAssociation(FXAssociation propertyValue) {
 		val property = propertyValue.property
-		val entityType = property.type as EntityType
+		val entityType = property.getType as MEntityType
 		val noRef = propertyValue.value == null
 		val HBox hBox = new HBox
 		val hBoxChildren = hBox.children
@@ -205,7 +212,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 					bundle.edit
 		]
 		
-		if (property.containment) {
+		if (property.isContainment) {
 			val createdNotAssignedValue = new ValueContainer<FXEntityReference>
 			val label = new Label
 			
@@ -280,7 +287,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		gridPane.add(hBox, 1, row)
 	}
 
-	override doWithBoolean(IPropertyValue<Boolean,?> propertyValue) {
+	override doWithBoolean(BooleanFXAttributeValue propertyValue) {
 		val checkBox = new CheckBox
 		
 		checkBox.selected = propertyValue.value
@@ -292,7 +299,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		gridPane.add(checkBox, 1, row)
 	}
 
-	override doWithDecimal(IPropertyValue<Long,?> propertyValue) {
+	override doWithDecimal(DecimalFXAttributeValue propertyValue) {
 		val textField = new TextField(propertyValue.toString)
 		
 		textField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
@@ -315,7 +322,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		gridPane.add(textField, 1, row)
 	}
 	
-	override doWithReal(IPropertyValue<Double,?> propertyValue) {
+	override doWithReal(RealFXAttributeValue propertyValue) {
 		val textField = new TextField(propertyValue.toString)
 		
 		textField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
@@ -356,7 +363,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		null
 	}
 
-	override doWithDate(IPropertyValue<Date,?> propertyValue) {
+	override doWithDate(DateFXAttributeValue propertyValue) {
 		val format = new SimpleDateFormat
 		val textField = new TextField(propertyValue.toString)
 		
@@ -384,7 +391,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		gridPane.add(textField, 1, row)
 	}
 
-	override doWithString(IPropertyValue<String,?> propertyValue) {
+	override doWithString(StringFXAttributeValue propertyValue) {
 		val textField = new TextField
 		
 		textField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
@@ -394,7 +401,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		gridPane.add(textField, 1, row)
 	}
 
-	override doWithText(IPropertyValue<String,?> propertyValue) {
+	override doWithText(TextFXAttributeValue propertyValue) {
 		val textArea = new TextArea
 		
 		textArea.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
@@ -404,7 +411,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		gridPane.add(textArea, 1, row)
 	}
 	
-	override doWithFile(IPropertyValue<String,?> propertyValue) {
+	override doWithFile(FileFXAttributeValue propertyValue) {
 		val VBox vBox = new VBox
 		val HBox hBox = new HBox
 		val vBoxChildren = vBox.children
@@ -475,7 +482,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			fileLabel.text = file.absolutePath
 	}
 	
-	def private void bindStringProperty(IPropertyValue<String,?> propertyValue, StringProperty textProperty) {
+	def private void bindStringProperty(AbstractFXAttributeValue<String> propertyValue, StringProperty textProperty) {
 		textProperty.value = propertyValue.value
 		textProperty.addListener [c,o,value|
 			propertyValue.value = if (value == null || value.empty)

@@ -4,13 +4,13 @@ import java.util.Collection;
 
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
-import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.MProperty;
 
-public class Associations extends AbstractPropertyValue<Collection<IEntityReference>,IEntityReference> {
+public class Associations extends AbstractPropertyValue<Collection<IEntityReference>> {
 
 	static private final long serialVersionUID = -2428408831904938958L;
 
-	public Associations(Property property) {
+	public Associations(MProperty property) {
 		super(property);
 	}
 	

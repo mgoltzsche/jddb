@@ -8,17 +8,16 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
-import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.MProperty;
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference;
 
 public class FXAssociations extends AbstractFXPropertyValue<Collection<FXEntityReference>> implements ListChangeListener<FXEntityReference> {
 
 	static private final long serialVersionUID = -2428408831904938958L;
 	
-	
 	private final ListProperty<FXEntityReference> observableValue = new SimpleListProperty<>(FXCollections.observableList(new LinkedList<FXEntityReference>()));
 
-	public FXAssociations(final Property property) {
+	public FXAssociations(final MProperty property) {
 		super(property);
 		setValue(new LinkedList<FXEntityReference>());
 	}

@@ -5,8 +5,6 @@ import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.dao.ModelChange
-import de.algorythm.jdoe.model.meta.EntityType
-import de.algorythm.jdoe.model.meta.EntityTypeWildcard
 import de.algorythm.jdoe.ui.jfx.controls.FXEntityDetailView
 import de.algorythm.jdoe.ui.jfx.controls.FXEntityTableView
 import de.algorythm.jdoe.ui.jfx.model.ApplicationStateModel
@@ -35,6 +33,8 @@ import javafx.stage.DirectoryChooser
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.model.meta.MEntityType
+import de.algorythm.jdoe.model.meta.MEntityTypeWildcard
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -45,16 +45,16 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	@Inject var Bundle bundle
 	@FXML var ApplicationStateModel appState
 	@FXML var Button openDbButton
-	@FXML var ComboBox<EntityType> typeComboBox
+	@FXML var ComboBox<MEntityType> typeComboBox
 	@FXML var TabPane tabs
 	@FXML var Tab listTab
 	@FXML var FXEntityTableView entityTable
 	@FXML var FXEntityDetailView entityDetails
 	@FXML var TextField searchField
 	@FXML var MenuButton newEntityButton
-	var selectedType = EntityTypeWildcard.INSTANCE
+	var selectedType = MEntityTypeWildcard.INSTANCE
 	var String searchPhrase
-	var Collection<EntityType> entityTypes
+	var Collection<MEntityType> entityTypes
 	
 	override initialize(URL url, ResourceBundle resourceBundle) {
 		tabPane = tabs
@@ -92,9 +92,9 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 		searchValueProperty
 	}
 	
-	def private void setSelectedType(EntityType type) {
+	def private void setSelectedType(MEntityType type) {
 		selectedType = if (type == null)
-				EntityTypeWildcard.INSTANCE
+				MEntityTypeWildcard.INSTANCE
 			else
 				type
 		
@@ -117,9 +117,9 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def private void setupTypeSelection() {
-		val types = new LinkedList<EntityType>(entityTypes)
+		val types = new LinkedList<MEntityType>(entityTypes)
 		
-		types.addFirst(EntityTypeWildcard.INSTANCE)
+		types.addFirst(MEntityTypeWildcard.INSTANCE)
 		
 		typeComboBox.items.all = types
 		typeComboBox.selectionModel.selectFirst
@@ -128,7 +128,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	def private void setupNewEntityButton() {
 		val menuItems = new LinkedList<MenuItem>
 		
-		for (type : entityTypes.filter[t|!t.embedded]) {
+		for (type : entityTypes.filter[t|!t.isEmbedded]) {
 			val menuItem = new MenuItem
 			
 			menuItem.text = type.label

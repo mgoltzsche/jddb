@@ -15,19 +15,19 @@ import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueVisitor;
-import de.algorythm.jdoe.model.meta.EntityType;
-import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.MEntityType;
+import de.algorythm.jdoe.model.meta.MProperty;
 
-public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> implements IPropertyValueVisitor<REF>, IPropertyValueLoader<REF> {
+public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> implements IPropertyValueVisitor<REF>, IPropertyValueLoader<REF> {
 	
 	static private final Logger LOG = LoggerFactory.getLogger(LoadVisitor.class);
 	
 	private final Vertex vertex;
 	private final String id;
-	private final EntityType type;
+	private final MEntityType type;
 	private final IDAOVisitorContext<V,P,REF> dao;
 	
-	public LoadVisitor(final Vertex vertex, final String id, final EntityType type, final IDAOVisitorContext<V,P,REF> dao) {
+	public LoadVisitor(final Vertex vertex, final String id, final MEntityType type, final IDAOVisitorContext<V,P,REF> dao) {
 		this.vertex = vertex;
 		this.id = id;
 		this.type = type;
@@ -40,7 +40,7 @@ public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	}
 	
 	@Override
-	public EntityType getType() {
+	public MEntityType getType() {
 		return type;
 	}
 	
@@ -49,13 +49,14 @@ public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 		return dao.loadReferringEntities(id, vertex);
 	}
 	
-	public void load(final IPropertyValue<?, REF> propertyValue) {
+	@Override
+	public void load(final IPropertyValue<?,REF> propertyValue) {
 		propertyValue.visit(this);
 	}
 	
 	@Override
 	public void doWithAssociation(final IPropertyValue<REF,REF> propertyValue) {
-		final Property property = propertyValue.getProperty();
+		final MProperty property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {
@@ -73,7 +74,7 @@ public class LoadVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, R
 	@Override
 	public void doWithAssociations(final IPropertyValue<Collection<REF>,REF> propertyValue) {
 		final LinkedHashSet<REF> associations = new LinkedHashSet<>();
-		final Property property = propertyValue.getProperty();
+		final MProperty property = propertyValue.getProperty();
 		final String propertyName = property.getName();
 		
 		for (Vertex referencingVertex : vertex.getVertices(Direction.OUT, propertyName)) {

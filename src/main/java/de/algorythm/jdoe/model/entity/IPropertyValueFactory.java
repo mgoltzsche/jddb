@@ -1,11 +1,19 @@
 package de.algorythm.jdoe.model.entity;
 
-import de.algorythm.jdoe.model.meta.Property;
+import java.util.Date;
+
+import de.algorythm.jdoe.model.meta.MProperty;
 import de.algorythm.jdoe.model.meta.propertyTypes.AbstractAttributeType;
 
-public interface IPropertyValueFactory<P extends IPropertyValue<?,REF>, REF extends IEntityReference> {
+public interface IPropertyValueFactory<P extends IPropertyValue<?,? extends IEntityReference>> {
 
-	P createAssociationValue(Property property);
-	P createAssociationsValue(Property property);
-	<V extends Comparable<V>> P createAttributeValue(Property property, AbstractAttributeType<V> type);
+	P createAssociationValue(MProperty property);
+	P createAssociationsValue(MProperty property);
+	P createBooleanAttributeValue(MProperty property, AbstractAttributeType<Boolean> type);
+	P createDecimalAttributeValue(MProperty property, AbstractAttributeType<Long> type);
+	P createRealAttributeValue(MProperty property, AbstractAttributeType<Double> type);
+	P createDateAttributeValue(MProperty property, AbstractAttributeType<Date> type);
+	P createStringAttributeValue(MProperty property, AbstractAttributeType<String> type);
+	P createTextAttributeValue(MProperty property, AbstractAttributeType<String> type);
+	P createFileAttributeValue(MProperty property, AbstractAttributeType<String> type);
 }

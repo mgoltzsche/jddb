@@ -1,12 +1,12 @@
 package de.algorythm.jdoe.ui.jfx.model.meta;
 
 import javafx.beans.property.ReadOnlyStringProperty;
-import de.algorythm.jdoe.model.meta.EntityType;
+import de.algorythm.jdoe.model.meta.MEntityType;
 import de.algorythm.jdoe.model.meta.ILabeledElement;
 
-public class FXType extends FXPropertyType<EntityType> implements ILabeledElement {
+public class FXType extends FXPropertyType<MEntityType> implements ILabeledElement {
 
-	public FXType(final EntityType type) {
+	public FXType(final MEntityType type) {
 		super(type);
 	}
 	

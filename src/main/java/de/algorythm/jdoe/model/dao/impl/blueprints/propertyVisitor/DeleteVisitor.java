@@ -8,7 +8,7 @@ import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 
-public class DeleteVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference> extends IndexKeywordCollectingVisitor<REF> {
+public class DeleteVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> extends IndexKeywordCollectingVisitor<REF> {
 	
 	private final IDAOVisitorContext<V,P,REF> dao;
 	

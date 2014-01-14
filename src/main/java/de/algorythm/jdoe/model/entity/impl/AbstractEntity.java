@@ -6,21 +6,21 @@ import java.util.UUID;
 import de.algorythm.jdoe.model.entity.IEntity;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.meta.EntityType;
+import de.algorythm.jdoe.model.meta.MEntityType;
 
-public abstract class AbstractEntity<P extends IPropertyValue<?, REF>, REF extends IEntityReference> implements IEntity<P, REF> {
+public abstract class AbstractEntity<P extends IPropertyValue<?,REF>, REF extends IEntityReference> implements IEntity<P, REF> {
 
 	static private final long serialVersionUID = 8803662114651751761L;
 	
 	private final String id;
-	private final EntityType type;
+	private final MEntityType type;
 	private ArrayList<P> values;
 	
-	public AbstractEntity(final EntityType type) {
+	public AbstractEntity(final MEntityType type) {
 		this(UUID.randomUUID().toString(), type);
 	}
 	
-	public AbstractEntity(final String id, final EntityType type) {
+	public AbstractEntity(final String id, final MEntityType type) {
 		this.id = id;
 		this.type = type;
 	}
@@ -31,7 +31,7 @@ public abstract class AbstractEntity<P extends IPropertyValue<?, REF>, REF exten
 	}
 	
 	@Override
-	public EntityType getType() {
+	public MEntityType getType() {
 		return type;
 	}
 	

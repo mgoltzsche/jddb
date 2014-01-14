@@ -3,24 +3,24 @@ package de.algorythm.jdoe.model.entity.impl.propertyValue;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.meta.IPropertyType;
-import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.MProperty;
 
-public abstract class AbstractPropertyValue<V,REF extends IEntityReference> implements IPropertyValue<V,REF> {
+public abstract class AbstractPropertyValue<V> implements IPropertyValue<V,IEntityReference> {
 
 	static private final long serialVersionUID = 3601500282325296848L;
 	static protected final String EMPTY = "";
 	
 	private V value;
-	private Property property;
+	private MProperty property;
 	protected IPropertyType<?> type;
 
-	public AbstractPropertyValue(final Property property) {
+	public AbstractPropertyValue(final MProperty property) {
 		this.property = property;
 		this.type = property.getType();
 	}
 	
 	@Override
-	public Property getProperty() {
+	public MProperty getProperty() {
 		return property;
 	}
 	

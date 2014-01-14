@@ -2,8 +2,10 @@ package de.algorythm.jdoe.model.meta.propertyTypes;
 
 import java.io.File;
 
-import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
+import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
+import de.algorythm.jdoe.model.meta.MProperty;
 
 public class TFile extends TString {
 
@@ -14,9 +16,8 @@ public class TFile extends TString {
 	}
 	
 	@Override
-	public void visit(final IPropertyValue<String,?> value,
-			final IAttributeValueVisitor visitor) {
-		visitor.doWithFile(value);
+	public <P extends IPropertyValue<?,? extends IEntityReference>> P createPropertyValue(final MProperty property, final IPropertyValueFactory<P> factory) {
+		return factory.createFileAttributeValue(property, this);
 	}
 	
 	@Override

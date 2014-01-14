@@ -6,9 +6,9 @@ import java.util.Collection;
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
 import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
-import de.algorythm.jdoe.model.meta.EntityType;
+import de.algorythm.jdoe.model.meta.MEntityType;
 import de.algorythm.jdoe.model.meta.IPropertyType;
-import de.algorythm.jdoe.model.meta.Property;
+import de.algorythm.jdoe.model.meta.MProperty;
 import de.algorythm.jdoe.model.meta.TextAlignment;
 
 public class CollectionType implements IPropertyType<Collection<? extends IEntityReference>>, Serializable {
@@ -16,11 +16,11 @@ public class CollectionType implements IPropertyType<Collection<? extends IEntit
 	static private final long serialVersionUID = 5746102308534615947L;
 	static private final String LABEL_SUFFIX = " (Liste)";
 
-	private EntityType itemType;
+	private MEntityType itemType;
 	
 	public CollectionType() {}
 	
-	public CollectionType(final EntityType itemType) {
+	public CollectionType(final MEntityType itemType) {
 		this.itemType = itemType;
 	}
 	
@@ -34,16 +34,16 @@ public class CollectionType implements IPropertyType<Collection<? extends IEntit
 		return Boolean.TRUE;
 	}
 
-	public EntityType getItemType() {
+	public MEntityType getItemType() {
 		return itemType;
 	}
 
-	public void setItemType(EntityType itemType) {
+	public void setItemType(MEntityType itemType) {
 		this.itemType = itemType;
 	}
 
 	@Override
-	public <P extends IPropertyValue<?,REF>, REF extends IEntityReference> P createPropertyValue(final Property property, final IPropertyValueFactory<P,REF> factory) {
+	public <P extends IPropertyValue<?,? extends IEntityReference>> P createPropertyValue(final MProperty property, final IPropertyValueFactory<P> factory) {
 		return factory.createAssociationsValue(property);
 	}
 	

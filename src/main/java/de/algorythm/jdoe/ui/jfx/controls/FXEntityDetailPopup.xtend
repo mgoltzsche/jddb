@@ -1,24 +1,22 @@
 package de.algorythm.jdoe.ui.jfx.controls
 
-import de.algorythm.jdoe.ui.jfx.model.FXEntity
+import de.algorythm.jdoe.ui.jfx.loader.image.ImageLoader
+import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
+import de.algorythm.jdoe.ui.jfx.util.FilePropertyUtil
+import java.util.LinkedList
+import javafx.beans.property.SimpleStringProperty
 import javafx.event.EventHandler
 import javafx.geometry.Side
 import javafx.scene.Node
 import javafx.scene.control.ContextMenu
+import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
+import javafx.scene.image.ImageView
 import javafx.scene.input.MouseEvent
-import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import javafx.scene.layout.HBox
+import javafx.scene.layout.VBox
 
 import static javafx.application.Platform.*
-import javafx.scene.layout.VBox
-import javafx.scene.layout.HBox
-import javafx.scene.control.Label
-import java.util.LinkedList
-import javafx.scene.image.ImageView
-import de.algorythm.jdoe.ui.jfx.util.FilePropertyUtil
-import javafx.beans.property.SimpleStringProperty
-import de.algorythm.jdoe.ui.jfx.loader.image.ImageLoader
-import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 
 class FXEntityDetailPopup extends ContextMenu {
 
@@ -27,10 +25,9 @@ class FXEntityDetailPopup extends ContextMenu {
 	extension FilePropertyUtil = new FilePropertyUtil
 	extension ImageLoader = ImageLoader.instance
 	val vBox = new VBox
-	val hBox = new HBox
+	val hBox = new HBox(5)
 	val label = new Label
 	val filePathProperties = new LinkedList<SimpleStringProperty>
-	var Node currentTargetNode
 	val EventHandler<? super MouseEvent> mouseExitHandler = [
 		hide
 	]
@@ -60,45 +57,38 @@ class FXEntityDetailPopup extends ContextMenu {
 		]*/
 	}
 	
-	def show(Node node, Procedure1<Procedure1<FXEntity>> loader) {
-		currentTargetNode = node
-		entity = null
-		hide
-		
-		loader.apply [
-			runLater [|
-				if (currentTargetNode == node)
-					node.show(it)
-			]
-		]
-	}
-	
-	def show(Node node, FXEntity entity) {
-		currentTargetNode = null
-		this.entity = entity
+	def show(Node node, FXEntityReference entityRef) {
+		this.entityRef = entityRef
 		
 		show(node, Side.BOTTOM, 3, 0)
 		node.removeEventHandler(MouseEvent.MOUSE_EXITED, mouseExitHandler)
 		node.addEventHandler(MouseEvent.MOUSE_EXITED, mouseExitHandler)
 	}
 	
-	def private setEntity(FXEntity entity) {
-		if (entity == null) {
+	def private setEntityRef(FXEntityReference entityRef) {
+		if (entityRef == null) {
 			label.text = null
 			
 			for (filePathProperty : filePathProperties)
 				filePathProperty.value = null
 		} else {
-			label.text = entity.toString
+			label.text = entityRef.toString
 			
 			val filePathPropertyIter = filePathProperties.iterator
-			val pathIter = entity.filePathes.iterator
+			val pathIter = entityRef.filePathes.iterator
 			
 			while (filePathPropertyIter.hasNext) {
-				if (pathIter.hasNext)
-					filePathPropertyIter.next.value = pathIter.next
-				else
-					filePathPropertyIter.next.value = null
+				val filePathProperty = filePathPropertyIter.next
+				
+				filePathProperty.value = null
+				
+				if (pathIter.hasNext) {
+					val newPath = pathIter.next
+					
+					runLater [|
+						filePathProperty.value = newPath
+					]
+				} 
 			}
 		}
 	}

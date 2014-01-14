@@ -3,8 +3,10 @@ package de.algorythm.jdoe.model.meta.propertyTypes;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
+import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
+import de.algorythm.jdoe.model.meta.MProperty;
 import de.algorythm.jdoe.model.meta.TextAlignment;
 
 public class TDate extends AbstractAttributeType<Date>  {
@@ -16,9 +18,8 @@ public class TDate extends AbstractAttributeType<Date>  {
 	}
 	
 	@Override
-	public void visit(final IPropertyValue<Date,?> value,
-			final IAttributeValueVisitor visitor) {
-		visitor.doWithDate(value);
+	public <P extends IPropertyValue<?,? extends IEntityReference>> P createPropertyValue(final MProperty property, final IPropertyValueFactory<P> factory) {
+		return factory.createDateAttributeValue(property, this);
 	}
 	
 	@Override

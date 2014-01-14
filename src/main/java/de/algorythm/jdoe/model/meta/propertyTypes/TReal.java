@@ -1,7 +1,9 @@
 package de.algorythm.jdoe.model.meta.propertyTypes;
 
-import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
+import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
+import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
+import de.algorythm.jdoe.model.meta.MProperty;
 import de.algorythm.jdoe.model.meta.TextAlignment;
 
 public class TReal extends AbstractAttributeType<Double> {
@@ -13,9 +15,8 @@ public class TReal extends AbstractAttributeType<Double> {
 	}
 
 	@Override
-	public void visit(final IPropertyValue<Double,?> value,
-			final IAttributeValueVisitor visitor) {
-		visitor.doWithReal(value);
+	public <P extends IPropertyValue<?,? extends IEntityReference>> P createPropertyValue(final MProperty property, final IPropertyValueFactory<P> factory) {
+		return factory.createRealAttributeValue(property, this);
 	}
 	
 	@Override

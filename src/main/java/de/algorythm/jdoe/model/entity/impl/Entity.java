@@ -5,7 +5,7 @@ import java.util.LinkedList;
 
 import de.algorythm.jdoe.model.entity.IEntityReference;
 import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.meta.EntityType;
+import de.algorythm.jdoe.model.meta.MEntityType;
 
 public class Entity extends AbstractEntity<IPropertyValue<?,IEntityReference>,IEntityReference> {
 
@@ -14,12 +14,12 @@ public class Entity extends AbstractEntity<IPropertyValue<?,IEntityReference>,IE
 	
 	private Collection<IEntityReference> referringEntities;
 	
-	public Entity(final EntityType type) {
+	public Entity(final MEntityType type) {
 		super(type);
 		referringEntities = new LinkedList<IEntityReference>();
 	}
 	
-	public Entity(final String id, final EntityType type) {
+	public Entity(final String id, final MEntityType type) {
 		super(id, type);
 		referringEntities = new LinkedList<IEntityReference>();
 	}

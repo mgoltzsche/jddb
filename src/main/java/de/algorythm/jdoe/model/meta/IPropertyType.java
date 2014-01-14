@@ -8,7 +8,7 @@ public interface IPropertyType<V> {
 	
 	String getLabel();
 	boolean isUserDefined();
-	<P extends IPropertyValue<?,REF>, REF extends IEntityReference> P createPropertyValue(Property property, IPropertyValueFactory<P,REF> factory);
+	<P extends IPropertyValue<?,? extends IEntityReference>> P createPropertyValue(MProperty property, IPropertyValueFactory<P> factory);
 	boolean isConform(IPropertyType<?> type);
 	TextAlignment getTextAlignment();
 }

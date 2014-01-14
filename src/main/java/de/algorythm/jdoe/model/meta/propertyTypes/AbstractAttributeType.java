@@ -5,17 +5,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
 
-import de.algorythm.jdoe.model.entity.IAttributeValueVisitor;
-import de.algorythm.jdoe.model.entity.IEntityReference;
-import de.algorythm.jdoe.model.entity.IPropertyValue;
-import de.algorythm.jdoe.model.entity.IPropertyValueFactory;
 import de.algorythm.jdoe.model.meta.IPropertyType;
-import de.algorythm.jdoe.model.meta.Property;
 import de.algorythm.jdoe.model.meta.TextAlignment;
 
 public abstract class AbstractAttributeType<V extends Comparable<V>> implements IPropertyType<V>, Comparator<V>, Serializable {
 
-	static private final long serialVersionUID = 4590467257394701843L;
+	static private final long serialVersionUID = 5778323289559217617L;
 	
 	static public final Collection<AbstractAttributeType<?>> ATTRIBUTE_TYPES = new LinkedList<>();
 	
@@ -64,13 +59,6 @@ public abstract class AbstractAttributeType<V extends Comparable<V>> implements 
 	public int compare(final V a, final V b) {
 		return a == null && b == null ? 0 : (a == null ? -1 : (b == null ? 1 : a.compareTo(b)));
 	}
-	
-	@Override
-	public <P extends IPropertyValue<?,REF>, REF extends IEntityReference> P createPropertyValue(final Property property, final IPropertyValueFactory<P,REF> factory) {
-		return factory.createAttributeValue(property, this);
-	}
-	
-	public abstract void visit(IPropertyValue<V,?> value, IAttributeValueVisitor visitor);
 
 	public abstract void valueToString(V value, StringBuilder sb);
 	

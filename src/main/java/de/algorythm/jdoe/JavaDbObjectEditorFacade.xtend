@@ -3,7 +3,7 @@ package de.algorythm.jdoe
 import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.controller.IEntitySaveResult
 import de.algorythm.jdoe.model.dao.IDAO
-import de.algorythm.jdoe.model.meta.EntityType
+import de.algorythm.jdoe.model.meta.MEntityType
 import de.algorythm.jdoe.ui.jfx.loader.fxml.FxmlLoaderResult
 import de.algorythm.jdoe.ui.jfx.loader.fxml.GuiceFxmlLoader
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
@@ -54,11 +54,7 @@ public class JavaDbObjectEditorFacade {
 	}
 	
 	def showEntityDetails(FXEntityReference entityRef, Node node) {
-		entityDetailsPopup.show(node) [
-			runTask('''entity-details-loader-«entityRef.id»''', '''Loading «entityRef»''') [|
-				apply(entityRef.find)
-			]
-		]
+		entityDetailsPopup.show(node, entityRef)
 	}
 	
 	def showEntityEditor(FXEntityReference entityRef) {
@@ -73,7 +69,7 @@ public class JavaDbObjectEditorFacade {
 		editorManager.closeEntityEditor(entityRef)
 	}
 	
-	def void openDB(File dbFile, Procedure1<Collection<EntityType>> callback) {
+	def void openDB(File dbFile, Procedure1<Collection<MEntityType>> callback) {
 		val closeTask = closeDB
 		
 		runTask('open-db', bundle.taskOpenDB) [|
