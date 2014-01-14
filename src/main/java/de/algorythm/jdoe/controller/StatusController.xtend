@@ -2,10 +2,9 @@ package de.algorythm.jdoe.controller
 
 import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.taskQueue.TaskState
-import de.algorythm.jdoe.ui.jfx.taskQueue.FXTask
-import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.loader.fxml.FxmlLoaderResult
 import de.algorythm.jdoe.ui.jfx.loader.fxml.GuiceFxmlLoader
+import de.algorythm.jdoe.ui.jfx.taskQueue.FXTask
 import java.net.URL
 import java.util.LinkedList
 import java.util.ResourceBundle
@@ -25,9 +24,10 @@ import javafx.scene.layout.StackPane
 import javafx.stage.Stage
 import javax.inject.Inject
 
+import static de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue.*
+
 class StatusController implements Initializable {
 	
-	@Inject extension FXTaskQueue
 	@Inject extension GuiceFxmlLoader
 	@Inject Bundle bundle
 	@FXML StackPane statusPane
@@ -46,7 +46,7 @@ class StatusController implements Initializable {
 		statusPane.addEventHandler(MouseEvent.MOUSE_CLICKED, statusClickListener)
 		progress.addEventHandler(MouseEvent.MOUSE_CLICKED, statusClickListener) 
 		
-		taskListProperty.addListener([Change<? extends FXTask> it|
+		pendingTasksProperty.addListener([Change<? extends FXTask> it|
 			taskListChanged
 		] as ListChangeListener<FXTask>)
 		
@@ -55,7 +55,7 @@ class StatusController implements Initializable {
 		// setup task details window
 		val FxmlLoaderResult<Parent, TaskListController> loaderResult = load('/fxml/task_list.fxml')
 		
-		loaderResult.controller.init(taskListProperty, failedTasks)
+		loaderResult.controller.init(pendingTasksProperty, failedTasks)
 		
 		taskDetails.title = bundle.taskDetails
 		taskDetails.scene = new Scene(loaderResult.node, 500, 300)
@@ -73,14 +73,14 @@ class StatusController implements Initializable {
 			taskCount = taskCount + addedSize
 			
 			for (task : removed) {
-				if (task.state == TaskState.FAILED)
+				if (task.state == TaskState.FAILED && !failedTasks.contains(task))
 					failedTasks += task
 				
 				taskFinishedCount = taskFinishedCount + 1
 			}
 		}
 		
-		val tasks = taskListProperty.value
+		val tasks = pendingTasksProperty.value
 		
 		if (tasks.empty) {
 			status.text = bundle.stateReady

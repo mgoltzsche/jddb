@@ -1,17 +1,25 @@
 package de.algorythm.jdoe.ui.jfx.taskQueue;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.algorythm.jdoe.taskQueue.ITask;
 import de.algorythm.jdoe.taskQueue.ITaskPriority;
 import de.algorythm.jdoe.taskQueue.TaskState;
 
 public class FXTask implements ITask {
 
+	static private final Logger log = LoggerFactory.getLogger(FXTask.class);
+	
 	private final String id;
 	private final String label;
 	private final ITaskPriority priority;
 	private final Runnable task;
+	private String errorMessage;
 	private SimpleObjectProperty<TaskState> state = new SimpleObjectProperty<>(TaskState.QUEUED);
 	
 	public FXTask(final String id, final String label, final ITaskPriority priority, final Runnable task) {
@@ -42,13 +50,32 @@ public class FXTask implements ITask {
 	}
 
 	@Override
-	public void setState(final TaskState state) {
-		this.state.set(state);
+	public void setState(final TaskState updatedState) {
+		try {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					state.set(updatedState);
+				}
+			});
+		} catch(Throwable e) {
+			log.error("Cannot set task state " + updatedState + " on task " + id + " due to " + e.getClass().getSimpleName() + ": " + e.getMessage());
+		}
 	}
 	
 	@Override
 	public TaskState getState() {
 		return state.get();
+	}
+	
+	@Override
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+	
+	@Override
+	public void setErrorMessage(final String errorMessage) {
+		this.errorMessage = errorMessage;
 	}
 	
 	public ReadOnlyObjectProperty<TaskState> stateProperty() {

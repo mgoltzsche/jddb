@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.Tab?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Label?>
 
 <TabPane xmlns:fx="http://javafx.com/fxml"
-	fx:controller="de.algorythm.jdoe.controller.TaskListController">
+		fx:controller="de.algorythm.jdoe.controller.TaskListController">
 	<tabs>
 		<Tab text="%tasksQueued" closable="false">
-			<ListView fx:id="taskQueuedList"/>
+			<ListView fx:id="pendingList"/>
 		</Tab>
-		<Tab text="%tasksFailed" closable="false">
-			<ListView fx:id="taskFailedList"/>
+		<Tab text="%tasksFailed" closable="false" disable="false">
+			<VBox>
+				<ListView fx:id="errorList"/>
+				<Label fx:id="errorMessageLabel" alignment="BASELINE_LEFT"/>
+			</VBox>
 		</Tab>
 	</tabs>
 </TabPane>

@@ -1,9 +1,7 @@
 package de.algorythm.jdoe.taskQueue;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,18 +21,18 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 			@Override
 			public void run() {
 				while (run || !taskQueue.isEmpty()) {
-					final T currentTask;
+					final T runningTask;
 					
 					synchronized(runnable) {
 						final Iterator<T> iter = taskQueue.iterator();
 						
 						if (iter.hasNext()) {
-							currentTask = iter.next();
+							runningTask = iter.next();
 						} else
-							currentTask = null;
+							runningTask = null;
 					}
 					
-					if (currentTask == null) {
+					if (runningTask == null) {
 						try {
 							synchronized(this) {
 								wait();
@@ -43,20 +41,21 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 							log.debug(name + " interrupted");
 						}
 					} else {
-						currentTask.setState(TaskState.RUNNING);
-						final String taskLabel = currentTask.getLabel();
+						runningTask.setState(TaskState.RUNNING);
+						final String taskLabel = runningTask.getLabel();
 						log.debug(taskLabel);
 						
 						try {
-							currentTask.run();
-							currentTask.setState(TaskState.COMPLETED);
+							runningTask.run();
+							runningTask.setState(TaskState.COMPLETED);
 						} catch(Throwable e) {
-							log.error("task " + taskLabel + " failed", e);
-							currentTask.setState(TaskState.FAILED);
+							log.error(taskLabel + " failed", e);
+							runningTask.setErrorMessage(createErrorMessage(e));
+							runningTask.setState(TaskState.FAILED);
 						} finally {
 							synchronized(runnable) {
-								taskQueue.remove(currentTask);
-								onTaskRemoved(currentTask);
+								taskQueue.remove(runningTask);
+								onTaskRemoved(runningTask);
 							}
 						}
 					}
@@ -84,14 +83,30 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 		}));
 	}
 	
-	public List<T> getPendingTasks() {
-		return Collections.unmodifiableList(taskQueue);
+	private String createErrorMessage(Throwable e) {
+		final StringBuilder sb = new StringBuilder();
+		final String exceptionName = e.getClass().getSimpleName();
+		
+		sb.append(exceptionName).append(": ").append(e.getMessage());
+		
+		Throwable cause = e;
+		Throwable rootCause = null;
+		
+		while ((cause = cause.getCause()) != null)
+			rootCause = cause;
+		
+		if (rootCause != null) {
+			sb.append("\nRoot cause: \n");
+			sb.append(exceptionName).append(": ").append(e.getMessage());
+		}
+		
+		return sb.toString();
 	}
 	
 	public void runTask(final T task) {
 		synchronized(runnable) {
 			taskQueue.remove(task);
-			task.getPriority().add(taskQueue, task);
+			task.getPriority().add(task, taskQueue);
 			runnable.notify();
 			onTaskQueued(task);
 		}

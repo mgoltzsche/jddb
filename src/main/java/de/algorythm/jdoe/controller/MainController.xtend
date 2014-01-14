@@ -5,6 +5,9 @@ import de.algorythm.jdoe.bundle.Bundle
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.dao.ModelChange
+import de.algorythm.jdoe.model.meta.MEntityType
+import de.algorythm.jdoe.model.meta.MEntityTypeWildcard
+import de.algorythm.jdoe.taskQueue.ITaskPriority
 import de.algorythm.jdoe.ui.jfx.controls.FXEntityDetailView
 import de.algorythm.jdoe.ui.jfx.controls.FXEntityTableView
 import de.algorythm.jdoe.ui.jfx.model.ApplicationStateModel
@@ -12,7 +15,7 @@ import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
-import de.algorythm.jdoe.ui.jfx.util.ViewRegistry
+import de.algorythm.jdoe.ui.jfx.util.EntityEditorViewRegistry
 import java.io.File
 import java.io.IOException
 import java.net.URL
@@ -33,16 +36,13 @@ import javafx.stage.DirectoryChooser
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.model.meta.MEntityType
-import de.algorythm.jdoe.model.meta.MEntityTypeWildcard
-import de.algorythm.jdoe.taskQueue.ITaskPriority
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension FXTaskQueue
 	@Inject extension JavaDbObjectEditorFacade facade
-	@Inject extension ViewRegistry
+	@Inject extension EntityEditorViewRegistry
 	@Inject var Bundle bundle
 	@FXML var ApplicationStateModel appState
 	@FXML var Button openDbButton

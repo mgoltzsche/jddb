@@ -1,7 +1,8 @@
 package de.algorythm.jdoe.ui.jfx.loader.image
 
 import de.algorythm.jdoe.cache.ObjectCache
-import de.algorythm.jdoe.cache.WeakCacheReferenceFactory
+import de.algorythm.jdoe.cache.SoftCacheReferenceFactory
+import de.algorythm.jdoe.taskQueue.ITaskPriority
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.ReadOnlyBooleanProperty
@@ -15,7 +16,6 @@ import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.taskQueue.ITaskPriority
 
 class ImageLoader {
 
@@ -27,11 +27,11 @@ class ImageLoader {
 	}
 	
 	extension FXTaskQueue = new FXTaskQueue('image-loader-queue')
-	val cache = new ObjectCache<ReadOnlyObjectProperty<Image>>('image-cache', new WeakCacheReferenceFactory<ReadOnlyObjectProperty<Image>>)
+	val cache = new ObjectCache<ReadOnlyObjectProperty<Image>>('image-cache', new SoftCacheReferenceFactory<ReadOnlyObjectProperty<Image>>)
 	val Function1<String, ReadOnlyObjectProperty<Image>> imageLoader = [
 		val future = new SimpleObjectProperty<Image>
 		
-		runTask('''Loading image «it»''', ITaskPriority.HIGHER) [|
+		runTask('''Load image «it»''', ITaskPriority.HIGHER) [|
 			loadImage(future)
 		]
 		
@@ -60,6 +60,7 @@ class ImageLoader {
 		
 		view.sceneProperty.addListener [c,o,v|
 			if (v == null) {
+				imageProperty.unbind
 				imageProperty.value = null
 				filePathProperty.removeListener(pathListener)
 				visibleProperty.removeListener(visibleListener)

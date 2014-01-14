@@ -17,7 +17,7 @@ import static javafx.application.Platform.*
 import de.algorythm.jdoe.ui.jfx.loader.fxml.GuiceFxmlLoader
 
 @Singleton
-public class ViewRegistry implements IEntityEditorManager {
+public class EntityEditorViewRegistry implements IEntityEditorManager {
 	
 	static val EDITOR_FXML = '/fxml/entity_editor.fxml'
 	

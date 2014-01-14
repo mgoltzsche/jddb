@@ -46,6 +46,8 @@ public class TaskCell extends ListCell<FXTask> {
 	
 	@Override
 	public void updateItem(final FXTask task, final boolean empty) {
+		super.updateItem(task, empty);
+		
 		if (empty) {
 			titleLabel.setText(null);
 			progressIndicator.visibleProperty().unbind();

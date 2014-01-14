@@ -5,10 +5,14 @@ import javafx.scene.image.Image;
 
 public class CachedImage extends Image {
 
-	private final ReadOnlyObjectProperty<Image> property;
+	private final ReadOnlyObjectProperty<Image> containedProperty;
 	
-	public CachedImage(final String url, final ReadOnlyObjectProperty<Image> property) {
+	public CachedImage(final String url, final ReadOnlyObjectProperty<Image> containedProperty) {
 		super(url, 300, 200, true, true);
-		this.property = property;
+		this.containedProperty = containedProperty;
+	}
+	
+	public ReadOnlyObjectProperty<Image> getContainedProperty() {
+		return containedProperty;
 	}
 }
