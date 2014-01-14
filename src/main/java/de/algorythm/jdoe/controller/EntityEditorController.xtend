@@ -30,6 +30,8 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
 import de.algorythm.jdoe.ui.jfx.cell.EntityReferenceCell
+import java.util.Date
+import de.algorythm.jdoe.taskQueue.ITaskPriority
 
 public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IEntitySaveResult, IFXEntityChangeListener {
 	
@@ -56,7 +58,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 		editorState.title = entityRef.labelProperty.value
 		editorState.typeName = entityRef.type.label
 		
-		runTask('load-' + entityRef.id, '''«bundle.taskLoad»: «entityRef» («entityRef.type.label»)''') [|
+		runTask('load-' + entityRef.id, '''«bundle.taskLoad»: «entityRef» («entityRef.type.label»)''', ITaskPriority.HIGHER) [|
 			val isNew = !entityRef.exists
 			val editEntity = if (isNew)
 				entityRef as FXEntity
@@ -117,7 +119,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 			for (saveTask : saveTasks)
 				saveTask.onBefore
 			
-			runTask('save-entity-' + transientEntity.id, '''«bundle.taskSave»: «transientEntity» («transientEntity.type.label»)''') [|
+			runTask('''save-entity-«transientEntity.id»-«new Date().time»''', '''«bundle.taskSave»: «transientEntity» («transientEntity.type.label»)''', ITaskPriority.LOWER) [|
 				saveTasks.runSaveTasks
 				
 				// run save callback once
@@ -185,7 +187,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 		editorState.deleting = true
 		val deleteEntity = transientEntity.copy
 		
-		runTask('delete-entity-' + deleteEntity.id, '''«bundle.taskDelete»: «deleteEntity» («deleteEntity.type.label»)''') [|
+		runTask('delete-entity-' + deleteEntity.id, '''«bundle.taskDelete»: «deleteEntity» («deleteEntity.type.label»)''', ITaskPriority.LOWER) [|
 			runLater [|
 				editorState.busy = true
 			]
@@ -219,7 +221,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	def close() {
 		removeObserver(this)
 		
-		runTask('close-unsaved-containment-editors-' + entityReference.id, bundle.taskCloseTransientContainmentEditors) [|
+		runTask('close-unsaved-containment-editors-' + entityReference.id, bundle.taskCloseTransientContainmentEditors, ITaskPriority.HIGHER) [|
 			for (entity : containedNewEntities.filter[e|!e.exists])
 				entity.closeEntityEditor
 		]

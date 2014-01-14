@@ -1,8 +1,8 @@
 package de.algorythm.jdoe.ui.jfx.taskQueue
 
 import de.algorythm.jdoe.taskQueue.AbstractTaskQueue
+import de.algorythm.jdoe.taskQueue.ITaskPriority
 import de.algorythm.jdoe.taskQueue.ITaskResult
-import de.algorythm.jdoe.taskQueue.TaskState
 import java.util.HashMap
 import java.util.LinkedList
 import javafx.beans.property.ReadOnlyListProperty
@@ -24,34 +24,28 @@ class FXTaskQueue extends AbstractTaskQueue<FXTask> {
 	
 	new(String name) {
 		super(name)
+		
 		INSTANCE_MAP.put(name, this)
 	}
 	
-	def ITaskResult runTask(String id, String label, Procedure0 task) {
-		val fxTask = new FXTask(id, label, task)
+	def ITaskResult runTask(String id, String label, ITaskPriority priority, Procedure0 task) {
+		val fxTask = new FXTask(id, label, priority, task)
+		
 		runTask(fxTask)
+		
 		fxTask
 	}
 	
 	def ReadOnlyListProperty<FXTask> taskListProperty() {
 		taskList
 	}
-
+	
 	override onTaskQueued(FXTask task) {
 		updateTasks
 	}
-
-	override onTaskStarted(FXTask task) {
-		runLater [|
-			super.onTaskStarted(task)
-		]
-	}
 	
-	override onTaskFinished(FXTask task, TaskState state) {
-		runLater [|
-			super.onTaskFinished(task, state)
-			updateTasks
-		]
+	override onTaskRemoved(FXTask task) {
+		updateTasks
 	}
 	
 	def private updateTasks() {

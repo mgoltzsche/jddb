@@ -2,13 +2,20 @@ package de.algorythm.jdoe.ui.jfx.loader.image
 
 import de.algorythm.jdoe.cache.ObjectCache
 import de.algorythm.jdoe.cache.WeakCacheReferenceFactory
+import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
+import javafx.beans.property.ObjectProperty
 import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.ReadOnlyStringProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.slf4j.LoggerFactory
+
+import static javafx.application.Platform.*
+import de.algorythm.jdoe.taskQueue.ITaskPriority
 
 class ImageLoader {
 
@@ -19,21 +26,31 @@ class ImageLoader {
 		INSTANCE
 	}
 	
-	val cache = new ObjectCache<Image>('image-cache', new WeakCacheReferenceFactory<Image>)
-	val Function1<String, Image> imageLoader = [loadImage]
+	extension FXTaskQueue = new FXTaskQueue('image-loader-queue')
+	val cache = new ObjectCache<ReadOnlyObjectProperty<Image>>('image-cache', new WeakCacheReferenceFactory<ReadOnlyObjectProperty<Image>>)
+	val Function1<String, ReadOnlyObjectProperty<Image>> imageLoader = [
+		val future = new SimpleObjectProperty<Image>
+		
+		runTask('''Loading image «it»''', ITaskPriority.HIGHER) [|
+			loadImage(future)
+		]
+		
+		future as ReadOnlyObjectProperty<Image>
+	]
 	
 	private new() {
 	}
 	
 	def bindImage(ImageView view, ReadOnlyStringProperty filePathProperty, ReadOnlyBooleanProperty visibleProperty) {
+		val imageProperty = view.imageProperty
 		view.cache = false
-		view.updateImage(filePathProperty, visibleProperty)
+		imageProperty.updateImage(filePathProperty, visibleProperty)
 		
 		val ChangeListener<? super String> pathListener = [c,o,v|
-			view.updateImage(filePathProperty, visibleProperty)
+			imageProperty.updateImage(filePathProperty, visibleProperty)
 		]
 		val ChangeListener<? super Boolean> visibleListener = [c,o,v|
-			view.updateImage(filePathProperty, visibleProperty)
+			imageProperty.updateImage(filePathProperty, visibleProperty)
 		]
 		
 		if (view.scene != null) {
@@ -43,19 +60,20 @@ class ImageLoader {
 		
 		view.sceneProperty.addListener [c,o,v|
 			if (v == null) {
-				view.image = null
+				imageProperty.value = null
 				filePathProperty.removeListener(pathListener)
 				visibleProperty.removeListener(visibleListener)
 			} else {
-				view.updateImage(filePathProperty, visibleProperty)
+				imageProperty.updateImage(filePathProperty, visibleProperty)
 				filePathProperty.addListener(pathListener)
 				visibleProperty.addListener(visibleListener)
 			}
 		]
 	}
 	
-	def private void updateImage(ImageView view, ReadOnlyStringProperty filePathProperty, ReadOnlyBooleanProperty visibleProperty) {
-		view.image = null
+	def private void updateImage(ObjectProperty<Image> imageProperty, ReadOnlyStringProperty filePathProperty, ReadOnlyBooleanProperty visibleProperty) {
+		imageProperty.unbind
+		imageProperty.value = null
 		
 		if (!visibleProperty.value)
 			return
@@ -65,27 +83,20 @@ class ImageLoader {
 		if (filePath == null || filePath.empty)
 			return;
 		
-		view.image = cache.get(filePath, imageLoader)
+		imageProperty.bind(cache.get(filePath, imageLoader))
 	}
 	
-	def private loadImage(String filePath) {
-//		System.gc
-		var Image image
+	def private loadImage(String filePath, SimpleObjectProperty<Image> imageProperty) {
 		try {
-			image = new Image('file:' + filePath, 300, 200, true, true, true)
-			image.progressProperty.addListener [c,o,p|
-//				if (p == 1.0)
-//					System.gc
-			]
-			image.errorProperty.addListener [c,o,error|
-				if (error) {
-					LOG.debug('Failed to load image: ' + filePath)
-//					System.gc
-				}
-			]
+			val image = new CachedImage('file:' + filePath, imageProperty)
+			
+			if (!image.error) {
+				runLater [|
+					imageProperty.value = image
+				]
+			}
 		} catch(Exception e) {
 			LOG.debug('Cannot load image ' + filePath, e)
 		}
-		image
 	}
 }

@@ -4,5 +4,6 @@ public interface ITask extends ITaskResult {
 
 	String getId();
 	String getLabel();
+	ITaskPriority getPriority();
 	void setState(TaskState state);
 }

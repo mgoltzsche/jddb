@@ -35,7 +35,7 @@ public class CacheCleanDaemon<V> extends Thread {
 					final String key = removeObj.getKey();
 					cacheMap.remove(key);
 					removeObj.clear();
-					LOG.debug("cleaned cache key: " + key);
+					LOG.debug("cleaned cache key " + key);
 				}
 			}
 		} catch(InterruptedException e) {

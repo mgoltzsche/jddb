@@ -53,6 +53,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension de.algorythm.jdoe.ui.jfx.util.OpenFileUtil.*
 import de.algorythm.jdoe.model.meta.MEntityType
+import de.algorythm.jdoe.taskQueue.ITaskPriority
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -130,7 +131,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			val hBoxChildren = hBox.children
 			val createButton = new Button(bundle.create)
 			val addEntityField = new EntityField [searchPhrase,it|
-				runTask('''search-«entityRef.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''') [|
+				runTask('''search-«entityRef.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''', ITaskPriority.HIGHER) [|
 					all = entityType.list(searchPhrase)
 				]
 			]
@@ -254,7 +255,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			]
 		} else {
 			val entityField = new EntityField [searchPhrase,it|
-				runTask('''search-«entityRef.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''') [|
+				runTask('''search-«entityRef.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''', ITaskPriority.HIGHER) [|
 					all = entityType.list(searchPhrase)
 				]
 			]

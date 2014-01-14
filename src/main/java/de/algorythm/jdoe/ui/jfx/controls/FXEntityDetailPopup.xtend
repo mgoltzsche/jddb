@@ -42,6 +42,7 @@ class FXEntityDetailPopup extends ContextMenu {
 		for (i : 1..PREVIEW_IMAGE_COUNT) {
 			val filePathProperty = new SimpleStringProperty
 			val imageView = new ImageView
+			imageView.cache = false
 			
 			filePathProperties += filePathProperty
 			hBox.children += imageView
@@ -51,18 +52,16 @@ class FXEntityDetailPopup extends ContextMenu {
 		
 		item.graphic = vBox
 		items += item
-		
-		/*addEventHandler(MouseEvent.MOUSE_ENTERED) [
-			hide
-		]*/
 	}
 	
 	def show(Node node, FXEntityReference entityRef) {
-		this.entityRef = entityRef
-		
-		show(node, Side.BOTTOM, 3, 0)
-		node.removeEventHandler(MouseEvent.MOUSE_EXITED, mouseExitHandler)
-		node.addEventHandler(MouseEvent.MOUSE_EXITED, mouseExitHandler)
+		runLater [|
+			this.entityRef = entityRef
+			
+			show(node, Side.BOTTOM, 3, 0)
+			node.removeEventHandler(MouseEvent.MOUSE_EXITED, mouseExitHandler)
+			node.addEventHandler(MouseEvent.MOUSE_EXITED, mouseExitHandler)
+		]
 	}
 	
 	def private setEntityRef(FXEntityReference entityRef) {
@@ -85,9 +84,7 @@ class FXEntityDetailPopup extends ContextMenu {
 				if (pathIter.hasNext) {
 					val newPath = pathIter.next
 					
-					runLater [|
-						filePathProperty.value = newPath
-					]
+					filePathProperty.value = newPath
 				} 
 			}
 		}

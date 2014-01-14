@@ -176,4 +176,9 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 	public void toString(final StringBuilder sb) {
 		sb.append(label.get());
 	}
+	
+	@Override
+	public String toString() {
+		return label.get();
+	}
 }

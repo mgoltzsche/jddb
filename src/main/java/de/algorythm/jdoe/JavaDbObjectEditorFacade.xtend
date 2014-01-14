@@ -24,6 +24,8 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import static javafx.application.Platform.*
 import de.algorythm.jdoe.ui.jfx.controls.FXEntityDetailPopup
 import javafx.scene.Node
+import de.algorythm.jdoe.taskQueue.ITaskPriority
+import de.algorythm.jdoe.taskQueue.TaskState
 
 @Singleton
 public class JavaDbObjectEditorFacade {
@@ -72,8 +74,8 @@ public class JavaDbObjectEditorFacade {
 	def void openDB(File dbFile, Procedure1<Collection<MEntityType>> callback) {
 		val closeTask = closeDB
 		
-		runTask('open-db', bundle.taskOpenDB) [|
-			if (!closeTask.failed) {
+		runTask('open-db', bundle.taskOpenDB, ITaskPriority.LOWER) [|
+			if (closeTask.state != TaskState.FAILED) {
 				dao.open(dbFile)
 				
 				runLater [|
@@ -84,7 +86,7 @@ public class JavaDbObjectEditorFacade {
 	}
 	
 	def private closeDB() {
-		runTask('close-db', bundle.taskCloseDB) [|
+		runTask('close-db', bundle.taskCloseDB, ITaskPriority.LOWER) [|
 			if (dao.opened) {
 				dao.close
 			}
