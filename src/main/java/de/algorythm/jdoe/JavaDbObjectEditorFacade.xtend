@@ -94,6 +94,6 @@ public class JavaDbObjectEditorFacade {
 	}
 	
 	def showTypeEditor() throws IOException {
-		showWindow(TYPE_EDITOR_FXML, 'jDOE - ' + bundle.typeDefinition, 500, 400)
+		showWindow(TYPE_EDITOR_FXML, 'jDOE - ' + bundle.typeDefinition, 600, 500)
 	}
 }

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,7 +14,7 @@ public class FXEntityType extends FXAbstractLabeledElement implements IFXPropert
 	private final BooleanProperty embedded = new SimpleBooleanProperty();
 	private final ObservableList<FXProperty> properties = FXCollections.observableList(new LinkedList<FXProperty>());
 
-	public BooleanProperty embeddedProperty() {
+	public Property<Boolean> embeddedProperty() {
 		return embedded;
 	}
 	

@@ -2,6 +2,7 @@ package de.algorythm.jdoe.ui.jfx.model.meta;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -11,7 +12,7 @@ public class FXProperty extends FXAbstractLabeledElement {
 	private final BooleanProperty searchable = new SimpleBooleanProperty();
 	private final BooleanProperty containment = new SimpleBooleanProperty();
 	
-	public ObjectProperty<IFXPropertyType> typeProperty() {
+	public Property<IFXPropertyType> typeProperty() {
 		return type;
 	}
 	
@@ -23,7 +24,7 @@ public class FXProperty extends FXAbstractLabeledElement {
 		this.type.set(type);
 	}
 	
-	public BooleanProperty searchableProperty() {
+	public Property<Boolean> searchableProperty() {
 		return searchable;
 	}
 	
@@ -35,7 +36,7 @@ public class FXProperty extends FXAbstractLabeledElement {
 		this.searchable.set(searchable);
 	}
 	
-	public BooleanProperty containmentProperty() {
+	public Property<Boolean> containmentProperty() {
 		return containment;
 	}
 	

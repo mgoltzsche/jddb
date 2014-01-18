@@ -5,6 +5,9 @@ import javafx.beans.property.StringProperty;
 
 public class FXAbstractLabeledElement {
 	
+	static private int internalIdCounter = 0;
+
+	private int internalId = ++internalIdCounter;
 	protected final StringProperty label = new SimpleStringProperty();
 	
 	public StringProperty labelProperty() {
@@ -28,7 +31,7 @@ public class FXAbstractLabeledElement {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((label == null) ? 0 : label.hashCode());
+		result = prime * result + internalId;
 		return result;
 	}
 
@@ -41,10 +44,7 @@ public class FXAbstractLabeledElement {
 		if (getClass() != obj.getClass())
 			return false;
 		FXAbstractLabeledElement other = (FXAbstractLabeledElement) obj;
-		if (label == null) {
-			if (other.label != null)
-				return false;
-		} else if (!label.equals(other.label))
+		if (internalId != other.internalId)
 			return false;
 		return true;
 	}
