@@ -1,0 +1,113 @@
+!!de.algorythm.jdoe.model.meta.Schema
+types:
+- &id002
+  embedded: false
+  label: Person
+  name: Person
+  properties:
+  - containment: false
+    label: Name
+    name: Name
+    searchable: true
+    type: !!de.algorythm.jdoe.model.meta.propertyTypes.TString {}
+  - containment: true
+    label: Adresse
+    name: Adresse
+    searchable: true
+    type: !!de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
+      itemType: &id003
+        embedded: true
+        label: Adresse
+        name: Adresse
+        properties:
+        - containment: false
+          label: Straße / Hausnr.
+          name: StraeHausnr
+          searchable: true
+          type: &id001 !!de.algorythm.jdoe.model.meta.propertyTypes.TString {}
+        - containment: false
+          label: Stadt
+          name: Stadt
+          searchable: true
+          type: *id001
+        - containment: false
+          label: PLZ
+          name: PLZ
+          searchable: true
+          type: !!de.algorythm.jdoe.model.meta.propertyTypes.TDecimal {}
+        - containment: false
+          label: Zusatz
+          name: Zusatz
+          searchable: true
+          type: !!de.algorythm.jdoe.model.meta.propertyTypes.TText {}
+  - containment: false
+    label: Geburtstag
+    name: Geburtstag
+    searchable: true
+    type: !!de.algorythm.jdoe.model.meta.propertyTypes.TDate {}
+  - containment: false
+    label: Bekannte
+    name: Bekannte
+    searchable: true
+    type: !!de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
+      itemType: *id002
+- *id003
+- embedded: false
+  label: Gallerie
+  name: Gallerie
+  properties:
+  - containment: false
+    label: Name
+    name: Name
+    searchable: true
+    type: *id001
+  - containment: false
+    label: Ansprechpartner
+    name: Ansprechpartner
+    searchable: true
+    type: *id002
+  - containment: false
+    label: value
+    name: value
+    searchable: true
+    type: !!de.algorythm.jdoe.model.meta.propertyTypes.TReal {}
+  - containment: false
+    label: Bilder
+    name: Bilder
+    searchable: true
+    type: !!de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
+      itemType: &id004
+        embedded: false
+        label: Bild
+        name: Bild
+        properties:
+        - containment: false
+          label: Bild
+          name: Bild
+          searchable: true
+          type: !!de.algorythm.jdoe.model.meta.propertyTypes.TFile {}
+        - containment: false
+          label: Autor
+          name: Autor
+          searchable: true
+          type: *id002
+- embedded: false
+  label: Datei
+  name: Datei
+  properties:
+  - containment: false
+    label: Datei
+    name: Datei
+    searchable: true
+    type: !!de.algorythm.jdoe.model.meta.propertyTypes.TFile {}
+  - containment: false
+    label: Datei2
+    name: Datei2
+    searchable: true
+    type: !!de.algorythm.jdoe.model.meta.propertyTypes.TFile {}
+  - containment: false
+    label: Autor
+    name: Autor
+    searchable: true
+    type: *id002
+- *id004

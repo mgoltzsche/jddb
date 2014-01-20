@@ -25,6 +25,7 @@ import javafx.stage.Stage
 import javax.inject.Inject
 
 import static de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue.*
+import static javafx.application.Platform.*
 
 class StatusController implements Initializable {
 	
@@ -53,12 +54,15 @@ class StatusController implements Initializable {
 		status.text = bundle.stateReady
 		
 		// setup task details window
-		val FxmlLoaderResult<Parent, TaskListController> loaderResult = load('/fxml/task_list.fxml')
-		
-		loaderResult.controller.init(pendingTasksProperty, failedTasks)
-		
-		taskDetails.title = bundle.taskDetails
-		taskDetails.scene = new Scene(loaderResult.node, 500, 300)
+		runLater [|
+			val FxmlLoaderResult<Parent, TaskListController> loaderResult = load('/fxml/task_list.fxml')
+			
+			loaderResult.controller.init(pendingTasksProperty, failedTasks)
+			
+			taskDetails.initOwner(statusPane.scene.window)
+			taskDetails.title = bundle.taskDetails
+			taskDetails.scene = new Scene(loaderResult.node, 500, 300)
+		]
 	}
 	
 	def private showTaskDetails() {

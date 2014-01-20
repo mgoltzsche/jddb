@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public class CacheCleanDaemon<V> extends Thread {
 
-	static private final Logger LOG = LoggerFactory.getLogger(CacheCleanDaemon.class);	
+	static private final Logger log = LoggerFactory.getLogger(CacheCleanDaemon.class);	
 	
 	private final Object syncMonitor;
 	private final ReferenceQueue<V> removalQueue;
@@ -35,11 +35,17 @@ public class CacheCleanDaemon<V> extends Thread {
 					final String key = removeObj.getKey();
 					cacheMap.remove(key);
 					removeObj.clear();
-					LOG.debug("cleaned cache key " + key);
+					log.debug("cleaned cache key " + key);
 				}
 			}
 		} catch(InterruptedException e) {
-			e.printStackTrace();
+			log.debug(getName() + " interrupted / stopped");
 		}
+	}
+	
+	@Override
+	public void start() {
+		super.start();
+		log.debug(getName() + " started");
 	}
 }

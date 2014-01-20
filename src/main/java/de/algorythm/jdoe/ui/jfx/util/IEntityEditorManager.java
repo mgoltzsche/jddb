@@ -1,5 +1,7 @@
 package de.algorythm.jdoe.ui.jfx.util;
 
+import java.util.List;
+
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
 import de.algorythm.jdoe.controller.IEntitySaveResult;
@@ -16,4 +18,6 @@ public interface IEntityEditorManager {
 	void showEntityEditor(FXEntityReference entityRef, Procedure1<IEntitySaveResult> saveCallback);
 	void showEntityEditor(FXEntityReference entityRef);
 	void closeEntityEditor(FXEntityReference entityRef);
+	void closeAll();
+	List<String> getOpenEditorIDs();
 }

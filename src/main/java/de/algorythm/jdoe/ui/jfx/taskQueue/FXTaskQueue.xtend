@@ -34,6 +34,7 @@ class FXTaskQueue extends AbstractTaskQueue<FXTask> {
 	override onTaskQueued(FXTask task) {
 		runLater [|
 			pendingTasks.remove(task)
+			//FXCollections.sort(pendingTasks, FXTaskStateComparator.INSTANCE);
 			task.priority.add(task, pendingTasks)
 		]
 	}
@@ -41,6 +42,7 @@ class FXTaskQueue extends AbstractTaskQueue<FXTask> {
 	override onTaskRemoved(FXTask task) {
 		runLater [|
 			pendingTasks.remove(task)
+			//FXCollections.sort(pendingTasks, FXTaskStateComparator.INSTANCE);
 		]
 	}
 }

@@ -1,18 +1,20 @@
 package de.algorythm.jdoe.model.meta;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-public class Schema implements Serializable {
+import de.algorythm.jdoe.model.dao.ISchema;
+
+public class Schema implements ISchema {
 
 	private static final long serialVersionUID = 6465812673182870098L;
 	
 	private Collection<MEntityType> types = new LinkedList<>();
 	private transient Map<String, MEntityType> typeIndex;
-
+	
+	@Override
 	public Collection<MEntityType> getTypes() {
 		return types;
 	}
@@ -22,7 +24,17 @@ public class Schema implements Serializable {
 		typeIndex = null;
 	}
 	
+	@Override
 	public MEntityType getTypeByName(final String name) {
+		return getTypeIndex().get(name);
+	}
+	
+	@Override
+	public boolean isKnownType(final String name) {
+		return getTypeIndex().containsKey(name);
+	}
+	
+	private Map<String, MEntityType> getTypeIndex() {
 		if (typeIndex == null) {
 			typeIndex = new HashMap<String, MEntityType>();
 			
@@ -30,13 +42,6 @@ public class Schema implements Serializable {
 				typeIndex.put(type.getName(), type);
 		}
 		
-		return typeIndex.get(name);
+		return typeIndex;
 	}
-	
-	/*public Schema copy() {
-		final Schema copy = new Schema();
-		
-		for (MEntityType type : types)
-			copy.getTypes().add(type.copy());
-	}*/
 }

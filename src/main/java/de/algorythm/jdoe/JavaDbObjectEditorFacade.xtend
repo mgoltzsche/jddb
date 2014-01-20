@@ -1,9 +1,13 @@
 package de.algorythm.jdoe
 
 import de.algorythm.jdoe.bundle.Bundle
+import de.algorythm.jdoe.cache.IObjectCache
 import de.algorythm.jdoe.controller.IEntitySaveResult
+import de.algorythm.jdoe.controller.MainController
 import de.algorythm.jdoe.model.dao.IDAO
-import de.algorythm.jdoe.model.meta.MEntityType
+import de.algorythm.jdoe.taskQueue.ITaskPriority
+import de.algorythm.jdoe.taskQueue.TaskState
+import de.algorythm.jdoe.ui.jfx.controls.FXEntityDetailPopup
 import de.algorythm.jdoe.ui.jfx.loader.fxml.FxmlLoaderResult
 import de.algorythm.jdoe.ui.jfx.loader.fxml.GuiceFxmlLoader
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
@@ -13,7 +17,7 @@ import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.io.File
 import java.io.IOException
-import java.util.Collection
+import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Stage
@@ -22,33 +26,36 @@ import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.ui.jfx.controls.FXEntityDetailPopup
-import javafx.scene.Node
-import de.algorythm.jdoe.taskQueue.ITaskPriority
-import de.algorythm.jdoe.taskQueue.TaskState
+import java.util.Collection
+import de.algorythm.jdoe.model.meta.MEntityType
+import java.util.Date
 
 @Singleton
 public class JavaDbObjectEditorFacade {
 
 	static val TYPE_EDITOR_FXML = '/fxml/type_editor.fxml'
 
-	@Inject extension FXTaskQueue taskQueue
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
+	@Inject extension FXTaskQueue taskQueue
+	@Inject IObjectCache<FXEntity> entityCache
 	@Inject extension GuiceFxmlLoader
 	@Inject IEntityEditorManager editorManager
 	@Inject Bundle bundle
 	val FXEntityDetailPopup entityDetailsPopup = new FXEntityDetailPopup
+	var MainController mainController
+	var Stage primaryStage
 	
 	def startApplication(Stage primaryStage) throws IOException {
-		runLater [|
-			val FxmlLoaderResult<Parent, Object> loaderResult = load('/fxml/jdoe.fxml')
-			
-			primaryStage.title = 'jDOE'
-			primaryStage.scene = new Scene(loaderResult.node, 900, 700)
-			primaryStage.minWidth = 300
-			primaryStage.minHeight = 400
-			primaryStage.show
-		]
+		this.primaryStage = primaryStage
+		val FxmlLoaderResult<Parent, MainController> loaderResult = load('/fxml/jdoe.fxml')
+		
+		mainController = loaderResult.controller
+		
+		primaryStage.title = 'jDOE'
+		primaryStage.scene = new Scene(loaderResult.node, 900, 700)
+		primaryStage.minWidth = 300
+		primaryStage.minHeight = 400
+		primaryStage.show
 	}
 	
 	def stopApplication() {
@@ -71,7 +78,13 @@ public class JavaDbObjectEditorFacade {
 		editorManager.closeEntityEditor(entityRef)
 	}
 	
-	def void openDB(File dbFile, Procedure1<Collection<MEntityType>> callback) {
+	def closeAllEntityEditors() {
+		editorManager.closeAll
+	}
+	
+	def void openDB(File dbFile) {
+		editorManager.closeAll
+		
 		val closeTask = closeDB
 		
 		runTask('open-db', bundle.taskOpenDB, ITaskPriority.LOWER) [|
@@ -79,21 +92,55 @@ public class JavaDbObjectEditorFacade {
 				dao.open(dbFile)
 				
 				runLater [|
-					callback.apply(dao.schema.types)
+					mainController.onDatabaseOpened
 				]
 			}
 		]
 	}
 	
 	def private closeDB() {
+		mainController.onDatabaseClose
+		
 		runTask('close-db', bundle.taskCloseDB, ITaskPriority.LOWER) [|
-			if (dao.opened) {
+			if (dao.opened)
 				dao.close
-			}
 		]
 	}
 	
 	def showTypeEditor() throws IOException {
-		showWindow(TYPE_EDITOR_FXML, 'jDOE - ' + bundle.typeDefinition, 600, 500)
+		showModalWindow(TYPE_EDITOR_FXML, 'jDOE - ' + bundle.typeDefinition, primaryStage, 600, 500)
+	}
+	
+	def updateSchema(Collection<MEntityType> types) {
+		runTask('update-schema-' + new Date().time, 'Update Database schema', ITaskPriority.LOWER) [|
+			types.updateSchemaTypes
+			reloadAll
+			
+			//runTask('rebuild-index', 'Rebuild index', ITaskPriority.LOWER) [|
+				rebuildIndex
+			//]
+		]
+	}
+	
+	def private reloadAll() {
+		val openedEditorIDs = editorManager.openEditorIDs
+		
+		entityCache.clear
+		
+		runLater [|
+			editorManager.closeAll
+			mainController.onReload
+		]
+		
+		for (id : openedEditorIDs) {
+			try {
+				val entity = id.find
+				
+				runLater [|
+					editorManager.showEntityEditor(entity)
+				]
+			} catch(IllegalArgumentException e) {
+			}
+		}
 	}
 }

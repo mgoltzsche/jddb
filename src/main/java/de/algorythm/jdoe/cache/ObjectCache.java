@@ -8,13 +8,22 @@ import org.eclipse.xtext.xbase.lib.Functions.Function1;
 
 public class ObjectCache<V> implements IObjectCache<V> {
 
+	private final String name;
 	private final Map<String, ICacheReference<V>> cacheMap = new HashMap<>();
-	private final ReferenceQueue<V> removalQueue = new ReferenceQueue<>();
 	private final ICacheReferenceFactory<V> referenceFactory;
+	private ReferenceQueue<V> removalQueue;
+	private CacheCleanDaemon<V> cacheCleanDaemon;
 	
 	public ObjectCache(final String name, final ICacheReferenceFactory<V> referenceFactory) {
+		this.name = name;
 		this.referenceFactory = referenceFactory;
-		new CacheCleanDaemon<V>(name, this, removalQueue, cacheMap).start();
+		createCacheCleanDaemon();
+	}
+	
+	private void createCacheCleanDaemon() {
+		removalQueue = new ReferenceQueue<>();
+		cacheCleanDaemon = new CacheCleanDaemon<V>(name, this, removalQueue, cacheMap);
+		cacheCleanDaemon.start();
 	}
 	
 	public void put(final String key, final V obj) {
@@ -59,6 +68,22 @@ public class ObjectCache<V> implements IObjectCache<V> {
 	public int size() {
 		synchronized(this) {
 			return cacheMap.size();
+		}
+	}
+	
+	@Override
+	public void clear() {
+		synchronized(this) {
+			cacheCleanDaemon.interrupt();
+			
+			try {
+				cacheCleanDaemon.join();
+			} catch (InterruptedException e) {
+				throw new RuntimeException("Interrupted while waiting for " + cacheCleanDaemon.getName(), e);
+			}
+			
+			cacheMap.clear();
+			createCacheCleanDaemon();
 		}
 	}
 }

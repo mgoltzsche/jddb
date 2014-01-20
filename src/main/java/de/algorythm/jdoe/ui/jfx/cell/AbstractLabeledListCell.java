@@ -1,18 +1,17 @@
 package de.algorythm.jdoe.ui.jfx.cell;
 
 import javafx.beans.property.Property;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
-
-import org.eclipse.xtext.xbase.lib.Functions.Function1;
-
 import de.algorythm.jdoe.bundle.Bundle;
 import de.algorythm.jdoe.ui.jfx.model.meta.FXAbstractLabeledElement;
 
@@ -21,57 +20,47 @@ public abstract class AbstractLabeledListCell<T extends FXAbstractLabeledElement
 	static protected final Bundle bundle = Bundle.getInstance();
 	
 	static protected interface BindingHandler<T extends FXAbstractLabeledElement> {
-		<V> void doWithProperty(Property<V> targetProperty, Function1<T,Property<V>> propertyResolver);
-		<V> void doWithProperty(SingleSelectionModel<V> targetSelection, Function1<T,Property<V>> propertyResolver);
+		<V> void doWithProperty(Property<V> inputProperty, V value, ChangeListener<V> changeListener);
+		<V> void doWithProperty(SelectionModel<V> inputProperty, V value, ChangeListener<V> changeListener);
 	}
 	
-	static private class Binder<T extends FXAbstractLabeledElement> implements BindingHandler<T>  {
-		private final T object;
-		public Binder(final T object) {
-			this.object = object;
+	private final BindingHandler<T> binder = new BindingHandler<T>() {
+		@Override
+		public <V> void doWithProperty(Property<V> inputProperty, V value,
+				ChangeListener<V> changeListener) {
+			inputProperty.setValue(value);
+			inputProperty.addListener(changeListener);
 		}
 		@Override
-		public <V> void doWithProperty(final Property<V> targetProperty, final Function1<T,Property<V>> propertyResolver) {
-			final Property<V> newProperty = propertyResolver.apply(object);
-			
-			targetProperty.setValue(newProperty.getValue());
-			newProperty.bind(targetProperty);
-		}
-		@Override
-		public <V> void doWithProperty(final SingleSelectionModel<V> targetSelection,
-				final Function1<T, Property<V>> propertyResolver) {
-			final Property<V> newProperty = propertyResolver.apply(object);
-			
-			targetSelection.select(newProperty.getValue());
-			newProperty.bind(targetSelection.selectedItemProperty());
+		public <V> void doWithProperty(SelectionModel<V> model,
+				V value, ChangeListener<V> changeListener) {
+			model.select(value);
+			model.selectedItemProperty().addListener(changeListener);
 		}
 	};
 	
-	static private class Unbinder<T extends FXAbstractLabeledElement> implements BindingHandler<T>  {
-		private final T object;
-		public Unbinder(final T object) {
-			this.object = object;
+	private final BindingHandler<T> unbinder = new BindingHandler<T>() {
+		@Override
+		public <V> void doWithProperty(Property<V> inputProperty, V value,
+				ChangeListener<V> changeListener) {
+			inputProperty.removeListener(changeListener);
 		}
 		@Override
-		public <V> void doWithProperty(final Property<V> targetProperty, final Function1<T,Property<V>> propertyResolver) {
-			propertyResolver.apply(object).unbind();
-		}
-		@Override
-		public <V> void doWithProperty(final SingleSelectionModel<V> targetSelection,
-				final Function1<T, Property<V>> propertyResolver) {
-			propertyResolver.apply(object).unbind();
+		public <V> void doWithProperty(SelectionModel<V> model,
+				V value, ChangeListener<V> changeListener) {
+			model.selectedItemProperty().removeListener(changeListener);
 		}
 	};
 	
-	private Function1<T,Property<String>> LABEL_RESOLVER = new Function1<T,Property<String>>() {
+	private final ChangeListener<String> labelListener = new ChangeListener<String>() {
 		@Override
-		public Property<String> apply(T object) {
-			return object.labelProperty();
+		public void changed(ObservableValue<? extends String> c,
+				String o, String value) {
+			editItem.setLabel(value);
 		}
 	};
 	
-	
-	private T editObject;
+	private T editItem;
 	protected final VBox editor = new VBox();
 	protected final TextField labelInput = new TextField();
 	protected final Button deleteButton = new Button(bundle.delete);
@@ -80,7 +69,7 @@ public abstract class AbstractLabeledListCell<T extends FXAbstractLabeledElement
 		deleteButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent evt) {
-				getListView().getItems().remove(editObject);
+				getListView().getItems().remove(editItem);
 			}
 		});
 		
@@ -90,31 +79,28 @@ public abstract class AbstractLabeledListCell<T extends FXAbstractLabeledElement
 		editorChildren.add(deleteButton);
 	}
 	
-	protected T getEditObject() {
-		return editObject;
+	protected T getEditItem() {
+		return editItem;
 	}
 	
 	@Override
 	public void startEdit() {
 		super.startEdit();
-		System.out.println("start edit " + getItem().getLabel());
-		editObject = getItem();
+		editItem = getItem();
 		hideLabel();
-		labelInput.setText(editObject.getLabel());
-		updateEditorNodes();
+		labelInput.setText(editItem.getLabel());
 		setGraphic(editor);
-		handleBinding(new Binder<T>(editObject));
+		doWithProperties(binder);
 		labelInput.requestFocus();
 	}
 	
 	@Override
 	public void cancelEdit() {
 		super.cancelEdit();
-		System.out.println("stop edit " + editObject);
 		showLabel();
-		handleBinding(new Unbinder<T>(editObject));
+		doWithProperties(unbinder);
 		setGraphic(null);
-		editObject = null;
+		editItem = null;
 	}
 	
 	@Override
@@ -128,7 +114,7 @@ public abstract class AbstractLabeledListCell<T extends FXAbstractLabeledElement
 			showLabel();
 	}
 	
-	private void showLabel() {
+	protected void showLabel() {
 		textProperty().bind(getItem().labelProperty());
 	}
 	
@@ -139,13 +125,7 @@ public abstract class AbstractLabeledListCell<T extends FXAbstractLabeledElement
 		p.setValue(null);
 	}
 	
-	protected void handleBinding(BindingHandler<T> binder) {
-		doWithProperties(binder);
-	}
-	
 	protected void doWithProperties(final BindingHandler<T> binder) {
-		binder.doWithProperty(labelInput.textProperty(), LABEL_RESOLVER);
+		binder.doWithProperty(labelInput.textProperty(), editItem.getLabel(), labelListener);
 	}
-	
-	protected void updateEditorNodes() {}
 }

@@ -19,10 +19,12 @@ import de.algorythm.jdoe.ui.jfx.util.EntityEditorViewRegistry
 import java.io.File
 import java.io.IOException
 import java.net.URL
-import java.util.Collection
+import java.util.Collections
 import java.util.LinkedList
 import java.util.ResourceBundle
 import javafx.beans.property.SimpleStringProperty
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
 import javafx.scene.control.Button
@@ -55,7 +57,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	@FXML var MenuButton newEntityButton
 	var selectedType = MEntityTypeWildcard.INSTANCE
 	var String searchPhrase
-	var Collection<MEntityType> entityTypes
+	val ObservableList<MEntityType> entityTypes = FXCollections.observableList(newLinkedList)
 	
 	override initialize(URL url, ResourceBundle resourceBundle) {
 		tabPane = tabs
@@ -80,6 +82,11 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 		
 		typeComboBox.valueProperty.addListener [
 			setSelectedType(typeComboBox.value)
+		]
+		
+		entityTypes.addListener [
+			setupTypeSelection
+			setupNewEntityButton
 		]
 		
 		runLater [|
@@ -171,23 +178,28 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			if (!dbFile.absolutePath.endsWith('.jdoedb'))
 				dbFile = new File(dbFile.absolutePath + '.jdoedb')
 			
-			dbFile.openDatabase
+			dbFile.openDB
 		}
-	}
-	
-	def private openDatabase(File dbFile) {
-		entityTable.items.clear
-		
-		facade.openDB(dbFile) [
-			entityTypes = it
-			setupTypeSelection
-			setupNewEntityButton
-			appState.dbClosed = false
-			searchField.requestFocus
-		]
 	}
 	
 	def showTypeEditor() throws IOException {
 		facade.showTypeEditor
+	}
+	
+	def onReload() {
+		entityTable.items.all = Collections.EMPTY_LIST
+		onDatabaseOpened
+	}
+	
+	def onDatabaseOpened() {
+		entityTypes.all = schema.types
+		appState.dbClosed = false
+		searchField.requestFocus
+		search
+	}
+	
+	def onDatabaseClose() {
+		entityTable.items.clear
+		appState.dbClosed = true
 	}
 }

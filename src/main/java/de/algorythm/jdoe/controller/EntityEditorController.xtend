@@ -224,6 +224,12 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 		runTask('close-unsaved-containment-editors-' + entityReference.id, bundle.taskCloseTransientContainmentEditors, ITaskPriority.HIGHER) [|
 			for (entity : containedNewEntities.filter[e|!e.exists])
 				entity.closeEntityEditor
+			
+			// gc workaround
+			transientEntity = null
+			entityReference = null
+			saveContainmentTasks.clear
+			containedNewEntities.clear
 		]
 	}
 	

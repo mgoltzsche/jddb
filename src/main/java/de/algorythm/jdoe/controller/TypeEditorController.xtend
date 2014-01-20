@@ -1,7 +1,6 @@
 package de.algorythm.jdoe.controller
 
 import de.algorythm.jdoe.model.dao.IDAO
-import de.algorythm.jdoe.model.meta.Schema
 import de.algorythm.jdoe.ui.jfx.cell.MetamodelElementCellFactories
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
@@ -22,29 +21,30 @@ import javafx.scene.control.Button
 import javafx.scene.control.ListView
 import javax.inject.Inject
 import org.slf4j.LoggerFactory
+import de.algorythm.jdoe.JavaDbObjectEditorFacade
+import java.util.Date
+import de.algorythm.jdoe.taskQueue.ITaskPriority
 
 class TypeEditorController implements Initializable {
 
 	static val log = LoggerFactory.getLogger(typeof(TypeEditorController))
 	
+	@Inject extension JavaDbObjectEditorFacade
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension ModelTransformation
 	@Inject extension FXModelTransformation
 	@FXML var ListView<FXEntityType> typeList
 	@FXML var ListView<FXProperty> propertyList
 	@FXML var Button btnAddProperty
-	var Schema schema
 	val types = new SimpleListProperty<FXEntityType>(FXCollections.observableList(new LinkedList<FXEntityType>));
 	
 	override initialize(URL url, ResourceBundle bundle) {
-		schema = dao.schema
-		
 		// setup type list
-		types.all = transform(schema.types)
+		types.all = schema.types.transform
 		typeList.cellFactory = new MetamodelElementCellFactories.TypeCellFactory
 		typeList.editable = true
 		typeList.selectionModel.selectedItemProperty.addListener [v,o,n|
-			propertyList.itemsProperty.value = if (n == null)
+			propertyList.items = if (n == null)
 				null
 			else
 				n.propertiesProperty
@@ -60,12 +60,7 @@ class TypeEditorController implements Initializable {
 	}
 	
 	def save() {
-		try {
-			transform(types)
-			dao.schema = schema
-		} catch (IOException e) {
-			log.error('Cannot save schema', e);
-		}
+		types.transform.updateSchema
 	}
 	
 	def addType() {

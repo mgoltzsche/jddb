@@ -11,12 +11,12 @@ import java.util.ArrayList
 import java.util.LinkedList
 import javafx.beans.value.ChangeListener
 import javafx.collections.ObservableList
+import javafx.geometry.Pos
 import javafx.scene.control.CheckBox
 import javafx.scene.control.ComboBox
 import javafx.scene.layout.HBox
-import javafx.geometry.Pos
-import javafx.scene.layout.Region
 import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
 
 public class PropertyEditCell extends AbstractLabeledListCell<FXProperty> {
 	
@@ -30,17 +30,17 @@ public class PropertyEditCell extends AbstractLabeledListCell<FXProperty> {
 	val ObservableList<FXEntityType> types
 	val hBox = new HBox(5)
 	val typeComboBox = new ComboBox<IFXPropertyType>
-	val searchableCheckBox = new CheckBox(bundle.searchable)
-	val containmentCheckBox = new CheckBox(bundle.contained)
+	val checkBox = new CheckBox(bundle.searchable)
 	val spacer = new Region
-	val attributeEditElements = newLinkedList(typeComboBox, searchableCheckBox, spacer, deleteButton)
-	val referenceEditElements = newLinkedList(typeComboBox, containmentCheckBox, spacer, deleteButton)
-	
-	val ChangeListener<IFXPropertyType> typeChangeListener = [c,o,type|
-		editObject.type = type
-		
-		if (editObject != null)
-			updateEditorNodes
+	val ChangeListener<IFXPropertyType> typeChangeListener = [c,o,n|
+		editItem.type = n
+		updateCheckBox
+	]
+	val ChangeListener<Boolean> checkBoxChangeListener = [c,o,n|
+		if (editItem.type.userDefined)
+			editItem.containment = n
+		else
+			editItem.searchable = n
 	]
 	
 	new(ObservableList<FXEntityType> types) {
@@ -55,23 +55,18 @@ public class PropertyEditCell extends AbstractLabeledListCell<FXProperty> {
 		
 		HBox.setHgrow(spacer, Priority.ALWAYS)
 		hBox.alignment = Pos.BASELINE_CENTER
+		val hBoxChildren = hBox.children
+		
+		hBoxChildren += typeComboBox
+		hBoxChildren += checkBox
+		hBoxChildren += spacer
+		hBoxChildren += deleteButton
+		
 		editor.children.all = newLinkedList(labelInput, hBox)
 		
 		types.addListener [
 			updateTypeComboBox
 		]
-	}
-	
-	override startEdit() {
-		super.startEdit
-		val typeSelection = typeComboBox.selectionModel
-		typeSelection.select(editObject.type)
-		typeSelection.selectedItemProperty.addListener(typeChangeListener)
-	}
-	
-	override cancelEdit() {
-		super.cancelEdit
-		typeComboBox.selectionModel.selectedItemProperty.removeListener(typeChangeListener)
 	}
 	
 	def void updateTypeComboBox() {
@@ -104,21 +99,25 @@ public class PropertyEditCell extends AbstractLabeledListCell<FXProperty> {
 		setText(label.toString());
 	}*/
 	
-	override updateEditorNodes() {
-		hBox.children.all = if (editObject.type.userDefined)
-			referenceEditElements
-		else
-			attributeEditElements
+	override showLabel() {
+		textProperty.bind(item.labelWithTypeProperty)
 	}
 	
 	override doWithProperties(AbstractLabeledListCell.BindingHandler<FXProperty> it) {
 		super.doWithProperties(it)
 
-		doWithProperty(searchableCheckBox.selectedProperty) [
-			editObject.searchableProperty
-		]
-		doWithProperty(containmentCheckBox.selectedProperty) [
-			editObject.containmentProperty
-		]
+		updateCheckBox
+		doWithProperty(typeComboBox.selectionModel, editItem.type, typeChangeListener)
+		doWithProperty(checkBox.selectedProperty, checkBox.selected, checkBoxChangeListener)
+	}
+	
+	def private updateCheckBox() {
+		if (editItem.type.userDefined) {
+			checkBox.text = bundle.contained
+			checkBox.selected = editItem.containment
+		} else {
+			checkBox.text = bundle.searchable
+			checkBox.selected = editItem.searchable
+		}
 	}
 }

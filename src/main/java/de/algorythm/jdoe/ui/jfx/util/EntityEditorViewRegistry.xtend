@@ -2,9 +2,11 @@ package de.algorythm.jdoe.ui.jfx.util;
 
 import de.algorythm.jdoe.controller.EntityEditorController
 import de.algorythm.jdoe.controller.IEntitySaveResult
+import de.algorythm.jdoe.ui.jfx.loader.fxml.GuiceFxmlLoader
 import de.algorythm.jdoe.ui.jfx.model.FXEntityReference
 import de.algorythm.jdoe.ui.jfx.model.ViewData
-import java.util.HashMap
+import java.util.LinkedHashMap
+import java.util.LinkedList
 import javafx.scene.Node
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.Tab
@@ -13,8 +15,9 @@ import javafx.scene.layout.Region
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+
 import static javafx.application.Platform.*
-import de.algorythm.jdoe.ui.jfx.loader.fxml.GuiceFxmlLoader
+import java.util.ArrayList
 
 @Singleton
 public class EntityEditorViewRegistry implements IEntityEditorManager {
@@ -22,11 +25,20 @@ public class EntityEditorViewRegistry implements IEntityEditorManager {
 	static val EDITOR_FXML = '/fxml/entity_editor.fxml'
 	
 	@Inject extension GuiceFxmlLoader
-	val viewMap = new HashMap<String, ViewData>
+	val viewMap = new LinkedHashMap<String, ViewData>
 	var TabPane tabPane
 	
 	def void setTabPane(TabPane tabPane) {
 		this.tabPane = tabPane
+	}
+	
+	override getOpenEditorIDs() {
+		val ids = new LinkedList<String>
+		
+		for (id : viewMap.keySet)
+			ids += id
+		
+		ids
 	}
 	
 	override showEntityEditor(FXEntityReference entityRef) {
@@ -76,13 +88,18 @@ public class EntityEditorViewRegistry implements IEntityEditorManager {
 				]
 			]
 			
-			tabPane.selectionModel.select(tab)
-		} else // focus existing tab
-			tabPane.selectionModel.select(existingViewData.tab)
+			runLater [|
+				tabPane.selectionModel.select(tab)
+			]
+		} else {// focus existing tab
+			runLater [|
+				tabPane.selectionModel.select(existingViewData.tab)
+			]
+		}
 	}
 	
-	override closeEntityEditor(FXEntityReference entity) {
-		val existingTab = viewMap.get(entity.id)
+	override closeEntityEditor(FXEntityReference entityRef) {
+		val existingTab = viewMap.get(entityRef.id)
 		
 		if (existingTab != null) {
 			val tab = existingTab.tab
@@ -92,5 +109,10 @@ public class EntityEditorViewRegistry implements IEntityEditorManager {
 			
 			tabPane.tabs -= tab
 		}
+	}
+	
+	override closeAll() {
+		for (viewData : new ArrayList(viewMap.values))
+			viewData.entityRef.closeEntityEditor
 	}
 }

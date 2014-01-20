@@ -6,6 +6,7 @@ import java.net.URL;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import javax.inject.Inject;
@@ -33,14 +34,16 @@ public class GuiceFxmlLoader {
 		return new FxmlLoaderResult<N, C>(node, controller);
 	}
 	
-	public void showWindow(final String fxmlFileName, final String title, final int width, final int height) throws IOException {
+	public void showModalWindow(final String fxmlFileName, final String title, final Stage owner, final int width, final int height) throws IOException {
 		final FxmlLoaderResult<Parent, Object> loaderResult = load(fxmlFileName);
 		final Parent rootNode = loaderResult.getNode();
 		final Scene scene = new Scene(rootNode, width, height);
 		final Stage stage = new Stage();
 		
+		stage.initModality(Modality.WINDOW_MODAL);
+		stage.initOwner(owner);
 		stage.setTitle(title);
 		stage.setScene(scene);
-		stage.show();
+		stage.showAndWait();
 	}
 }

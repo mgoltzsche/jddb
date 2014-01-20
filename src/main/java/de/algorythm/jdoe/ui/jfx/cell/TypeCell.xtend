@@ -6,12 +6,16 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Region
 import javafx.scene.layout.Priority
 import javafx.geometry.Pos
+import javafx.beans.value.ChangeListener
 
 class TypeCell extends AbstractLabeledListCell<FXEntityType> {
 	
 	val hBox = new HBox
 	val spacer = new Region
 	val embedded = new CheckBox(bundle.embedded)
+	val ChangeListener<Boolean> embeddedChangeListener = [c,o,n|
+		editItem.embedded = n
+	]
 	
 	new() {
 		super()
@@ -30,11 +34,9 @@ class TypeCell extends AbstractLabeledListCell<FXEntityType> {
 		editor.children.all = newLinkedList(labelInput, hBox)
 	}
 	
-	override doWithProperties(AbstractLabeledListCell.BindingHandler<FXEntityType> binder) {
-		super.doWithProperties(binder)
+	override doWithProperties(AbstractLabeledListCell.BindingHandler<FXEntityType> it) {
+		super.doWithProperties(it)
 		
-		binder.doWithProperty(embedded.selectedProperty) [
-			embeddedProperty
-		]
+		doWithProperty(embedded.selectedProperty, editItem.embedded, embeddedChangeListener)
 	}
 }
