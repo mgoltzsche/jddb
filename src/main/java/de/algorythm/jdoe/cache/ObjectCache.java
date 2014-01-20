@@ -4,8 +4,6 @@ import java.lang.ref.ReferenceQueue;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.xtext.xbase.lib.Functions.Function1;
-
 public class ObjectCache<V> implements IObjectCache<V> {
 
 	private final String name;
@@ -22,28 +20,27 @@ public class ObjectCache<V> implements IObjectCache<V> {
 	
 	private void createCacheCleanDaemon() {
 		removalQueue = new ReferenceQueue<>();
-		cacheCleanDaemon = new CacheCleanDaemon<V>(name, this, removalQueue, cacheMap);
+		cacheCleanDaemon = new CacheCleanDaemon<V>(name, this, cacheMap, removalQueue);
 		cacheCleanDaemon.start();
 	}
 	
-	public void put(final String key, final V obj) {
-		if (obj == null)
-			throw new IllegalArgumentException("Cannot cache null");
+	@Override
+	public synchronized void put(final String key, final V value) {
+		if (key == null)
+			throw new IllegalArgumentException("Cache key cannot be null");
 		
-		synchronized(this) {
-			if (cacheMap.containsKey(key))
-				throw new IllegalArgumentException("object with key " + key + " is already cached");
-			
-			cacheMap.put(key, referenceFactory.create(key, obj, removalQueue));
-		}
+		if (value == null)
+			throw new IllegalArgumentException("Cache value cannot be null");
+		
+		if (get(key) != null)
+			throw new IllegalArgumentException("object with key " + key + " is already cached");
+		
+		cacheMap.put(key, referenceFactory.create(key, value, removalQueue));
 	}
 	
-	public V get(final String key) {
-		final ICacheReference<V> ref;
-		
-		synchronized(this) {
-			ref = cacheMap.get(key);
-		}
+	@Override
+	public synchronized V get(final String key) {
+		final ICacheReference<V> ref = cacheMap.get(key);
 		
 		if (ref == null)
 			return null;
@@ -51,39 +48,35 @@ public class ObjectCache<V> implements IObjectCache<V> {
 			return ref.get();
 	}
 	
-	public V get(final String key, final Function1<String, V> loader) {
-		synchronized(this) {
-			V value = get(key);
+	@Override
+	public synchronized V get(final String key, final ICachePopulator<V> loader) {
+		V result = get(key);
+		
+		if (result == null) {
+			result = loader.load(key);
 			
-			if (value == null) {
-				value = loader.apply(key);
-				
-				put(key, value);
-			}
-			
-			return value;
+			put(key, result);
 		}
-	}
-	
-	public int size() {
-		synchronized(this) {
-			return cacheMap.size();
-		}
+		
+		return result;
 	}
 	
 	@Override
-	public void clear() {
-		synchronized(this) {
-			cacheCleanDaemon.interrupt();
-			
-			try {
-				cacheCleanDaemon.join();
-			} catch (InterruptedException e) {
-				throw new RuntimeException("Interrupted while waiting for " + cacheCleanDaemon.getName(), e);
-			}
-			
-			cacheMap.clear();
-			createCacheCleanDaemon();
+	public synchronized int size() {
+		return cacheMap.size();
+	}
+	
+	@Override
+	public synchronized void clear() {
+		cacheCleanDaemon.interrupt();
+		
+		try {
+			cacheCleanDaemon.join();
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted while waiting for " + cacheCleanDaemon.getName(), e);
 		}
+		
+		cacheMap.clear();
+		createCacheCleanDaemon();
 	}
 }

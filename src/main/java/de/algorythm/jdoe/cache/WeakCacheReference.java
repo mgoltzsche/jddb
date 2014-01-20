@@ -14,6 +14,7 @@ public class WeakCacheReference<V> extends WeakReference<V> implements
 		this.key = key;
 	}
 
+	@Override
 	public String getKey() {
 		return key;
 	}

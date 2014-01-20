@@ -2,8 +2,9 @@ package de.algorythm.jdoe.cache;
 
 public interface IObjectCache<V> {
 
-	V get(String key);
 	void put(String key, V value);
+	V get(String key);
+	V get(String key, ICachePopulator<V> loader);
 	int size();
 	void clear();
 }
