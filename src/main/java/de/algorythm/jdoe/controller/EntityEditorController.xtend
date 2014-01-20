@@ -58,7 +58,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 		editorState.title = entityRef.labelProperty.value
 		editorState.typeName = entityRef.type.label
 		
-		runTask('load-' + entityRef.id, '''«bundle.taskLoad»: «entityRef» («entityRef.type.label»)''', ITaskPriority.HIGHER) [|
+		runTask('load-' + entityRef.id, '''«bundle.taskLoad»: «entityRef» («entityRef.type.label»)''', ITaskPriority.FIRST) [|
 			val isNew = !entityRef.exists
 			val editEntity = if (isNew)
 				entityRef as FXEntity
@@ -119,7 +119,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 			for (saveTask : saveTasks)
 				saveTask.onBefore
 			
-			runTask('''save-entity-«transientEntity.id»-«new Date().time»''', '''«bundle.taskSave»: «transientEntity» («transientEntity.type.label»)''', ITaskPriority.LOWER) [|
+			runTask('''save-entity-«transientEntity.id»-«new Date().time»''', '''«bundle.taskSave»: «transientEntity» («transientEntity.type.label»)''', ITaskPriority.LAST) [|
 				saveTasks.runSaveTasks
 				
 				// run save callback once
@@ -187,7 +187,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 		editorState.deleting = true
 		val deleteEntity = transientEntity.copy
 		
-		runTask('delete-entity-' + deleteEntity.id, '''«bundle.taskDelete»: «deleteEntity» («deleteEntity.type.label»)''', ITaskPriority.LOWER) [|
+		runTask('delete-entity-' + deleteEntity.id, '''«bundle.taskDelete»: «deleteEntity» («deleteEntity.type.label»)''', ITaskPriority.LAST) [|
 			runLater [|
 				editorState.busy = true
 			]
@@ -221,7 +221,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	def close() {
 		removeObserver(this)
 		
-		runTask('close-unsaved-containment-editors-' + entityReference.id, bundle.taskCloseTransientContainmentEditors, ITaskPriority.HIGHER) [|
+		runTask('close-unsaved-containment-editors-' + entityReference.id, bundle.taskCloseTransientContainmentEditors, ITaskPriority.FIRST) [|
 			for (entity : containedNewEntities.filter[e|!e.exists])
 				entity.closeEntityEditor
 			

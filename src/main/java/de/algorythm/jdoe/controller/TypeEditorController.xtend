@@ -1,5 +1,6 @@
 package de.algorythm.jdoe.controller
 
+import de.algorythm.jdoe.JavaDbObjectEditorFacade
 import de.algorythm.jdoe.model.dao.IDAO
 import de.algorythm.jdoe.ui.jfx.cell.MetamodelElementCellFactories
 import de.algorythm.jdoe.ui.jfx.model.FXEntity
@@ -9,7 +10,6 @@ import de.algorythm.jdoe.ui.jfx.model.meta.FXProperty
 import de.algorythm.jdoe.ui.jfx.model.meta.transform.FXModelTransformation
 import de.algorythm.jdoe.ui.jfx.model.meta.transform.ModelTransformation
 import de.algorythm.jdoe.ui.jfx.model.propertyValue.IFXPropertyValue
-import java.io.IOException
 import java.net.URL
 import java.util.LinkedList
 import java.util.ResourceBundle
@@ -20,14 +20,8 @@ import javafx.fxml.Initializable
 import javafx.scene.control.Button
 import javafx.scene.control.ListView
 import javax.inject.Inject
-import org.slf4j.LoggerFactory
-import de.algorythm.jdoe.JavaDbObjectEditorFacade
-import java.util.Date
-import de.algorythm.jdoe.taskQueue.ITaskPriority
 
 class TypeEditorController implements Initializable {
-
-	static val log = LoggerFactory.getLogger(typeof(TypeEditorController))
 	
 	@Inject extension JavaDbObjectEditorFacade
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao

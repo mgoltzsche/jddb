@@ -2,7 +2,6 @@ package de.algorythm.jdoe.ui.jfx.loader.image
 
 import de.algorythm.jdoe.cache.ObjectCache
 import de.algorythm.jdoe.cache.SoftCacheReferenceFactory
-import de.algorythm.jdoe.taskQueue.ITaskPriority
 import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.ReadOnlyBooleanProperty
@@ -16,6 +15,7 @@ import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.taskQueue.ITaskPriority
 
 class ImageLoader {
 
@@ -31,7 +31,7 @@ class ImageLoader {
 	val Function1<String, ReadOnlyObjectProperty<Image>> imageLoader = [
 		val future = new SimpleObjectProperty<Image>
 		
-		runTask('''Load image «it»''', ITaskPriority.HIGHER) [|
+		runTask('''Load image «it»''', ITaskPriority.FIRST) [|
 			loadImage(future)
 		]
 		

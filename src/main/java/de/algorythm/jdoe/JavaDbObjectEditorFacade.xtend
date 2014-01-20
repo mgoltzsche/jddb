@@ -5,7 +5,6 @@ import de.algorythm.jdoe.cache.IObjectCache
 import de.algorythm.jdoe.controller.IEntitySaveResult
 import de.algorythm.jdoe.controller.MainController
 import de.algorythm.jdoe.model.dao.IDAO
-import de.algorythm.jdoe.taskQueue.ITaskPriority
 import de.algorythm.jdoe.taskQueue.TaskState
 import de.algorythm.jdoe.ui.jfx.controls.FXEntityDetailPopup
 import de.algorythm.jdoe.ui.jfx.loader.fxml.FxmlLoaderResult
@@ -29,6 +28,7 @@ import static javafx.application.Platform.*
 import java.util.Collection
 import de.algorythm.jdoe.model.meta.MEntityType
 import java.util.Date
+import de.algorythm.jdoe.taskQueue.ITaskPriority
 
 @Singleton
 public class JavaDbObjectEditorFacade {
@@ -87,7 +87,7 @@ public class JavaDbObjectEditorFacade {
 		
 		val closeTask = closeDB
 		
-		runTask('open-db', bundle.taskOpenDB, ITaskPriority.LOWER) [|
+		runTask('open-db', bundle.taskOpenDB, ITaskPriority.LAST) [|
 			if (closeTask.state != TaskState.FAILED) {
 				dao.open(dbFile)
 				
@@ -101,7 +101,7 @@ public class JavaDbObjectEditorFacade {
 	def private closeDB() {
 		mainController.onDatabaseClose
 		
-		runTask('close-db', bundle.taskCloseDB, ITaskPriority.LOWER) [|
+		runTask('close-db', bundle.taskCloseDB, ITaskPriority.LAST) [|
 			if (dao.opened)
 				dao.close
 		]
@@ -112,7 +112,7 @@ public class JavaDbObjectEditorFacade {
 	}
 	
 	def updateSchema(Collection<MEntityType> types) {
-		runTask('update-schema-' + new Date().time, 'Update Database schema', ITaskPriority.LOWER) [|
+		runTask('update-schema-' + new Date().time, 'Update Database schema', ITaskPriority.LAST) [|
 			types.updateSchemaTypes
 			reloadAll
 			

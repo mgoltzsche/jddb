@@ -5,14 +5,14 @@ import java.util.List;
 
 public interface ITaskPriority {
 
-	static public final ITaskPriority HIGHER = new ITaskPriority() {
+	static public final ITaskPriority FIRST = new ITaskPriority() {
 		@Override
 		public <T extends ITask> void add(T task, List<T> queue) {
 			queue.add(0, task);
 		}
 	};
 	
-	static public final ITaskPriority LOWER = new ITaskPriority() {
+	static public final ITaskPriority LAST = new ITaskPriority() {
 		@Override
 		public <T extends ITask> void add(T task, List<T> queue) {
 			queue.add(task);

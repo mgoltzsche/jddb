@@ -131,7 +131,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			val hBoxChildren = hBox.children
 			val createButton = new Button(bundle.create)
 			val addEntityField = new EntityField [searchPhrase,it|
-				runTask('''search-«entityRef.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''', ITaskPriority.HIGHER) [|
+				runTask('''search-«entityRef.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''', ITaskPriority.FIRST) [|
 					all = entityType.list(searchPhrase)
 				]
 			]
@@ -255,7 +255,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			]
 		} else {
 			val entityField = new EntityField [searchPhrase,it|
-				runTask('''search-«entityRef.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''', ITaskPriority.HIGHER) [|
+				runTask('''search-«entityRef.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''', ITaskPriority.FIRST) [|
 					all = entityType.list(searchPhrase)
 				]
 			]

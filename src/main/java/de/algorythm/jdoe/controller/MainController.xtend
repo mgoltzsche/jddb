@@ -7,7 +7,6 @@ import de.algorythm.jdoe.model.dao.IObserver
 import de.algorythm.jdoe.model.dao.ModelChange
 import de.algorythm.jdoe.model.meta.MEntityType
 import de.algorythm.jdoe.model.meta.MEntityTypeWildcard
-import de.algorythm.jdoe.taskQueue.ITaskPriority
 import de.algorythm.jdoe.ui.jfx.controls.FXEntityDetailView
 import de.algorythm.jdoe.ui.jfx.controls.FXEntityTableView
 import de.algorythm.jdoe.ui.jfx.model.ApplicationStateModel
@@ -38,6 +37,7 @@ import javafx.stage.DirectoryChooser
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
+import de.algorythm.jdoe.taskQueue.ITaskPriority
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -106,7 +106,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			else
 				type
 		
-		runTask('switch-search-type', '''«bundle.taskSwitchSearchType»: «selectedType.label»''', ITaskPriority.HIGHER) [|
+		runTask('switch-search-type', '''«bundle.taskSwitchSearchType»: «selectedType.label»''', ITaskPriority.FIRST) [|
 			runLater [|
 				showListTab
 			]
@@ -160,7 +160,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def private void search() {
-		runTask('search', '''«bundle.taskSearch»: «searchPhrase» («selectedType.label»)''', ITaskPriority.HIGHER) [|
+		runTask('search', '''«bundle.taskSearch»: «searchPhrase» («selectedType.label»)''', ITaskPriority.FIRST) [|
 			val entities = dao.list(selectedType, searchPhrase)
 			
 			runLater [|
