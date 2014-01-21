@@ -12,7 +12,7 @@ import com.google.inject.Guice;
 
 public class JavaDesktopDatabase extends Application {
 
-	static private final Logger LOG = LoggerFactory.getLogger(JavaDesktopDatabase.class);
+	static private final Logger log = LoggerFactory.getLogger(JavaDesktopDatabase.class);
 	
 	@Inject
 	private JavaDesktopDatabaseFacade facade;
@@ -24,13 +24,13 @@ public class JavaDesktopDatabase extends Application {
 	@Override
 	public void start(final Stage primaryStage) throws Exception {
 		try {
-			//Thread.currentThread().setDefaultUncaughtExceptionHandler(eh);
+			Thread.setDefaultUncaughtExceptionHandler(new JavaDesktopDatabaseUncaughtExceptionHandler(primaryStage));
 			Guice.createInjector(new JavaDesktopDatabaseModule())
 					.injectMembers(this);
 	
 			facade.startApplication(primaryStage);
 		} catch(Throwable e) {
-			LOG.error("Error during application start: " + e.getMessage(), e);
+			log.error("Error during application start: " + e.getMessage(), e);
 			System.exit(1);
 		}
 	}

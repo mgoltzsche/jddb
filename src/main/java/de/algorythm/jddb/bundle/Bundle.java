@@ -14,6 +14,7 @@ public class Bundle {
 	}
 	
 	public final ResourceBundle bundle;
+	public final String close;
 	public final String typeDefinition;
 	public final String types;
 	public final String type;
@@ -71,6 +72,7 @@ public class Bundle {
 		
 		bundle = b;
 		
+		close = b.getString("close");
 		typeDefinition = b.getString("typeDefinition");
 		types = b.getString("types");
 		type = b.getString("type");
