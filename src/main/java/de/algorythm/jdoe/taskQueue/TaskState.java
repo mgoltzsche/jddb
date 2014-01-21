@@ -6,8 +6,9 @@ public enum TaskState {
 
 	QUEUED(Bundle.getInstance().stateQueued, 2),
 	RUNNING(Bundle.getInstance().stateRunning, 1),
-	COMPLETED(Bundle.getInstance().stateCompleted, 3),
-	FAILED(Bundle.getInstance().stateFailed, 4);
+	CANCELED(Bundle.getInstance().stateCanceled, 3),
+	COMPLETED(Bundle.getInstance().stateCompleted, 4),
+	FAILED(Bundle.getInstance().stateFailed, 5);
 	
 	private final String label;
 	private final int value;

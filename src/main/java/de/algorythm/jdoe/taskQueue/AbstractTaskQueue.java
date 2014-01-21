@@ -23,7 +23,7 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 				while (run || !taskQueue.isEmpty()) {
 					final T runningTask;
 					
-					synchronized(AbstractTaskQueue.this) {
+					synchronized(this) {
 						final Iterator<T> iter = taskQueue.iterator();
 						
 						if (iter.hasNext()) {
@@ -34,26 +34,29 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 					
 					if (runningTask == null) {
 						try {
-							synchronized(AbstractTaskQueue.this) {
+							synchronized(this) {
 								wait();
 							}
 						} catch (InterruptedException e) {
 							log.debug(name + " interrupted");
 						}
 					} else {
-						runningTask.setState(TaskState.RUNNING);
 						final String taskLabel = runningTask.getLabel();
 						log.debug(taskLabel);
+						runningTask.setState(TaskState.RUNNING);
 						
 						try {
 							runningTask.run();
 							runningTask.setState(TaskState.COMPLETED);
+						} catch(CancelTaskException cte) {
+							runningTask.setState(TaskState.CANCELED);
+							log.debug(taskLabel + " has been canceled: " + cte.getMessage());
 						} catch(Throwable e) {
 							log.error(taskLabel + " failed", e);
 							runningTask.setErrorMessage(createErrorMessage(e));
 							runningTask.setState(TaskState.FAILED);
 						} finally {
-							synchronized(AbstractTaskQueue.this) {
+							synchronized(this) {
 								taskQueue.remove(runningTask);
 								onTaskRemoved(runningTask);
 							}
@@ -72,7 +75,7 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 				run = false;
 				
 				try {
-					synchronized(AbstractTaskQueue.this) {
+					synchronized(runnable) {
 						log.debug("Finish current pending tasks and terminate " + name);
 						runnable.notify();
 					}
@@ -103,11 +106,12 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 		return sb.toString();
 	}
 	
-	public synchronized void runTask(final T task) {
-		taskQueue.remove(task);
-		task.getPriority().add(task, taskQueue);
-		runnable.notify();
-		onTaskQueued(task);
+	public void runTask(final T task) {
+		synchronized(runnable) {
+			task.getPriority().add(task, taskQueue);
+			runnable.notify();
+			onTaskQueued(task);
+		}
 	}
 	
 	protected void onTaskQueued(T task) {}

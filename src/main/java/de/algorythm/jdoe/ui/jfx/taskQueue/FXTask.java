@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.algorythm.jdoe.taskQueue.CancelTaskException;
 import de.algorythm.jdoe.taskQueue.ITask;
 import de.algorythm.jdoe.taskQueue.ITaskPriority;
 import de.algorythm.jdoe.taskQueue.TaskState;
@@ -20,7 +21,8 @@ public class FXTask implements ITask {
 	private final ITaskPriority priority;
 	private final Runnable task;
 	private String errorMessage;
-	private SimpleObjectProperty<TaskState> state = new SimpleObjectProperty<>(TaskState.QUEUED);
+	private TaskState state;
+	private SimpleObjectProperty<TaskState> stateProperty = new SimpleObjectProperty<>(TaskState.QUEUED);
 	
 	public FXTask(final String id, final String label, final ITaskPriority priority, final Runnable task) {
 		this.id = id;
@@ -51,11 +53,13 @@ public class FXTask implements ITask {
 
 	@Override
 	public void setState(final TaskState updatedState) {
+		state = updatedState;
+		
 		try {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					state.set(updatedState);
+					stateProperty.set(updatedState);
 				}
 			});
 		} catch(Throwable e) {
@@ -65,7 +69,7 @@ public class FXTask implements ITask {
 	
 	@Override
 	public TaskState getState() {
-		return state.get();
+		return state;
 	}
 	
 	@Override
@@ -78,8 +82,18 @@ public class FXTask implements ITask {
 		this.errorMessage = errorMessage;
 	}
 	
+	@Override
+	public void requireCompleted() throws CancelTaskException {
+		switch(state) {
+		case COMPLETED: break;
+		case FAILED: throw new CancelTaskException("required task " + label + " failed");
+		case CANCELED: throw new CancelTaskException("required task " + label + " is canceled");
+		default: throw new IllegalStateException("Invalid API usage. " + label + " didn't run");
+		}
+	}
+	
 	public ReadOnlyObjectProperty<TaskState> stateProperty() {
-		return state;
+		return stateProperty;
 	}
 	
 	@Override

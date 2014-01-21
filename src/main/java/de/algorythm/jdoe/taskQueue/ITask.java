@@ -7,4 +7,5 @@ public interface ITask extends ITaskResult {
 	ITaskPriority getPriority();
 	void setState(TaskState state);
 	void setErrorMessage(String errorMessage);
+	void run() throws CancelTaskException;
 }

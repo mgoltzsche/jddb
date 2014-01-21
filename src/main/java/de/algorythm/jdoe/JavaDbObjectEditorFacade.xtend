@@ -5,7 +5,8 @@ import de.algorythm.jdoe.cache.IObjectCache
 import de.algorythm.jdoe.controller.IEntitySaveResult
 import de.algorythm.jdoe.controller.MainController
 import de.algorythm.jdoe.model.dao.IDAO
-import de.algorythm.jdoe.taskQueue.TaskState
+import de.algorythm.jdoe.model.meta.MEntityType
+import de.algorythm.jdoe.taskQueue.ITaskPriority
 import de.algorythm.jdoe.ui.jfx.controls.FXEntityDetailPopup
 import de.algorythm.jdoe.ui.jfx.loader.fxml.FxmlLoaderResult
 import de.algorythm.jdoe.ui.jfx.loader.fxml.GuiceFxmlLoader
@@ -16,6 +17,8 @@ import de.algorythm.jdoe.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jdoe.ui.jfx.util.IEntityEditorManager
 import java.io.File
 import java.io.IOException
+import java.util.Collection
+import java.util.Date
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -25,10 +28,6 @@ import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
-import java.util.Collection
-import de.algorythm.jdoe.model.meta.MEntityType
-import java.util.Date
-import de.algorythm.jdoe.taskQueue.ITaskPriority
 
 @Singleton
 public class JavaDbObjectEditorFacade {
@@ -88,13 +87,12 @@ public class JavaDbObjectEditorFacade {
 		val closeTask = closeDB
 		
 		runTask('open-db', bundle.taskOpenDB, ITaskPriority.LAST) [|
-			if (closeTask.state != TaskState.FAILED) {
-				dao.open(dbFile)
-				
-				runLater [|
-					mainController.onDatabaseOpened
-				]
-			}
+			closeTask.requireCompleted
+			dao.open(dbFile)
+			
+			runLater [|
+				mainController.onDatabaseOpened
+			]
 		]
 	}
 	
@@ -112,13 +110,14 @@ public class JavaDbObjectEditorFacade {
 	}
 	
 	def updateSchema(Collection<MEntityType> types) {
-		runTask('update-schema-' + new Date().time, 'Update Database schema', ITaskPriority.LAST) [|
+		val updateSchemaTask = runTask('update-schema-' + new Date().time, bundle.updateDatabaseSchema, ITaskPriority.LAST) [|
 			types.updateSchemaTypes
 			reloadAll
-			
-			//runTask('rebuild-index', 'Rebuild index', ITaskPriority.LOWER) [|
-				rebuildIndex
-			//]
+		]
+		
+		runTask('rebuild-db-index', bundle.rebuildSearchIndex, ITaskPriority.LAST) [|
+			updateSchemaTask.requireCompleted
+			rebuildIndex
 		]
 	}
 	

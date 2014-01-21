@@ -39,10 +39,13 @@ public class Bundle {
 	public final String newEntity;
 	public final String results;
 	public final String entity;
+	public final String updateDatabaseSchema;
+	public final String rebuildSearchIndex;
 	
 	public final String stateReady;
 	public final String stateQueued;
 	public final String stateRunning;
+	public final String stateCanceled;
 	public final String stateCompleted;
 	public final String stateFailed;
 	public final String taskOpenDB;
@@ -90,11 +93,14 @@ public class Bundle {
 		newEntity = b.getString("newEntity");
 		results = b.getString("results");
 		entity = b.getString("entity");
+		updateDatabaseSchema = b.getString("updateDatabaseSchema");
+		rebuildSearchIndex = b.getString("rebuildSearchIndex");
 		yes = b.getString("yes");
 		no = b.getString("no");
 		stateReady = b.getString("stateReady");
 		stateQueued = b.getString("stateQueued");
 		stateRunning = b.getString("stateRunning");
+		stateCanceled = b.getString("stateCanceled");
 		stateCompleted = b.getString("stateCompleted");
 		stateFailed = b.getString("stateFailed");
 		taskOpenDB = b.getString("taskOpenDB");

@@ -1,7 +1,8 @@
 package de.algorythm.jdoe.taskQueue;
 
-public interface ITaskResult extends Runnable {
+public interface ITaskResult {
 
 	TaskState getState();
 	String getErrorMessage();
+	void requireCompleted() throws CancelTaskException;
 }

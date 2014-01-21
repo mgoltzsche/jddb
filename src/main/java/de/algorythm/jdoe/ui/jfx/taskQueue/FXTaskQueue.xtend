@@ -3,7 +3,7 @@ package de.algorythm.jdoe.ui.jfx.taskQueue
 import de.algorythm.jdoe.taskQueue.AbstractTaskQueue
 import de.algorythm.jdoe.taskQueue.ITaskPriority
 import de.algorythm.jdoe.taskQueue.ITaskResult
-import java.util.LinkedList
+import java.util.ArrayList
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
@@ -13,10 +13,10 @@ import static javafx.application.Platform.*
 
 class FXTaskQueue extends AbstractTaskQueue<FXTask> {
 	
-	static val pendingTasks = new SimpleListProperty<FXTask>(FXCollections.observableList(new LinkedList<FXTask>))
+	static val pendingTasksProperty = new SimpleListProperty<FXTask>(FXCollections.observableList(new ArrayList<FXTask>))
 	
 	def static ReadOnlyListProperty<FXTask> pendingTasksProperty() {
-		pendingTasks
+		pendingTasksProperty
 	}
 	
 	new(String name) {
@@ -33,16 +33,13 @@ class FXTaskQueue extends AbstractTaskQueue<FXTask> {
 	
 	override onTaskQueued(FXTask task) {
 		runLater [|
-			pendingTasks.remove(task)
-			//FXCollections.sort(pendingTasks, FXTaskStateComparator.INSTANCE);
-			task.priority.add(task, pendingTasks)
+			task.priority.add(task, pendingTasksProperty)
 		]
 	}
 	
 	override onTaskRemoved(FXTask task) {
 		runLater [|
-			pendingTasks.remove(task)
-			//FXCollections.sort(pendingTasks, FXTaskStateComparator.INSTANCE);
+			pendingTasksProperty.remove(task)
 		]
 	}
 }
