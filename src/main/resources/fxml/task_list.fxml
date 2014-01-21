@@ -8,7 +8,7 @@
 <?import javafx.scene.control.Label?>
 
 <TabPane xmlns:fx="http://javafx.com/fxml"
-		fx:controller="de.algorythm.jdoe.controller.TaskListController">
+		fx:controller="de.algorythm.jddb.controller.TaskListController">
 	<tabs>
 		<Tab text="%tasksQueued" closable="false">
 			<ListView fx:id="pendingList"/>

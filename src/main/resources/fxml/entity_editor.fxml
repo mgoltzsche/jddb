@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import de.algorythm.jdoe.ui.jfx.model.EditorStateModel?>
+<?import de.algorythm.jddb.ui.jfx.model.EditorStateModel?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.control.ToolBar?>
@@ -15,11 +15,11 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.control.Label?>
-<?import de.algorythm.jdoe.ui.jfx.model.EditorStateModel?>
+<?import de.algorythm.jddb.ui.jfx.model.EditorStateModel?>
 <?import javafx.scene.layout.Region?>
 
 <SplitPane xmlns:fx="http://javafx.com/fxml"
-		fx:controller="de.algorythm.jdoe.controller.EntityEditorController"
+		fx:controller="de.algorythm.jddb.controller.EntityEditorController"
 		stylesheets="/styles/formstate.css"
 		dividerPositions="1.0, 0.3"
 		fx:id="editorPane">

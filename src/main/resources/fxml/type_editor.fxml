@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.Region?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-		fx:controller="de.algorythm.jdoe.controller.TypeEditorController">
+		fx:controller="de.algorythm.jddb.controller.TypeEditorController">
 	<center>
 		<SplitPane dividerPositions="0.4,0.6">
 			<BorderPane>

@@ -9,7 +9,7 @@
 <?import javafx.geometry.Insets?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
-		fx:controller="de.algorythm.jdoe.controller.StatusController"
+		fx:controller="de.algorythm.jddb.controller.StatusController"
 		alignment="CENTER_LEFT"
 		fx:id="statusPane">
 	<ProgressBar fx:id="progress" styleClass="taskProgress" prefWidth="Infinity" maxHeight="Infinity" progress="1.0"/>

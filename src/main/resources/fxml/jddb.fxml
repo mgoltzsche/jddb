@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitPane?>
+<?import de.algorythm.jddb.ui.jfx.model.ApplicationStateModel?>
+<?import de.algorythm.jddb.ui.jfx.controls.FXEntityTableView?>
+<?import de.algorythm.jddb.ui.jfx.controls.FXEntityDetailView?>
+<?import javafx.scene.control.ScrollPane?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+	fx:controller="de.algorythm.jddb.controller.MainController"
+	stylesheets="/styles/color.css">
+	<fx:define>
+		<ApplicationStateModel fx:id="appState"/>
+	</fx:define>
+	<top>
+		<ToolBar>
+			<Label fx:id="currentDatabaseLabel"/>
+			<Button text="%open" onAction="#showDatabaseOpenDialog" fx:id="openDbButton"/>
+			<Button text="%configure" onAction="#showTypeEditor" disable="${appState.dbClosed}"/>
+			<Region HBox.hgrow="ALWAYS"/>
+			<TextField fx:id="searchField" promptText="%search"
+				prefWidth="200" disable="${appState.dbClosed}"/>
+			<ComboBox fx:id="typeComboBox" prefWidth="90" disable="${appState.dbClosed}"/>
+			<Region HBox.hgrow="ALWAYS"/>
+			<MenuButton fx:id="newEntityButton" text="%newEntity" disable="${appState.dbClosed}"/>
+		</ToolBar>
+	</top>
+	<center>
+		<TabPane fx:id="tabs" disable="${appState.dbClosed}">
+			<tabs>
+				<Tab fx:id="listTab" id="list" text="%results" closable="false">
+					<SplitPane dividerPositions="1.0, 0.3" fx:id="resultPane">
+						<FXEntityTableView fx:id="entityTable" />
+						<ScrollPane>
+							<FXEntityDetailView fx:id="entityDetails" visible="${resultPane.visible}" />
+						</ScrollPane>
+					</SplitPane>
+				</Tab>
+			</tabs>
+		</TabPane>
+	</center>
+	<bottom>
+		<fx:include source="/fxml/status.fxml"/>
+	</bottom>
+</BorderPane>

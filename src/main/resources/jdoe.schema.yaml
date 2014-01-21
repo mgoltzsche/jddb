@@ -1,4 +1,4 @@
-!!de.algorythm.jdoe.model.meta.Schema
+!!de.algorythm.jddb.model.meta.Schema
 types:
 - &id002
   embedded: false
@@ -9,12 +9,12 @@ types:
     label: Name
     name: Name
     searchable: true
-    type: !!de.algorythm.jdoe.model.meta.propertyTypes.TString {}
+    type: !!de.algorythm.jddb.model.meta.propertyTypes.TString {}
   - containment: true
     label: Adresse
     name: Adresse
     searchable: true
-    type: !!de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
+    type: !!de.algorythm.jddb.model.meta.propertyTypes.CollectionType
       itemType: &id003
         embedded: true
         label: Adresse
@@ -24,7 +24,7 @@ types:
           label: Straße / Hausnr.
           name: StraeHausnr
           searchable: true
-          type: &id001 !!de.algorythm.jdoe.model.meta.propertyTypes.TString {}
+          type: &id001 !!de.algorythm.jddb.model.meta.propertyTypes.TString {}
         - containment: false
           label: Stadt
           name: Stadt
@@ -34,22 +34,22 @@ types:
           label: PLZ
           name: PLZ
           searchable: true
-          type: !!de.algorythm.jdoe.model.meta.propertyTypes.TDecimal {}
+          type: !!de.algorythm.jddb.model.meta.propertyTypes.TDecimal {}
         - containment: false
           label: Zusatz
           name: Zusatz
           searchable: true
-          type: !!de.algorythm.jdoe.model.meta.propertyTypes.TText {}
+          type: !!de.algorythm.jddb.model.meta.propertyTypes.TText {}
   - containment: false
     label: Geburtstag
     name: Geburtstag
     searchable: true
-    type: !!de.algorythm.jdoe.model.meta.propertyTypes.TDate {}
+    type: !!de.algorythm.jddb.model.meta.propertyTypes.TDate {}
   - containment: false
     label: Bekannte
     name: Bekannte
     searchable: true
-    type: !!de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
+    type: !!de.algorythm.jddb.model.meta.propertyTypes.CollectionType
       itemType: *id002
 - *id003
 - embedded: false
@@ -70,12 +70,12 @@ types:
     label: value
     name: value
     searchable: true
-    type: !!de.algorythm.jdoe.model.meta.propertyTypes.TReal {}
+    type: !!de.algorythm.jddb.model.meta.propertyTypes.TReal {}
   - containment: false
     label: Bilder
     name: Bilder
     searchable: true
-    type: !!de.algorythm.jdoe.model.meta.propertyTypes.CollectionType
+    type: !!de.algorythm.jddb.model.meta.propertyTypes.CollectionType
       itemType: &id004
         embedded: false
         label: Bild
@@ -85,7 +85,7 @@ types:
           label: Bild
           name: Bild
           searchable: true
-          type: !!de.algorythm.jdoe.model.meta.propertyTypes.TFile {}
+          type: !!de.algorythm.jddb.model.meta.propertyTypes.TFile {}
         - containment: false
           label: Autor
           name: Autor
@@ -99,12 +99,12 @@ types:
     label: Datei
     name: Datei
     searchable: true
-    type: !!de.algorythm.jdoe.model.meta.propertyTypes.TFile {}
+    type: !!de.algorythm.jddb.model.meta.propertyTypes.TFile {}
   - containment: false
     label: Datei2
     name: Datei2
     searchable: true
-    type: !!de.algorythm.jdoe.model.meta.propertyTypes.TFile {}
+    type: !!de.algorythm.jddb.model.meta.propertyTypes.TFile {}
   - containment: false
     label: Autor
     name: Autor
