@@ -31,11 +31,8 @@ public abstract class AbstractFXPropertyValue<V> implements IFXPropertyValue<V>,
 	
 	@Override
 	public void setValue(final V value) {
-		changeHandler.changeValue(this, value);
-	}
-	
-	public void setPristineValue(final V value) {
 		this.value = value;
+		changeHandler.changeValue(this, value);
 	}
 	
 	public abstract void setObservableValue(final V value);

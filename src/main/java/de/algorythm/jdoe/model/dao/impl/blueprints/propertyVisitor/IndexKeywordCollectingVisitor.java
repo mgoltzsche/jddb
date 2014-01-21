@@ -65,9 +65,9 @@ public class IndexKeywordCollectingVisitor<REF extends IEntityReference> impleme
 	@Override
 	public void doWithFile(final IPropertyValue<String,?> propertyValue) {
 		if (propertyValue.getProperty().isSearchable()) {
-			final String value = propertyValue.toString();
+			final String value = propertyValue.getValue();
 			
-			if (!value.isEmpty()) {
+			if (value != null && !value.isEmpty()) {
 				final String fileName = new File(value).getName();
 				
 				indexKeywords.add(value);
@@ -80,11 +80,16 @@ public class IndexKeywordCollectingVisitor<REF extends IEntityReference> impleme
 	
 	private void addIndexKeywords(IPropertyValue<?,?> propertyValue) {
 		if (propertyValue.getProperty().isSearchable()) {
-			final String value = propertyValue.toString();
+			final Object value = propertyValue.getValue();
 			
-			if (!value.isEmpty())
-				for (String keyword : truncatedKeywords(value))
-					indexKeywords.add(keyword);
+			if (value != null) {
+				final String valueStr = value.toString();
+				
+				if (!valueStr.isEmpty()) {
+					for (String keyword : truncatedKeywords(valueStr))
+						indexKeywords.add(keyword);
+				}
+			}
 		}
 	}
 	

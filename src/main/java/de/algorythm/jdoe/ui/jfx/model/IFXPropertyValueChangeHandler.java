@@ -7,9 +7,7 @@ public interface IFXPropertyValueChangeHandler {
 	static public final IFXPropertyValueChangeHandler DEFAULT = new IFXPropertyValueChangeHandler() {
 		
 		@Override
-		public <V> void changeValue(final AbstractFXPropertyValue<V> propertyValue, final V value) {
-			propertyValue.setPristineValue(value);
-		}
+		public <V> void changeValue(final AbstractFXPropertyValue<V> propertyValue, final V value) {}
 		
 		@Override
 		public void valueChanged() {}
