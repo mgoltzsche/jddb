@@ -246,6 +246,14 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 
 	@Override
 	public void delete(final REF entityRef) {
+		delete(entityRef, new HashSet<REF>());
+	}
+	
+	@Override
+	public void delete(final REF entityRef, final Set<REF> deletedEntities) {
+		if (!deletedEntities.add(entityRef))
+			return;
+		
 		final Vertex vertex;
 
 		try {
@@ -259,7 +267,7 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 		final V entity = createEntity(vertex);
 		final Set<String> indexKeywords = new HashSet<>();
 		final DeleteVisitor<V, P, REF> visitor = new DeleteVisitor<>(this,
-				WORD_PATTERN, indexKeywords);
+				WORD_PATTERN, indexKeywords, deletedEntities);
 
 		change.setNewOrDeleted(true);
 		change.getDeleted().add(entity);

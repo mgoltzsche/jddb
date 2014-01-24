@@ -11,17 +11,19 @@ import de.algorythm.jddb.model.entity.IPropertyValue;
 public class DeleteVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> extends IndexKeywordCollectingVisitor<REF> {
 	
 	private final IDAOVisitorContext<V,P,REF> dao;
+	private final Set<REF> deletedEntities;
 	
-	public DeleteVisitor(final IDAOVisitorContext<V,P,REF> dao, final Pattern wordPattern, final Set<String> indexKeywords) {
+	public DeleteVisitor(final IDAOVisitorContext<V,P,REF> dao, final Pattern wordPattern, final Set<String> indexKeywords, final Set<REF> deletedEntities) {
 		super(wordPattern, indexKeywords);
 		this.dao = dao;
+		this.deletedEntities = deletedEntities;
 	}
 	
 	@Override
 	public void doWithAssociations(final IPropertyValue<Collection<REF>,REF> propertyValue) {
 		if (propertyValue.getProperty().isContainment())
 			for (REF entityRef : propertyValue.getValue())
-				dao.delete(entityRef);
+				dao.delete(entityRef, deletedEntities);
 	}
 	
 	@Override
@@ -30,7 +32,7 @@ public class DeleteVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?,
 			final REF entityRef = propertyValue.getValue();
 			
 			if (entityRef != null)
-				dao.delete(entityRef);
+				dao.delete(entityRef, deletedEntities);
 		}
 	}
 }

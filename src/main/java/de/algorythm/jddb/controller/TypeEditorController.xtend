@@ -13,24 +13,31 @@ import de.algorythm.jddb.ui.jfx.model.propertyValue.IFXPropertyValue
 import java.net.URL
 import java.util.LinkedList
 import java.util.ResourceBundle
+import javafx.beans.InvalidationListener
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
-import javafx.scene.control.Button
 import javafx.scene.control.ListView
 import javax.inject.Inject
+import javafx.beans.Observable
+import java.util.LinkedHashSet
+import java.util.HashSet
+import javafx.beans.property.SimpleStringProperty
 
-class TypeEditorController implements Initializable {
+class TypeEditorController implements Initializable, InvalidationListener {
 	
 	@Inject extension JavaDesktopDatabaseFacade
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
-	@Inject extension ModelTransformation
+	extension ModelTransformation = new ModelTransformation(this)
 	@Inject extension FXModelTransformation
 	@FXML var ListView<FXEntityType> typeList
 	@FXML var ListView<FXProperty> propertyList
-	@FXML var Button btnAddProperty
-	val types = new SimpleListProperty<FXEntityType>(FXCollections.observableList(new LinkedList<FXEntityType>));
+	val types = new SimpleListProperty<FXEntityType>(FXCollections.observableList(new LinkedList<FXEntityType>))
+	val noTypeSelectedProperty = new SimpleBooleanProperty(true)
+	val unsavableProperty = new SimpleBooleanProperty(true)
+	val errorMessageProperty = new SimpleStringProperty()
 	
 	override initialize(URL url, ResourceBundle bundle) {
 		// setup type list
@@ -49,8 +56,44 @@ class TypeEditorController implements Initializable {
 		propertyList.cellFactory = new MetamodelElementCellFactories.PropertyCellFactory(types)
 		propertyList.editable = true
 		propertyList.itemsProperty.addListener [v,o,n|
-			btnAddProperty.disable = n == null
+			noTypeSelectedProperty.value = n == null
 		]
+	}
+	
+	def getErrorMessage() {
+		errorMessageProperty.value
+	}
+	
+	def setErrorMessage(String value) {
+		errorMessageProperty.value = value
+	}
+	
+	def errorMessageProperty() {
+		errorMessageProperty
+	}
+	
+	def isUnsavable() {
+		unsavableProperty.value
+	}
+	
+	def setUnsavable(Boolean value) {
+		unsavableProperty.value = value
+	}
+	
+	def unsavableProperty() {
+		unsavableProperty
+	}
+	
+	def isNoTypeSelected() {
+		noTypeSelectedProperty.value
+	}
+	
+	def setNoTypeSelected(Boolean value) {
+		noTypeSelectedProperty.value = value
+	}
+	
+	def noTypeSelectedProperty() {
+		noTypeSelectedProperty
 	}
 	
 	def save() {
@@ -58,10 +101,40 @@ class TypeEditorController implements Initializable {
 	}
 	
 	def addType() {
-		types += new FXEntityType
+		types += new FXEntityType(this)
 	}
 	
 	def addProperty() {
-		propertyList.itemsProperty.value += new FXProperty
+		propertyList.itemsProperty.value += new FXProperty(this)
+	}
+	
+	override invalidated(Observable property) {
+		validate
+	}
+	
+	def validate() {
+		val errors = new LinkedHashSet<String>
+		val typeNames = new HashSet<String>
+		
+		for (type : types) {
+			val typeLabel = type.label
+			val propertyNames = new HashSet<String>
+			
+			if (typeLabel.empty)
+				errors += "Empty type label(s)"
+			else if (!typeNames.add(typeLabel))
+				errors += "Duplicate type label: " + typeLabel
+			
+			for (property : type.properties) {
+				val propertyLabel = property.label
+				if (propertyLabel.empty)
+					errors += "Empty property label(s) in type: " + typeLabel
+				else if (!propertyNames.add(propertyLabel))
+					errors += "Duplicate property label " + propertyLabel + " in " + typeLabel
+			}
+		}
+		
+		unsavableProperty.value = !errors.empty
+		errorMessageProperty.value = errors.join('\n')
 	}
 }

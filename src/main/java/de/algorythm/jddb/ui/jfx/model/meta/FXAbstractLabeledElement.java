@@ -2,29 +2,30 @@ package de.algorythm.jddb.ui.jfx.model.meta;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import de.algorythm.jddb.bundle.Bundle;
 
 public class FXAbstractLabeledElement {
 	
 	static private int internalIdCounter = 0;
 
 	private int internalId = ++internalIdCounter;
-	protected final StringProperty label = new SimpleStringProperty();
+	protected final SimpleStringProperty labelProperty = new SimpleStringProperty(Bundle.getInstance().unknown);
 	
 	public StringProperty labelProperty() {
-		return label;
+		return labelProperty;
 	}
 	
 	public String getLabel() {
-		return label.get();
+		return labelProperty.get();
 	}
 	
 	public void setLabel(final String label) {
-		this.label.set(label);
+		labelProperty.set(label);
 	}
-
+	
 	@Override
 	public String toString() {
-		return label.get();
+		return labelProperty.get();
 	}
 	
 	@Override

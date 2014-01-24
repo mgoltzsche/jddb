@@ -3,21 +3,27 @@ package de.algorythm.jddb.ui.jfx.model.meta;
 import java.util.LinkedList;
 import java.util.List;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public class FXEntityType extends FXAbstractLabeledElement implements IFXPropertyType {
+public class FXEntityType extends FXAbstractLabeledChangable implements IFXPropertyType {
 
 	private final BooleanProperty embedded = new SimpleBooleanProperty();
 	private final ObservableList<FXProperty> properties = FXCollections.observableList(new LinkedList<FXProperty>());
 
+	public FXEntityType(final InvalidationListener invalidationListener) {
+		super(invalidationListener);
+	}
+	
 	public Property<Boolean> embeddedProperty() {
 		return embedded;
 	}
 	
+	@Override
 	public Boolean isEmbedded() {
 		return embedded.get();
 	}
@@ -35,7 +41,7 @@ public class FXEntityType extends FXAbstractLabeledElement implements IFXPropert
 	}
 	
 	@Override
-	public boolean isUserDefined() {
+	public Boolean isUserDefined() {
 		return Boolean.TRUE;
 	}
 }

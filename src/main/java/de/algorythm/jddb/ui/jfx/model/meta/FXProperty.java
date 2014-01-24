@@ -1,6 +1,6 @@
 package de.algorythm.jddb.ui.jfx.model.meta;
 
-import de.algorythm.jddb.model.meta.propertyTypes.TString;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
@@ -10,8 +10,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import de.algorythm.jddb.model.meta.propertyTypes.TString;
 
-public class FXProperty extends FXAbstractLabeledElement {
+public class FXProperty extends FXAbstractLabeledChangable {
 
 	private final Property<String> labelWithTypeProperty = new SimpleStringProperty();
 	private final ObjectProperty<IFXPropertyType> type = new SimpleObjectProperty<IFXPropertyType>(new FXAttributeType(new TString()));
@@ -26,8 +27,10 @@ public class FXProperty extends FXAbstractLabeledElement {
 		}
 	};
 	
-	public FXProperty() {
-		label.addListener(new ChangeListener<String>() {
+	public FXProperty(final InvalidationListener invalidationListener) {
+		super(invalidationListener);
+		
+		labelProperty.addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> c,
 					String o, String n) {
@@ -49,7 +52,7 @@ public class FXProperty extends FXAbstractLabeledElement {
 	}
 	
 	private void updateLabelWithTypeProperty() {
-		labelWithTypeProperty.setValue(label.get() + " (" + type.get().getLabel() + ")");
+		labelWithTypeProperty.setValue(labelProperty.get() + " (" + type.get().getLabel() + ")");
 	}
 	
 	public ReadOnlyProperty<String> labelWithTypeProperty() {

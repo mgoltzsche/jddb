@@ -365,9 +365,10 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	}
 
 	override doWithDate(DateFXAttributeValue propertyValue) {
-		val format = new SimpleDateFormat
+		val format = new SimpleDateFormat()
 		val textField = new TextField(propertyValue.toString)
 		
+		textField.promptText = format.toLocalizedPattern
 		textField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
 		
 		textField.assign [

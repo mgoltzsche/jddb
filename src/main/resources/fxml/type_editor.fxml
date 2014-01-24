@@ -16,6 +16,9 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
 		fx:controller="de.algorythm.jddb.controller.TypeEditorController">
+	<top>
+		<Label text="${controller.errorMessage}" styleClass="error"/>
+	</top>
 	<center>
 		<SplitPane dividerPositions="0.4,0.6">
 			<BorderPane>
@@ -35,7 +38,7 @@
 					<ToolBar>
 						<Label text="%properties"/>
 						<Region prefWidth="30"/>
-						<Button fx:id="btnAddProperty" text="%add" onAction="#addProperty" styleClass="toolbar-button" disable="true"/>
+						<Button fx:id="btnAddProperty" text="%add" onAction="#addProperty" styleClass="toolbar-button" disable="${controller.noTypeSelected}"/>
 					</ToolBar>
 				</top>
 				<center>
@@ -45,6 +48,6 @@
 		</SplitPane>
 	</center>
 	<bottom>
-		<Button text="%save" onAction="#save"/>
+		<Button text="%save" onAction="#save" disable="${controller.unsavable}"/>
 	</bottom>
 </BorderPane>

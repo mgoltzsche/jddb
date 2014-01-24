@@ -112,7 +112,12 @@ public class PropertyEditCell extends AbstractLabeledListCell<FXProperty> {
 	}
 	
 	def private updateCheckBox() {
+		checkBox.disable = editItem.type.embedded
+		
 		if (editItem.type.userDefined) {
+			if (editItem.type.embedded)
+				editItem.containment = true
+			
 			checkBox.text = bundle.contained
 			checkBox.selected = editItem.containment
 		} else {

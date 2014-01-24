@@ -35,7 +35,7 @@ public class JavaDesktopDatabaseUncaughtExceptionHandler implements UncaughtExce
 			val stage = new Stage
 			val vBox = new VBox(5)
 			val hBox = new HBox
-			val label = new Label('Due to a fatal unexpected error Java Desktop Database must be terminated.\n\nStack trace:')
+			val label = new Label('Sorry, Java Desktop Database must be terminated due to a fatal error:')
 			val infoArea = new TextArea
 			val stackTraceWriter = new StringWriter
 			val closeBtn = new Button(bundle.close)
@@ -61,7 +61,7 @@ public class JavaDesktopDatabaseUncaughtExceptionHandler implements UncaughtExce
 			stage.initModality(Modality.APPLICATION_MODAL)
 			stage.initOwner(primaryStage)
 			stage.scene = new Scene(vBox)
-			stage.title = 'Fatal Error'
+			stage.title = 'FATAL ERROR'
 			stage.scene.stylesheets += getClass.getResource('/styles/color.css').toExternalForm
 			
 			stage.showAndWait

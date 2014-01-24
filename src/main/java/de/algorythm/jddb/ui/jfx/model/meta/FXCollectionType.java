@@ -8,7 +8,7 @@ public class FXCollectionType extends FXAbstractLabeledElement implements IFXPro
 	
 	public FXCollectionType(final FXEntityType itemType) {
 		this.itemType = itemType;
-		label.bind(itemType.labelProperty().concat(" (" + Bundle.getInstance().dataSet + ")"));
+		labelProperty.bind(itemType.labelProperty().concat(" (" + Bundle.getInstance().dataSet + ")"));
 	}
 	
 	public FXEntityType getItemType() {
@@ -16,7 +16,12 @@ public class FXCollectionType extends FXAbstractLabeledElement implements IFXPro
 	}
 	
 	@Override
-	public boolean isUserDefined() {
-		return Boolean.TRUE;
+	public Boolean isUserDefined() {
+		return itemType.isUserDefined();
+	}
+	
+	@Override
+	public Boolean isEmbedded() {
+		return itemType.isEmbedded();
 	}
 }

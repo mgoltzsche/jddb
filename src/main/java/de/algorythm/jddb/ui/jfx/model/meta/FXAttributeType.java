@@ -8,7 +8,7 @@ public class FXAttributeType extends FXAbstractLabeledElement implements IFXProp
 	
 	public FXAttributeType(final IPropertyType<?> type) {
 		this.type = type;
-		label.set(type.getLabel());
+		labelProperty.set(type.getLabel());
 	}
 	
 	public IPropertyType<?> getType() {
@@ -16,10 +16,15 @@ public class FXAttributeType extends FXAbstractLabeledElement implements IFXProp
 	}
 	
 	@Override
-	public boolean isUserDefined() {
+	public Boolean isUserDefined() {
 		return Boolean.FALSE;
 	}
 
+	@Override
+	public Boolean isEmbedded() {
+		return Boolean.FALSE;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

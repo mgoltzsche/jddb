@@ -2,6 +2,7 @@ package de.algorythm.jddb.model.dao.impl.blueprints.propertyVisitor;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -195,7 +196,7 @@ public class SaveVisitor<V extends IEntity<P,REF>, P extends IPropertyValue<?,RE
 			final REF referredEntity = dao.createEntityReference(referredVertex);
 			
 			if (property.getType().isConform(referredEntity.getType()))
-				dao.delete(referredEntity);
+				dao.delete(referredEntity, new HashSet<REF>());
 		}
 	}
 }
