@@ -15,12 +15,13 @@ import javafx.scene.image.ImageView
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 
 import static javafx.application.Platform.*
+import de.algorythm.jddb.taskQueue.ITaskQueueExceptionHandler
 
 class ImageLoader {
 
 	static public val INSTANCE = new ImageLoader
 	
-	extension FXTaskQueue = new FXTaskQueue('image-loader-queue')
+	extension FXTaskQueue = new FXTaskQueue('image-loader-queue', ITaskQueueExceptionHandler.DEFAULT)
 	val cache = new ObjectCache<ReadOnlyObjectProperty<Image>>('image-cache', new SoftCacheReferenceFactory<ReadOnlyObjectProperty<Image>>)
 	val Function1<String, ReadOnlyObjectProperty<Image>> imageLoader = [
 		val future = new SimpleObjectProperty<Image>

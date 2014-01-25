@@ -1,12 +1,8 @@
 package de.algorythm.jddb.model.dao.impl.blueprints;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,9 +15,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.representer.Representer;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinkerpop.blueprints.CloseableIterable;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -44,9 +41,13 @@ import de.algorythm.jddb.model.dao.impl.blueprints.propertyVisitor.SaveVisitor;
 import de.algorythm.jddb.model.entity.IEntity;
 import de.algorythm.jddb.model.entity.IEntityReference;
 import de.algorythm.jddb.model.entity.IPropertyValue;
+import de.algorythm.jddb.model.meta.IPropertyType;
 import de.algorythm.jddb.model.meta.MEntityType;
 import de.algorythm.jddb.model.meta.MEntityTypeWildcard;
+import de.algorythm.jddb.model.meta.MProperty;
 import de.algorythm.jddb.model.meta.Schema;
+import de.algorythm.jddb.model.meta.propertyTypes.AbstractAttributeType;
+import de.algorythm.jddb.model.meta.propertyTypes.CollectionType;
 
 public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IPropertyValue<?, REF>, REF extends IEntityReference>
 		implements IDAO<V, P, REF>, IDAOVisitorContext<V, P, REF>,
@@ -56,64 +57,119 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 	static protected final String TYPE_FIELD = "_type";
 	static protected final String SEARCH_INDEX = "searchIndex";
 	static private final Pattern WORD_PATTERN = Pattern.compile("[\\w]+");
-	static private final String DEFAULT_SCHEMA_RES = "/jdoe.schema.yaml";
-	static private final String SCHEMA_FILE_NAME = "schema.yaml";
+	static private final String SCHEMA_FILE_NAME = "schema.jddb.json";
 
 	private final IModelFactory<V, P, REF> modelFactory;
-	private final Yaml yaml;
+	private final ObjectMapper mapper = new ObjectMapper();
 	private Schema schema;
-	private File dbDirectory;
 	private TransactionalGraph graph;
 	private Index<Vertex> searchIndex;
 	private final HashSet<IObserver<V, P, REF>> observers = new HashSet<>();
 	private ModelChange<V, P, REF> change;
-	private final File defaultSchemaFile;
 	private File schemaFile;
+	private final File defaultSchemaFile;
 
-	public BlueprintsDAO(final IModelFactory<V, P, REF> modelFactory) throws URISyntaxException {
-		final URL schemaURL = getClass().getResource(DEFAULT_SCHEMA_RES);
-		
-		if (schemaURL == null)
-			throw new RuntimeException("Missing default schema resource " + DEFAULT_SCHEMA_RES);
-		
-		final URI schemaURI = schemaURL.toURI();
+	public BlueprintsDAO(final IModelFactory<V, P, REF> modelFactory) {
 		this.modelFactory = modelFactory;
-		final Representer representer = new Representer();
-		representer.getPropertyUtils().setSkipMissingProperties(true);
-		yaml = new Yaml(representer);
-		defaultSchemaFile = new File(schemaURI);
+		
+		mapper.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
+		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
+		
+		try {
+			defaultSchemaFile = new File(getClass().getResource('/' + SCHEMA_FILE_NAME).toURI());
+		} catch (URISyntaxException e) {
+			throw new RuntimeException("Cannot get default schema file URI", e);
+		}
 	}
 
 	@Override
 	public boolean isOpened() {
-		return graph != null;
+		return schemaFile != null;
 	}
 
 	protected abstract TransactionalGraph openGraph(File dbDirectory);
 	protected abstract Index<Vertex> getOrCreateSearchIndex();
 	protected abstract void dropSearchIndex();
 
+	private void deriveSchemaFile(final File dbDirectory) {
+		final String dbDir = dbDirectory.getAbsolutePath();
+		schemaFile = new File(dbDir + File.separator + SCHEMA_FILE_NAME);
+	}
+	
+	@Override
+	public void createAndOpen(final File dbDirectory) throws IOException {
+		dbDirectory.mkdirs();
+		
+		if (dbDirectory.list().length > 0)
+			throw new IllegalArgumentException("Given directory is not empty: " + dbDirectory.getAbsolutePath());
+		
+		try {
+			deriveSchemaFile(dbDirectory);
+			loadSchema(defaultSchemaFile);
+			updateSchemaTypes(schema.getTypes());
+			open(dbDirectory);
+		} catch(IOException e) {
+			try {
+				dbDirectory.delete();
+			} catch(Throwable ex) {}
+			
+			schemaFile = null;
+			throw new IOException("Cannot create database: " + dbDirectory.getAbsolutePath(), e);
+		}
+	}
+	
 	@Override
 	public void open(final File dbDirectory) throws IOException {
-		this.dbDirectory = dbDirectory;
-		schemaFile = new File(dbDirectory.getAbsolutePath()
-				+ File.separator + SCHEMA_FILE_NAME);
+		final String dbDir = dbDirectory.getAbsolutePath();
 		
-		loadSchema(schemaFile.exists() ? schemaFile : defaultSchemaFile);
-		graph = openGraph(dbDirectory);
-		searchIndex = getOrCreateSearchIndex();
+		if (!dbDirectory.exists())
+			throw new IllegalArgumentException("The database directory does not exist: " + dbDir);
+		
+		if (!dbDirectory.isDirectory())
+			throw new IllegalArgumentException("No directory given: " + dbDir);
+		
+		try {
+			deriveSchemaFile(dbDirectory);
+			
+			if (!schemaFile.exists() || !schemaFile.isFile())
+				throw new IllegalArgumentException("No database found in directory: " + dbDir);
+			
+			loadSchema(schemaFile);
+			graph = openGraph(dbDirectory);
+			searchIndex = getOrCreateSearchIndex();
+		} catch(IOException e) {
+			schemaFile = null;
+			throw new IOException("Cannot open database: " + dbDirectory.getAbsolutePath(), e);
+		}
+	}
+	
+	private void loadSchema(File schemaFile) throws IOException {
+		schema = mapper.readValue(schemaFile, Schema.class);
+		final Map<String, IPropertyType<?>> typeMap = new HashMap<>();
+		
+		for (MEntityType type : schema.getTypes()) {
+			final CollectionType collectionType = new CollectionType(type);
+			
+			typeMap.put(type.getName(), type);
+			typeMap.put(collectionType.getName(), collectionType);
+		}
+		
+		for (AbstractAttributeType<?> type : AbstractAttributeType.ATTRIBUTE_TYPES)
+			typeMap.put(type.getName(), type);
+		
+		for (MEntityType type : schema.getTypes())
+			for (MProperty property : type.getProperties())
+				property.loadTypeForName(typeMap);
 	}
 
 	@Override
 	public void close() throws IOException {
-		graph.shutdown();
-		dbDirectory = null;
-	}
-
-	private void loadSchema(final File schemaFile) throws IOException {
-		schema = schemaFile.exists()
-			? yaml.loadAs(new FileReader(schemaFile), Schema.class)
-			: new Schema();
+		if (graph != null)
+			graph.shutdown();
+		
+		graph = null;
+		searchIndex = null;
+		schema = null;
 	}
 
 	@Override
@@ -131,7 +187,8 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 		
 		final Schema newSchema = new Schema();
 		newSchema.setTypes(types);
-		yaml.dump(schema, new FileWriter(schemaFile));
+		mapper.writeValue(schemaFile, newSchema);
+		//yaml.dump(schema, new FileWriter(schemaFile));
 		schema = newSchema;
 	}
 
@@ -291,7 +348,7 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 	@Override
 	public Set<V> list(final MEntityType type) {
 		final LinkedHashSet<V> result = new LinkedHashSet<>();
-		final Iterable<Vertex> vertices = type == MEntityTypeWildcard.INSTANCE ? graph
+		final Iterable<Vertex> vertices = type == MEntityTypeWildcard.getInstance() ? graph
 				.getVertices() : graph.getVertices(TYPE_FIELD, type.getName());
 
 		for (Vertex vertex : vertices)

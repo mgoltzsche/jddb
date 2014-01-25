@@ -17,34 +17,55 @@
 <?import javafx.scene.control.Label?>
 <?import de.algorythm.jddb.ui.jfx.model.EditorStateModel?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 
 <SplitPane xmlns:fx="http://javafx.com/fxml"
-		fx:controller="de.algorythm.jddb.controller.EntityEditorController"
-		stylesheets="/styles/formstate.css"
-		dividerPositions="1.0, 0.3"
-		fx:id="editorPane">
+	fx:controller="de.algorythm.jddb.controller.EntityEditorController"
+	stylesheets="/styles/formstate.css" dividerPositions="1.0, 0.3" fx:id="editorPane">
 	<fx:define>
-		<EditorStateModel fx:id="editorState"/>
+		<EditorStateModel fx:id="editorState" />
 	</fx:define>
-	<VBox fillWidth="true" prefWidth="600" minWidth="270" disable="${editorState.deleting}">
+	<VBox fillWidth="true" prefWidth="600" minWidth="270"
+		disable="${editorState.deleting}">
 		<ToolBar prefHeight="33">
-			<Button text="%delete" onAction="#delete" disable="${editorState.creating}"/>
-			<Button text="%save" onAction="#save" disable="${editorState.pristine}"/>
-			<Region prefWidth="10"/>
-			<Label text="${editorState.typeName}"/>
+			<Button text="%delete" onAction="#delete" disable="${editorState.creating}">
+				<graphic>
+					<ImageView>
+						<image>
+							<Image backgroundLoading="true"
+								url="/jddb-icons/delete.png" />
+						</image>
+					</ImageView>
+				</graphic>
+			</Button>
+			<Button text="%save" onAction="#save" disable="${editorState.pristine}">
+				<graphic>
+					<ImageView>
+						<image>
+							<Image backgroundLoading="true"
+								url="/jddb-icons/save.png" />
+						</image>
+					</ImageView>
+				</graphic>
+			</Button>
+			<Region prefWidth="10" />
+			<Label text="${editorState.typeName}" />
 		</ToolBar>
-		<ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" fitToHeight="true">
+		<ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true"
+			fitToHeight="true">
 			<GridPane fx:id="gridPane" vgap="20" hgap="20">
 				<padding>
-					<Insets bottom="20" left="20" right="20" top="20"/>
+					<Insets bottom="20" left="20" right="20" top="20" />
 				</padding>
 			</GridPane>
 		</ScrollPane>
 	</VBox>
 	<VBox>
 		<ToolBar prefHeight="33">
-			<Label text="Referring entities:"/>
+			<Label text="Referring entities:" />
 		</ToolBar>
-		<ListView fx:id="referringEntities" prefWidth="150" minWidth="100" VBox.vgrow="ALWAYS"/>
+		<ListView fx:id="referringEntities" prefWidth="150" minWidth="100"
+			VBox.vgrow="ALWAYS" />
 	</VBox>
 </SplitPane>

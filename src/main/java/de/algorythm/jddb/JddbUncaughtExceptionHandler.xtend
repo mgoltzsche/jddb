@@ -1,25 +1,26 @@
 package de.algorythm.jddb
 
-import java.lang.Thread.UncaughtExceptionHandler
-import javafx.stage.Stage
-import javafx.stage.Modality
-import javafx.scene.Scene
-import static javafx.application.Platform.*
-import javafx.scene.control.TextArea
-import javafx.scene.control.Label
-import java.io.StringWriter
+import de.algorythm.jddb.bundle.Bundle
 import java.io.PrintWriter
-import javafx.scene.layout.VBox
-import javafx.scene.control.Button
-import org.slf4j.LoggerFactory
+import java.io.StringWriter
 import javafx.geometry.Insets
 import javafx.geometry.Pos
-import de.algorythm.jddb.bundle.Bundle
+import javafx.scene.Scene
+import javafx.scene.control.Button
+import javafx.scene.control.Label
+import javafx.scene.control.TextArea
 import javafx.scene.layout.HBox
+import javafx.scene.layout.VBox
+import javafx.stage.Modality
+import javafx.stage.Stage
+import org.slf4j.LoggerFactory
 
-public class JavaDesktopDatabaseUncaughtExceptionHandler implements UncaughtExceptionHandler {
+import static javafx.application.Platform.*
+import java.lang.Thread.UncaughtExceptionHandler
 
-	static val log = LoggerFactory.getLogger(typeof(JavaDesktopDatabaseUncaughtExceptionHandler))
+public class JddbUncaughtExceptionHandler implements UncaughtExceptionHandler {
+
+	static val log = LoggerFactory.getLogger(typeof(JddbUncaughtExceptionHandler))
 
 	val bundle = Bundle.instance
 	val Stage primaryStage

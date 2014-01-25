@@ -7,6 +7,7 @@ public interface IFXPropertyType {
 	StringProperty labelProperty();
 	String getLabel();
 	void setLabel(String label);
+	String getItemLabel();
 	Boolean isUserDefined();
 	Boolean isEmbedded();
 }

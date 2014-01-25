@@ -30,7 +30,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import static javafx.application.Platform.*
 
 @Singleton
-public class JavaDesktopDatabaseFacade {
+public class JddbFacade {
 
 	static val TYPE_EDITOR_FXML = '/fxml/type_editor.fxml'
 
@@ -81,6 +81,21 @@ public class JavaDesktopDatabaseFacade {
 		editorManager.closeAll
 	}
 	
+	def void createDB(File dbFile) {
+		editorManager.closeAll
+		
+		val closeTask = closeDB
+		
+		runTask('open-db', bundle.taskCreateDB, ITaskPriority.LAST) [|
+			closeTask.requireCompleted
+			dao.createAndOpen(dbFile)
+			
+			runLater [|
+				mainController.onDatabaseOpened
+			]
+		]
+	}
+	
 	def void openDB(File dbFile) {
 		editorManager.closeAll
 		
@@ -100,6 +115,8 @@ public class JavaDesktopDatabaseFacade {
 		mainController.onDatabaseClose
 		
 		runTask('close-db', bundle.taskCloseDB, ITaskPriority.LAST) [|
+			entityCache.clear
+			
 			if (dao.opened)
 				dao.close
 		]
@@ -110,6 +127,8 @@ public class JavaDesktopDatabaseFacade {
 	}
 	
 	def updateSchema(Collection<MEntityType> types) {
+		mainController.onDatabaseClose
+		
 		val updateSchemaTask = runTask('update-schema-' + new Date().time, bundle.updateDatabaseSchema, ITaskPriority.LAST) [|
 			types.updateSchemaTypes
 			reloadAll

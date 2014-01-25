@@ -2,20 +2,20 @@ package de.algorythm.jddb.model.meta;
 
 import de.algorythm.jddb.bundle.Bundle;
 
-public class MEntityTypeWildcard extends MEntityType {
+public class UnknownEntityType extends MEntityType {
 
-	static private final long serialVersionUID = 659038941492670930L;
+	static private final long serialVersionUID = -7360987287928027937L;
 	static private MEntityType instance;
 	
 	static public final MEntityType getInstance() {
 		if (instance == null)
-			instance = new MEntityTypeWildcard();
+			instance = new UnknownEntityType();
 		
 		return instance;
 	}
 	
-	private MEntityTypeWildcard() {
-		setLabel(Bundle.getInstance().all);
+	private UnknownEntityType() {
+		setLabel(Bundle.getInstance().unknown);
 	}
 	
 	@Override

@@ -11,8 +11,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import de.algorythm.jddb.bundle.Bundle;
+import de.algorythm.jddb.bundle.ImageBundle;
 import de.algorythm.jddb.ui.jfx.model.meta.FXAbstractLabeledElement;
 
 public abstract class AbstractLabeledListCell<T extends FXAbstractLabeledElement> extends ListCell<T> {
@@ -66,6 +68,7 @@ public abstract class AbstractLabeledListCell<T extends FXAbstractLabeledElement
 	protected final Button deleteButton = new Button(bundle.delete);
 	
 	public AbstractLabeledListCell() {
+		deleteButton.setGraphic(new ImageView(ImageBundle.getInstance().minus));
 		deleteButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent evt) {

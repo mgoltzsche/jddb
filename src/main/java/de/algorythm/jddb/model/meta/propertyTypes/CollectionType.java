@@ -14,14 +14,18 @@ import de.algorythm.jddb.model.meta.TextAlignment;
 public class CollectionType implements IPropertyType<Collection<? extends IEntityReference>>, Serializable {
 
 	static private final long serialVersionUID = 5746102308534615947L;
+	static private final String NAME_SUFFIX = "[]";
 	static private final String LABEL_SUFFIX = " (Liste)";
-
+	
 	private MEntityType itemType;
-	
-	public CollectionType() {}
-	
+
 	public CollectionType(final MEntityType itemType) {
 		this.itemType = itemType;
+	}
+	
+	@Override
+	public String getName() {
+		return itemType.getName() + NAME_SUFFIX;
 	}
 	
 	@Override

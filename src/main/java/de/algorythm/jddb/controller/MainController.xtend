@@ -1,6 +1,6 @@
 package de.algorythm.jddb.controller
 
-import de.algorythm.jddb.JavaDesktopDatabaseFacade
+import de.algorythm.jddb.JddbFacade
 import de.algorythm.jddb.bundle.Bundle
 import de.algorythm.jddb.model.dao.IDAO
 import de.algorythm.jddb.model.dao.IObserver
@@ -16,10 +16,8 @@ import de.algorythm.jddb.ui.jfx.model.FXEntityReference
 import de.algorythm.jddb.ui.jfx.model.propertyValue.IFXPropertyValue
 import de.algorythm.jddb.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jddb.ui.jfx.util.EntityEditorViewRegistry
-import java.io.File
 import java.io.IOException
 import java.net.URL
-import java.util.Collections
 import java.util.LinkedList
 import java.util.ResourceBundle
 import javafx.beans.property.SimpleStringProperty
@@ -43,7 +41,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension FXTaskQueue
-	@Inject extension JavaDesktopDatabaseFacade facade
+	@Inject extension JddbFacade facade
 	@Inject extension EntityEditorViewRegistry
 	@Inject var Bundle bundle
 	@FXML var ApplicationStateModel appState
@@ -55,7 +53,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	@FXML var FXEntityDetailView entityDetails
 	@FXML var TextField searchField
 	@FXML var MenuButton newEntityButton
-	var selectedType = MEntityTypeWildcard.INSTANCE
+	var selectedType = MEntityTypeWildcard.instance
 	var String searchPhrase
 	val ObservableList<MEntityType> entityTypes = FXCollections.observableList(newLinkedList)
 	
@@ -102,9 +100,12 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	
 	def private void setSelectedType(MEntityType type) {
 		selectedType = if (type == null)
-				MEntityTypeWildcard.INSTANCE
+				MEntityTypeWildcard.instance
 			else
 				type
+		
+		val selectedType = selectedType
+		val searchPhrase = searchPhrase
 		
 		runTask('switch-search-type', '''«bundle.taskSwitchSearchType»: «selectedType.label»''', ITaskPriority.FIRST) [|
 			runLater [|
@@ -127,7 +128,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	def private void setupTypeSelection() {
 		val types = new LinkedList<MEntityType>(entityTypes)
 		
-		types.addFirst(MEntityTypeWildcard.INSTANCE)
+		types.addFirst(MEntityTypeWildcard.instance)
 		
 		typeComboBox.items.all = types
 		typeComboBox.selectionModel.selectFirst
@@ -160,6 +161,9 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def private void search() {
+		val selectedType = selectedType
+		val searchPhrase = searchPhrase
+		
 		runTask('search', '''«bundle.taskSearch»: «searchPhrase» («selectedType.label»)''', ITaskPriority.FIRST) [|
 			val entities = dao.list(selectedType, searchPhrase)
 			
@@ -169,17 +173,22 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 		]
 	}
 	
+	def showDatabaseCreateDialog() {
+		val dc = new DirectoryChooser
+		dc.title = bundle.taskOpenDB
+		var dbFile = dc.showDialog(openDbButton.scene.window)
+		
+		if (dbFile != null)
+			dbFile.createDB
+	}
+	
 	def showDatabaseOpenDialog() {
 		val dc = new DirectoryChooser
 		dc.title = bundle.taskOpenDB
 		var dbFile = dc.showDialog(openDbButton.scene.window)
 		
-		if (dbFile != null) {
-			if (!dbFile.absolutePath.endsWith('.jdoedb'))
-				dbFile = new File(dbFile.absolutePath + '.jdoedb')
-			
+		if (dbFile != null)		
 			dbFile.openDB
-		}
 	}
 	
 	def showTypeEditor() throws IOException {
@@ -187,7 +196,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def onReload() {
-		entityTable.items.all = Collections.EMPTY_LIST
+		entityTable.items.clear
 		onDatabaseOpened
 	}
 	
@@ -199,7 +208,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	}
 	
 	def onDatabaseClose() {
-		entityTable.items.clear
 		appState.dbClosed = true
+		entityTable.items.clear
 	}
 }

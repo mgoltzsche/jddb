@@ -8,9 +8,17 @@ import de.algorythm.jddb.model.meta.MProperty;
 public class TText extends TString {
 
 	static private final long serialVersionUID = 8799483774046996115L;
-
-	public TText() {
-		super("text");
+	static private TText instance;
+	
+	static public AbstractAttributeType<?> getInstance() {
+		if (instance == null)
+			instance = new TText();
+		
+		return instance;
+	}
+	
+	private TText() {
+		super("text", "Multiline text");
 	}
 	
 	@Override

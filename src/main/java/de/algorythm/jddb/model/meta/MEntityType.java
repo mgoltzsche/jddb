@@ -51,7 +51,7 @@ public class MEntityType extends AbstractLabeledElement implements IPropertyType
 	
 	@Override
 	public boolean isConform(final IPropertyType<?> type) {
-		return type == null ? false : label.equals(type.getLabel());
+		return label.equals(type.getLabel());
 	}
 	
 	@Override

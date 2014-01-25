@@ -15,9 +15,9 @@ import de.algorythm.jddb.model.meta.propertyTypes.TString;
 public class FXProperty extends FXAbstractLabeledChangable {
 
 	private final Property<String> labelWithTypeProperty = new SimpleStringProperty();
-	private final ObjectProperty<IFXPropertyType> type = new SimpleObjectProperty<IFXPropertyType>(new FXAttributeType(new TString()));
-	private final BooleanProperty searchable = new SimpleBooleanProperty(true);
-	private final BooleanProperty containment = new SimpleBooleanProperty();
+	private final ObjectProperty<IFXPropertyType> typeProperty = new SimpleObjectProperty<IFXPropertyType>(new FXAttributeType(TString.getInstance()));
+	private final BooleanProperty searchableProperty = new SimpleBooleanProperty(true);
+	private final BooleanProperty containmentProperty = new SimpleBooleanProperty();
 	
 	private final ChangeListener<String> typeLabelListener = new ChangeListener<String>() {
 		@Override
@@ -30,6 +30,8 @@ public class FXProperty extends FXAbstractLabeledChangable {
 	public FXProperty(final InvalidationListener invalidationListener) {
 		super(invalidationListener);
 		
+		updateLabelWithTypeProperty();
+		typeProperty.addListener(invalidationListener);
 		labelProperty.addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> c,
@@ -37,7 +39,7 @@ public class FXProperty extends FXAbstractLabeledChangable {
 				updateLabelWithTypeProperty();
 			}
 		});
-		type.addListener(new ChangeListener<IFXPropertyType>() {
+		typeProperty.addListener(new ChangeListener<IFXPropertyType>() {
 			@Override
 			public void changed(
 					ObservableValue<? extends IFXPropertyType> c,
@@ -52,7 +54,7 @@ public class FXProperty extends FXAbstractLabeledChangable {
 	}
 	
 	private void updateLabelWithTypeProperty() {
-		labelWithTypeProperty.setValue(labelProperty.get() + " (" + type.get().getLabel() + ")");
+		labelWithTypeProperty.setValue(labelProperty.get() + " (" + typeProperty.get().getLabel() + ")");
 	}
 	
 	public ReadOnlyProperty<String> labelWithTypeProperty() {
@@ -60,38 +62,38 @@ public class FXProperty extends FXAbstractLabeledChangable {
 	}
 	
 	public Property<IFXPropertyType> typeProperty() {
-		return type;
+		return typeProperty;
 	}
 	
 	public IFXPropertyType getType() {
-		return type.get();
+		return typeProperty.get();
 	}
 	
 	public void setType(final IFXPropertyType type) {
-		this.type.set(type);
+		typeProperty.set(type);
 	}
 	
 	public Property<Boolean> searchableProperty() {
-		return searchable;
+		return searchableProperty;
 	}
 	
 	public Boolean isSearchable() {
-		return searchable.get();
+		return searchableProperty.get();
 	}
 	
 	public void setSearchable(final Boolean searchable) {
-		this.searchable.set(searchable);
+		searchableProperty.set(searchable);
 	}
 	
 	public Property<Boolean> containmentProperty() {
-		return containment;
+		return containmentProperty;
 	}
 	
 	public Boolean isContainment() {
-		return containment.get();
+		return containmentProperty.get();
 	}
 	
 	public void setContainment(final Boolean containment) {
-		this.containment.set(containment);
+		containmentProperty.set(containment);
 	}
 }

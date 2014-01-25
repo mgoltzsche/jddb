@@ -12,9 +12,17 @@ import de.algorythm.jddb.model.meta.TextAlignment;
 public class TDate extends AbstractAttributeType<Date>  {
 
 	static private final long serialVersionUID = -7251553097102848742L;
-
-	public TDate() {
-		super("date");
+	static private TDate instance;
+	
+	static public AbstractAttributeType<?> getInstance() {
+		if (instance == null)
+			instance = new TDate();
+		
+		return instance;
+	}
+	
+	private TDate() {
+		super("date", "Date");
 	}
 	
 	@Override

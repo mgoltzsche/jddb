@@ -11,6 +11,11 @@ public class FXAttributeType extends FXAbstractLabeledElement implements IFXProp
 		labelProperty.set(type.getLabel());
 	}
 	
+	@Override
+	public String getItemLabel() {
+		return getLabel();
+	}
+	
 	public IPropertyType<?> getType() {
 		return type;
 	}

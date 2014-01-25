@@ -15,7 +15,7 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 	private final Runnable runnable;
 	private final Thread taskThread;
 	
-	public AbstractTaskQueue(final String name) {
+	public AbstractTaskQueue(final String name, final ITaskQueueExceptionHandler exceptionHandler) {
 		// create task thread
 		runnable = new Runnable() {
 			@Override
@@ -55,6 +55,7 @@ public abstract class AbstractTaskQueue<T extends ITask> {
 							log.error(taskLabel + " failed", e);
 							runningTask.setErrorMessage(createErrorMessage(e));
 							runningTask.setState(TaskState.FAILED);
+							exceptionHandler.handleError(e);
 						} finally {
 							synchronized(this) {
 								taskQueue.remove(runningTask);

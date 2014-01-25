@@ -64,7 +64,7 @@ class FXEntityTableView extends TableView<FXEntity> {
 	def private updateTableColumns(MEntityType entityType) {
 		val columns = new LinkedList<TableColumn<FXEntity, ?>>
 		
-		if (entityType == MEntityTypeWildcard.INSTANCE) {
+		if (entityType == MEntityTypeWildcard.instance) {
 			val typeColumn = new TableColumn<FXEntity, String>(bundle.type)
 			val labelColumn = new TableColumn<FXEntity, String>(bundle.entity)
 			

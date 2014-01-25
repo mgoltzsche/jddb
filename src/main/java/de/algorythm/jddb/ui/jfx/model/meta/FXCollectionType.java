@@ -11,6 +11,11 @@ public class FXCollectionType extends FXAbstractLabeledElement implements IFXPro
 		labelProperty.bind(itemType.labelProperty().concat(" (" + Bundle.getInstance().dataSet + ")"));
 	}
 	
+	@Override
+	public String getItemLabel() {
+		return itemType.getLabel();
+	}
+	
 	public FXEntityType getItemType() {
 		return itemType;
 	}

@@ -2,7 +2,6 @@ package de.algorythm.jddb.model.dao.impl.orientdb;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import javax.inject.Singleton;
 
@@ -28,7 +27,7 @@ public class OrientDbDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,RE
 	
 	private OrientGraph graph;
 	
-	public OrientDbDAO(final IModelFactory<V, P, REF> modelFactory) throws URISyntaxException {
+	public OrientDbDAO(final IModelFactory<V, P, REF> modelFactory) {
 		super(modelFactory);
 		OGlobalConfiguration.STORAGE_KEEP_OPEN.setValue(Boolean.FALSE);
 	}

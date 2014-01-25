@@ -7,13 +7,17 @@ import java.util.ResourceBundle;
 public class Bundle {
 	
 	static private final String BUNDLE_NAME = "bundles/jdoe";
-	static private final Bundle instance = new Bundle();
+	static private Bundle instance;
 	
 	static public Bundle getInstance() {
+		if (instance == null)
+			instance = new Bundle();
+		
 		return instance;
 	}
 	
 	public final ResourceBundle bundle;
+	public final String ok;
 	public final String close;
 	public final String unknown;
 	public final String typeDefinition;
@@ -50,6 +54,7 @@ public class Bundle {
 	public final String stateCanceled;
 	public final String stateCompleted;
 	public final String stateFailed;
+	public final String taskCreateDB;
 	public final String taskOpenDB;
 	public final String taskCloseDB;
 	public final String taskSearch;
@@ -72,7 +77,7 @@ public class Bundle {
 		}
 		
 		bundle = b;
-		
+		ok = b.getString("ok");
 		close = b.getString("close");
 		unknown = b.getString("unknown");
 		typeDefinition = b.getString("typeDefinition");
@@ -107,6 +112,7 @@ public class Bundle {
 		stateCanceled = b.getString("stateCanceled");
 		stateCompleted = b.getString("stateCompleted");
 		stateFailed = b.getString("stateFailed");
+		taskCreateDB = b.getString("taskCreateDB");
 		taskOpenDB = b.getString("taskOpenDB");
 		taskCloseDB = b.getString("taskCloseDB");
 		taskSearch = b.getString("taskSearch");

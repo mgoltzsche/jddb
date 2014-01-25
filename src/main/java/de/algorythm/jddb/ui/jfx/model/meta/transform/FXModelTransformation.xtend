@@ -6,9 +6,9 @@ import de.algorythm.jddb.model.meta.MProperty
 import de.algorythm.jddb.ui.jfx.model.meta.FXProperty
 import de.algorythm.jddb.ui.jfx.model.meta.IFXPropertyType
 import de.algorythm.jddb.model.meta.IPropertyType
-import de.algorythm.jddb.model.meta.propertyTypes.CollectionType
 import de.algorythm.jddb.ui.jfx.model.meta.FXCollectionType
 import de.algorythm.jddb.ui.jfx.model.meta.FXAttributeType
+import de.algorythm.jddb.model.meta.propertyTypes.CollectionType
 
 class FXModelTransformation extends AbstractModelTransformation<FXEntityType, MEntityType> {
 	

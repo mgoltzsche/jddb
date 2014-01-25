@@ -83,22 +83,6 @@ public class PropertyEditCell extends AbstractLabeledListCell<FXProperty> {
 		typeComboBox.items.all = availablePropertyTypes
 	}
 	
-	/*@Override
-	protected void showLabel() {
-		final String name = object.getLabel();
-		final IFXPropertyType type = object.getType();
-		
-		StringBuilder label = new StringBuilder();
-		
-		if (name != null)
-			label.append(name);
-		
-		if (type != null && !type.isUserDefined())
-			label.append(" (").append(object.getType().toString()).append(")");
-		
-		setText(label.toString());
-	}*/
-	
 	override showLabel() {
 		textProperty.bind(item.labelWithTypeProperty)
 	}

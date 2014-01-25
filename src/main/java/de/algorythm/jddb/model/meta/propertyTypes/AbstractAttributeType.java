@@ -15,19 +15,26 @@ public abstract class AbstractAttributeType<V extends Comparable<V>> implements 
 	static public final Collection<AbstractAttributeType<?>> ATTRIBUTE_TYPES = new LinkedList<>();
 	
 	static {
-		ATTRIBUTE_TYPES.add(new TBoolean());
-		ATTRIBUTE_TYPES.add(new TDecimal());
-		ATTRIBUTE_TYPES.add(new TReal());
-		ATTRIBUTE_TYPES.add(new TDate());
-		ATTRIBUTE_TYPES.add(new TString());
-		ATTRIBUTE_TYPES.add(new TText());
-		ATTRIBUTE_TYPES.add(new TFile());
+		ATTRIBUTE_TYPES.add(TBoolean.getInstance());
+		ATTRIBUTE_TYPES.add(TDecimal.getInstance());
+		ATTRIBUTE_TYPES.add(TReal.getInstance());
+		ATTRIBUTE_TYPES.add(TDate.getInstance());
+		ATTRIBUTE_TYPES.add(TString.getInstance());
+		ATTRIBUTE_TYPES.add(TText.getInstance());
+		ATTRIBUTE_TYPES.add(TFile.getInstance());
 	}
 	
+	private final String name;
 	private final String label;
 	
-	public AbstractAttributeType(final String label) {
+	public AbstractAttributeType(final String name, final String label) {
+		this.name = name;
 		this.label = label;
+	}
+	
+	@Override
+	public String getName() {
+		return name;
 	}
 	
 	@Override

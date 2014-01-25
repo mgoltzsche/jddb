@@ -9,9 +9,17 @@ import de.algorythm.jddb.model.meta.TextAlignment;
 public class TDecimal extends AbstractAttributeType<Long> {
 
 	static private final long serialVersionUID = -4545233017943271599L;
-
-	public TDecimal() {
-		super("decimal");
+	static private TDecimal instance;
+	
+	static public AbstractAttributeType<?> getInstance() {
+		if (instance == null)
+			instance = new TDecimal();
+		
+		return instance;
+	}
+	
+	private TDecimal() {
+		super("decimal", "Decimal number");
 	}
 
 	@Override

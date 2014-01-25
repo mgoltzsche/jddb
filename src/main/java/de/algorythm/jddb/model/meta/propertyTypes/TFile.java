@@ -10,9 +10,17 @@ import de.algorythm.jddb.model.meta.MProperty;
 public class TFile extends TString {
 
 	static private final long serialVersionUID = 6086451869372645461L;
-
-	public TFile() {
-		super("file");
+	static private TFile instance;
+	
+	static public AbstractAttributeType<?> getInstance() {
+		if (instance == null)
+			instance = new TFile();
+		
+		return instance;
+	}
+	
+	private TFile() {
+		super("file", "File");
 	}
 	
 	@Override

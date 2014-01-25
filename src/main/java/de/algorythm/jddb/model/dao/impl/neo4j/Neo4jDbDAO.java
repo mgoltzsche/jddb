@@ -2,7 +2,6 @@ package de.algorythm.jddb.model.dao.impl.neo4j;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,7 @@ public class Neo4jDbDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF
 	
 	private Neo4jGraph graph;
 	
-	public Neo4jDbDAO(final IModelFactory<V, P, REF> modelFactory) throws URISyntaxException {
+	public Neo4jDbDAO(final IModelFactory<V, P, REF> modelFactory) {
 		super(modelFactory);
 	}
 	

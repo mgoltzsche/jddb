@@ -5,16 +5,16 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
-import de.algorythm.jddb.JavaDesktopDatabaseFacade;
+import de.algorythm.jddb.JddbFacade;
 import de.algorythm.jddb.ui.jfx.model.FXEntityReference;
 
 public class EntityReferenceCell extends ListCell<FXEntityReference> {
 	
 	static public class Factory implements Callback<ListView<FXEntityReference>, ListCell<FXEntityReference>> {
 		
-		private final JavaDesktopDatabaseFacade facade;
+		private final JddbFacade facade;
 		
-		public Factory(final JavaDesktopDatabaseFacade facade) {
+		public Factory(final JddbFacade facade) {
 			this.facade = facade;
 		}
 		
@@ -25,7 +25,7 @@ public class EntityReferenceCell extends ListCell<FXEntityReference> {
 	};
 	
 	
-	protected EntityReferenceCell(final JavaDesktopDatabaseFacade facade) {
+	protected EntityReferenceCell(final JddbFacade facade) {
 		setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(final MouseEvent evt) {

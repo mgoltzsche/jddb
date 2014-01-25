@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -16,17 +17,18 @@ import javafx.util.Callback;
 
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
-import de.algorythm.jddb.JavaDesktopDatabaseFacade;
+import de.algorythm.jddb.JddbFacade;
+import de.algorythm.jddb.bundle.ImageBundle;
 import de.algorythm.jddb.ui.jfx.model.FXEntityReference;
 
 public class AssociationCell extends EntityReferenceCell {
 
 	static public class Factory implements Callback<ListView<FXEntityReference>, ListCell<FXEntityReference>> {
 
-		private final JavaDesktopDatabaseFacade facade;
+		private final JddbFacade facade;
 		private final Procedure1<FXEntityReference> onRemove;
 		
-		public Factory(final JavaDesktopDatabaseFacade facade, final Procedure1<FXEntityReference> onRemove) {
+		public Factory(final JddbFacade facade, final Procedure1<FXEntityReference> onRemove) {
 			this.facade = facade;
 			this.onRemove = onRemove;
 		}
@@ -43,7 +45,7 @@ public class AssociationCell extends EntityReferenceCell {
 	private final Region spacer = new Region();
 	private final Button removeButton = new Button("remove");
 	
-	public AssociationCell(final JavaDesktopDatabaseFacade facade, final Procedure1<FXEntityReference> onRemove) {
+	public AssociationCell(final JddbFacade facade, final Procedure1<FXEntityReference> onRemove) {
 		super(facade);
 		
 		HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -55,6 +57,7 @@ public class AssociationCell extends EntityReferenceCell {
 		hBoxChildren.add(spacer);
 		hBoxChildren.add(removeButton);
 		
+		removeButton.setGraphic(new ImageView(ImageBundle.getInstance().minus));
 		removeButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent evt) {

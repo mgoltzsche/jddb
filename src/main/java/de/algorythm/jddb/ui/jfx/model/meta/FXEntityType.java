@@ -17,6 +17,12 @@ public class FXEntityType extends FXAbstractLabeledChangable implements IFXPrope
 
 	public FXEntityType(final InvalidationListener invalidationListener) {
 		super(invalidationListener);
+		properties.addListener(invalidationListener);
+	}
+	
+	@Override
+	public String getItemLabel() {
+		return getLabel();
 	}
 	
 	public Property<Boolean> embeddedProperty() {

@@ -10,7 +10,7 @@ public class FXAbstractLabeledElement {
 
 	private int internalId = ++internalIdCounter;
 	protected final SimpleStringProperty labelProperty = new SimpleStringProperty(Bundle.getInstance().unknown);
-	
+
 	public StringProperty labelProperty() {
 		return labelProperty;
 	}

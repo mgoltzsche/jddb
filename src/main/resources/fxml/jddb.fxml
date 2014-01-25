@@ -34,6 +34,7 @@
 		<ToolBar>
 			<Label fx:id="currentDatabaseLabel"/>
 			<Button text="%open" onAction="#showDatabaseOpenDialog" fx:id="openDbButton"/>
+			<Button text="%create" onAction="#showDatabaseCreateDialog"/>
 			<Button text="%configure" onAction="#showTypeEditor" disable="${appState.dbClosed}"/>
 			<Region HBox.hgrow="ALWAYS"/>
 			<TextField fx:id="searchField" promptText="%search"

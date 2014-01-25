@@ -26,7 +26,12 @@ public class Schema implements ISchema {
 	
 	@Override
 	public MEntityType getTypeByName(final String name) {
-		return getTypeIndex().get(name);
+		MEntityType type = getTypeIndex().get(name);
+		
+		if (type == null)
+			type = UnknownEntityType.getInstance();
+		
+		return type;
 	}
 	
 	@Override

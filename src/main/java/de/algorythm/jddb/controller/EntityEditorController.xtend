@@ -1,7 +1,7 @@
 package de.algorythm.jddb.controller
 
 import com.google.inject.Injector
-import de.algorythm.jddb.JavaDesktopDatabaseFacade
+import de.algorythm.jddb.JddbFacade
 import de.algorythm.jddb.bundle.Bundle
 import de.algorythm.jddb.model.dao.IDAO
 import de.algorythm.jddb.model.dao.IObserver
@@ -38,7 +38,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	@Inject extension FXTaskQueue
 	@Inject extension Injector
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
-	@Inject extension JavaDesktopDatabaseFacade facade
+	@Inject extension JddbFacade facade
 	@Inject Bundle bundle
 	@FXML EditorStateModel editorState
 	@FXML SplitPane editorPane

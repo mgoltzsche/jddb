@@ -1,5 +1,7 @@
 package de.algorythm.jddb.model.meta;
 
+import java.util.Map;
+
 import de.algorythm.jddb.model.entity.IEntityReference;
 import de.algorythm.jddb.model.entity.IPropertyValue;
 import de.algorythm.jddb.model.entity.IPropertyValueFactory;
@@ -9,13 +11,22 @@ public class MProperty extends AbstractLabeledElement {
 	
 	static private final long serialVersionUID = -1803072858495973198L;
 	
-	static private final IPropertyType<?> DEFAULT_TYPE = new TString();
-	
-	private IPropertyType<?> type = DEFAULT_TYPE;
+	private String typeName = TString.getInstance().getName();
+	private transient IPropertyType<?> type = TString.getInstance();
 	private boolean containment, searchable = true;
 	
 	public MProperty() {
 		setLabel("New property");
+	}
+	
+	public void loadTypeForName(final Map<String, IPropertyType<?>> typeMap) {
+		if (typeName == null)
+			throw new IllegalStateException("typeName is null");
+		
+		type = typeMap.get(typeName);
+		
+		if (type == null)
+			throw new IllegalStateException("Unknown type name " + typeName);
 	}
 	
 	public IPropertyType<?> getType() {
@@ -24,6 +35,7 @@ public class MProperty extends AbstractLabeledElement {
 	
 	public void setType(final IPropertyType<?> type) {
 		this.type = type;
+		typeName = type.getName();
 	}
 	
 	public boolean isContainment() {

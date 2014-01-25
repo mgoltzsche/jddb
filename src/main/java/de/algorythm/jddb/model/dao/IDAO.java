@@ -15,6 +15,7 @@ import de.algorythm.jddb.model.meta.MEntityType;
 public interface IDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>, REF extends IEntityReference> {
 	
 	boolean isOpened();
+	void createAndOpen(File dbFile) throws IOException;
 	void open(File dbFile) throws IOException;
 	void close() throws IOException;
 	void addObserver(IObserver<V,P,REF> observer);

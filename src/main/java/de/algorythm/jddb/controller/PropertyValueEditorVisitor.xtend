@@ -1,10 +1,9 @@
 package de.algorythm.jddb.controller
 
-import de.algorythm.jddb.JavaDesktopDatabaseFacade
+import de.algorythm.jddb.JddbFacade
 import de.algorythm.jddb.bundle.Bundle
 import de.algorythm.jddb.model.dao.IDAO
 import de.algorythm.jddb.model.meta.MEntityType
-import de.algorythm.jddb.model.meta.propertyTypes.CollectionType
 import de.algorythm.jddb.taskQueue.ITaskPriority
 import de.algorythm.jddb.ui.jfx.cell.AssociationCell
 import de.algorythm.jddb.ui.jfx.controls.EntityField
@@ -54,6 +53,8 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension de.algorythm.jddb.ui.jfx.util.OpenFileUtil.*
+import de.algorythm.jddb.model.meta.propertyTypes.CollectionType
+import de.algorythm.jddb.bundle.ImageBundle
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -65,7 +66,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension FXTaskQueue
-	@Inject extension JavaDesktopDatabaseFacade facade
+	@Inject extension JddbFacade facade
 	@Inject Bundle bundle
 	var GridPane gridPane
 	var int row
@@ -88,12 +89,14 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	override doWithAssociations(FXAssociations propertyValue) {
 		val property = propertyValue.property
 		val collectionType = property.getType as CollectionType
-		val entityType = collectionType.itemType
+		val entityType = collectionType.getItemType
 		val vBox = new VBox
 		val selectedEntities = new ListView<FXEntityReference>
 		val addButton = new Button(bundle.add)
 		val vBoxChildren = vBox.children
 		var Procedure1<FXEntityReference> onRemove
+		
+		addButton.graphic = new ImageView(ImageBundle.instance.plus)
 		
 		if (property.isContainment) {
 			vBoxChildren += selectedEntities
@@ -203,6 +206,8 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			} else
 				bundle.edit
 		val editButton = new Button(editButtonLabel)
+		
+		removeButton.graphic = new ImageView(ImageBundle.instance.delete)
 		
 		propertyValue.valueProperty.addListener [c,o,value|
 			val isNull = value == null

@@ -9,9 +9,17 @@ import de.algorythm.jddb.model.meta.MProperty;
 public class TBoolean extends AbstractAttributeType<Boolean> {
 
 	static private final long serialVersionUID = 248266786995111398L;
-
-	public TBoolean() {
-		super("boolean");
+	static private TBoolean instance;
+	
+	static public AbstractAttributeType<?> getInstance() {
+		if (instance == null)
+			instance = new TBoolean();
+		
+		return instance;
+	}
+	
+	private TBoolean() {
+		super("boolean", "Boolean (true/false)");
 	}
 	
 	@Override

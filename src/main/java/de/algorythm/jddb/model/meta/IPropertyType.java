@@ -6,6 +6,7 @@ import de.algorythm.jddb.model.entity.IPropertyValueFactory;
 
 public interface IPropertyType<V> {
 	
+	String getName();
 	String getLabel();
 	boolean isUserDefined();
 	<P extends IPropertyValue<?,? extends IEntityReference>> P createPropertyValue(MProperty property, IPropertyValueFactory<P> factory);

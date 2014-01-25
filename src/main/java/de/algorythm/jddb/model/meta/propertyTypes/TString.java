@@ -8,13 +8,21 @@ import de.algorythm.jddb.model.meta.MProperty;
 public class TString extends AbstractAttributeType<String> {
 
 	static private final long serialVersionUID = 6086451869372645461L;
-
-	public TString() {
-		super("string");
+	static private TString instance;
+	
+	static public AbstractAttributeType<?> getInstance() {
+		if (instance == null)
+			instance = new TString();
+		
+		return instance;
 	}
 	
-	protected TString(final String label) {
-		super(label);
+	protected TString() {
+		super("string", "Single-line text");
+	}
+	
+	protected TString(final String name, final String label) {
+		super(name, label);
 	}
 	
 	@Override

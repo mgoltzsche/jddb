@@ -9,9 +9,17 @@ import de.algorythm.jddb.model.meta.TextAlignment;
 public class TReal extends AbstractAttributeType<Double> {
 
 	static private final long serialVersionUID = 4068458404531019807L;
-
-	public TReal() {
-		super("real");
+	static private TReal instance;
+	
+	static public AbstractAttributeType<?> getInstance() {
+		if (instance == null)
+			instance = new TReal();
+		
+		return instance;
+	}
+	
+	private TReal() {
+		super("real", "Real number");
 	}
 
 	@Override

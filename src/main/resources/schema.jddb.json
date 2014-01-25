@@ -1,0 +1,12 @@
+{"types":[
+{"name":"Person", "label":"Person", "properties":[
+	{"name":"Name", "label":"Name", "searchable":true},
+	{"name":"Adressen", "label":"Adresse", "typeName":"Adresse[]", "containment":true}
+]},
+{"name":"Adresse", "label":"Adresse", "properties":[
+	{"name":"straße / Hausnr.", "label":"Straße / Hausnr.", "searchable":true},
+	{"name":"PLZ", "label":"PLZ", "typeName":"decimal", "searchable":true},
+	{"name":"Stadt", "label":"Stadt", "searchable":true},
+	{"name":"Land", "label":"Land", "searchable":true}
+]}
+]}

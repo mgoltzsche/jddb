@@ -10,6 +10,7 @@ import javafx.collections.FXCollections
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 
 import static javafx.application.Platform.*
+import de.algorythm.jddb.taskQueue.ITaskQueueExceptionHandler
 
 class FXTaskQueue extends AbstractTaskQueue<FXTask> {
 	
@@ -19,8 +20,9 @@ class FXTaskQueue extends AbstractTaskQueue<FXTask> {
 		pendingTasksProperty
 	}
 	
-	new(String name) {
-		super(name)
+	
+	new(String name, ITaskQueueExceptionHandler exceptionHandler) {
+		super(name, exceptionHandler)
 	}
 	
 	def ITaskResult runTask(String id, String label, ITaskPriority priority, Procedure0 task) {
