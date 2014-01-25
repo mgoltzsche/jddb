@@ -38,6 +38,7 @@ public class Bundle {
 	public final String yes;
 	public final String no;
 	
+	public final String confirmCloseUnsaved;
 	public final String open;
 	public final String configure;
 	public final String search;
@@ -95,6 +96,7 @@ public class Bundle {
 		create = b.getString("create");
 		edit = b.getString("edit");
 		choose = b.getString("choose");
+		confirmCloseUnsaved = b.getString("confirmCloseUnsaved");
 		open = b.getString("open");
 		configure = b.getString("configure");
 		search = b.getString("search");

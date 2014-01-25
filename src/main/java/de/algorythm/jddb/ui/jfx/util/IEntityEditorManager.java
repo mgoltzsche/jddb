@@ -19,5 +19,6 @@ public interface IEntityEditorManager {
 	void showEntityEditor(FXEntityReference entityRef);
 	void closeEntityEditor(FXEntityReference entityRef);
 	void closeAll();
+	boolean isAllSaved();
 	List<String> getOpenEditorIDs();
 }

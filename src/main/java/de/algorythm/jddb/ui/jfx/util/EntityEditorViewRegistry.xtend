@@ -41,6 +41,13 @@ public class EntityEditorViewRegistry implements IEntityEditorManager {
 		ids
 	}
 	
+	override isAllSaved() {
+		for (viewData : viewMap.values)
+			if (!viewData.controller.editorState.pristine)
+				return false
+		true
+	}
+	
 	override showEntityEditor(FXEntityReference entityRef) {
 		showEntityEditor(entityRef, null)
 	}

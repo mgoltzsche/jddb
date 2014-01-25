@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Guice;
 
 import de.algorythm.jddb.taskQueue.ITaskQueueExceptionHandler;
+import de.algorythm.jddb.ui.jfx.dialogs.JddbTaskFailureHandler;
+import de.algorythm.jddb.ui.jfx.dialogs.JddbUncaughtExceptionHandler;
 
 public class JavaDesktopDatabase extends Application {
 

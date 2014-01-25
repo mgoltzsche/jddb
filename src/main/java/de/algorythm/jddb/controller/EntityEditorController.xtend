@@ -109,6 +109,10 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 		]
 	}
 	
+	def getEditorState() {
+		return editorState
+	}
+	
 	def save() {
 		if (!transientEntity.type.embedded || saveCallback == null) {
 			editorState.busy = true

@@ -1,4 +1,4 @@
-package de.algorythm.jddb
+package de.algorythm.jddb.ui.jfx.dialogs
 
 import de.algorythm.jddb.bundle.Bundle
 import de.algorythm.jddb.taskQueue.ITaskQueueExceptionHandler

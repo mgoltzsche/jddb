@@ -28,6 +28,7 @@ import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
+import de.algorythm.jddb.ui.jfx.dialogs.ConfirmDialog
 
 @Singleton
 public class JddbFacade {
@@ -43,6 +44,7 @@ public class JddbFacade {
 	val FXEntityDetailPopup entityDetailsPopup = new FXEntityDetailPopup
 	var MainController mainController
 	var Stage primaryStage
+	var ConfirmDialog closeConfirmDialog
 	
 	def startApplication(Stage primaryStage) throws IOException {
 		this.primaryStage = primaryStage
@@ -50,11 +52,20 @@ public class JddbFacade {
 		
 		mainController = loaderResult.controller
 		
+		closeConfirmDialog = new ConfirmDialog(primaryStage)
+		
+		primaryStage.setOnCloseRequest [
+			if (!editorManager.allSaved)
+				if (!closeConfirmDialog.confirm(bundle.confirmCloseUnsaved))
+					consume
+		]
+		
 		primaryStage.title = 'Java Desktop Database'
 		primaryStage.scene = new Scene(loaderResult.node, 900, 700)
 		primaryStage.minWidth = 300
 		primaryStage.minHeight = 400
 		primaryStage.show
+		primaryStage.centerOnScreen
 	}
 	
 	def stopApplication() {
