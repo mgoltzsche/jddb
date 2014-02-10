@@ -12,6 +12,9 @@ import javafx.stage.Modality
 import javafx.stage.Stage
 
 import static javafx.application.Platform.*
+import javafx.scene.layout.HBox
+import javafx.scene.image.ImageView
+import de.algorythm.jddb.bundle.ImageBundle
 
 class JddbTaskFailureHandler implements ITaskQueueExceptionHandler {
 	
@@ -30,7 +33,8 @@ class JddbTaskFailureHandler implements ITaskQueueExceptionHandler {
 		
 		runLater [|
 			val stage = new Stage
-			val vBox = new VBox(5)
+			val vBox = new VBox(7)
+			val hBox = new HBox(7)
 			val label = new Label(errorMessage)
 			val closeBtn = new Button(Bundle.instance.ok)
 			
@@ -38,10 +42,12 @@ class JddbTaskFailureHandler implements ITaskQueueExceptionHandler {
 				stage.close
 			]
 			
-			vBox.padding = new Insets(5, 5, 5, 5)
+			vBox.padding = new Insets(7)
 			vBox.alignment = Pos.CENTER
 			
-			vBox.children += label
+			hBox.children += new ImageView(ImageBundle.instance.warn)
+			hBox.children += label 
+			vBox.children += hBox
 			vBox.children += closeBtn
 			
 			//closeBtn.alignment = Pos.BASELINE_CENTER

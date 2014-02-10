@@ -23,6 +23,8 @@
 <?import de.algorythm.jddb.ui.jfx.controls.FXEntityTableView?>
 <?import de.algorythm.jddb.ui.jfx.controls.FXEntityDetailView?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
 	fx:controller="de.algorythm.jddb.controller.MainController"
@@ -33,22 +35,45 @@
 	<top>
 		<ToolBar>
 			<Label fx:id="currentDatabaseLabel"/>
-			<Button text="%open" onAction="#showDatabaseOpenDialog" fx:id="openDbButton"/>
-			<Button text="%create" onAction="#showDatabaseCreateDialog"/>
-			<Button text="%configure" onAction="#showTypeEditor" disable="${appState.dbClosed}"/>
+			<Button text="%open" onAction="#showDatabaseOpenDialog" fx:id="openDbButton">
+				<graphic>
+					<ImageView >
+						<image>
+							<Image backgroundLoading="true" url="/jddb-icons/folder_16.png" />
+						</image>
+					</ImageView>
+				</graphic>
+			</Button>
+			<Button text="%configure" onAction="#showTypeEditor" disable="${appState.dbClosed}">
+				<graphic>
+					<ImageView >
+						<image>
+							<Image backgroundLoading="true" url="/jddb-icons/gear_16.png" />
+						</image>
+					</ImageView>
+				</graphic>
+			</Button>
 			<Region HBox.hgrow="ALWAYS"/>
 			<TextField fx:id="searchField" promptText="%search"
 				prefWidth="200" disable="${appState.dbClosed}"/>
-			<ComboBox fx:id="typeComboBox" prefWidth="90" disable="${appState.dbClosed}"/>
+			<ComboBox fx:id="typeComboBox" prefWidth="100" disable="${appState.dbClosed}"/>
 			<Region HBox.hgrow="ALWAYS"/>
-			<MenuButton fx:id="newEntityButton" text="%newEntity" disable="${appState.dbClosed}"/>
+			<MenuButton fx:id="newEntityButton" text="%newEntity" disable="${appState.dbClosed}">
+				<graphic>
+					<ImageView>
+						<image>
+							<Image backgroundLoading="true" url="/jddb-icons/document_16.png" />
+						</image>
+					</ImageView>
+				</graphic>
+			</MenuButton>
 		</ToolBar>
 	</top>
 	<center>
 		<TabPane fx:id="tabs" disable="${appState.dbClosed}">
 			<tabs>
 				<Tab fx:id="listTab" id="list" text="%results" closable="false">
-					<SplitPane dividerPositions="1.0, 0.3" fx:id="resultPane">
+					<SplitPane dividerPositions="1.0, 0.3">
 						<FXEntityTableView fx:id="entityTable" />
 						<ScrollPane>
 							<FXEntityDetailView fx:id="entityDetails" visible="${resultPane.visible}" />

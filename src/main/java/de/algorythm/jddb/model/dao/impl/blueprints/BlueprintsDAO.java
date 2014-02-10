@@ -90,60 +90,47 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 	protected abstract TransactionalGraph openGraph(File dbDirectory);
 	protected abstract Index<Vertex> getOrCreateSearchIndex();
 	protected abstract void dropSearchIndex();
-
-	private void deriveSchemaFile(final File dbDirectory) {
-		final String dbDir = dbDirectory.getAbsolutePath();
-		schemaFile = new File(dbDir + File.separator + SCHEMA_FILE_NAME);
-	}
-	
-	@Override
-	public void createAndOpen(final File dbDirectory) throws IOException {
-		dbDirectory.mkdirs();
-		
-		if (dbDirectory.list().length > 0)
-			throw new IllegalArgumentException("Given directory is not empty: " + dbDirectory.getAbsolutePath());
-		
-		try {
-			deriveSchemaFile(dbDirectory);
-			loadSchema(defaultSchemaFile);
-			updateSchemaTypes(schema.getTypes());
-			open(dbDirectory);
-		} catch(IOException e) {
-			try {
-				dbDirectory.delete();
-			} catch(Throwable ex) {}
-			
-			schemaFile = null;
-			throw new IOException("Cannot create database: " + dbDirectory.getAbsolutePath(), e);
-		}
-	}
 	
 	@Override
 	public void open(final File dbDirectory) throws IOException {
 		final String dbDir = dbDirectory.getAbsolutePath();
+		final String[] containedFiles = dbDirectory.list();
+		final boolean dbDirNotExists = !dbDirectory.exists();
+		final boolean createDB = dbDirNotExists || (containedFiles != null && containedFiles.length == 0);
 		
-		if (!dbDirectory.exists())
-			throw new IllegalArgumentException("The database directory does not exist: " + dbDir);
+		if (dbDirNotExists)
+			dbDirectory.mkdirs();
 		
 		if (!dbDirectory.isDirectory())
 			throw new IllegalArgumentException("No directory given: " + dbDir);
 		
 		try {
-			deriveSchemaFile(dbDirectory);
+			schemaFile = new File(dbDir + File.separator + SCHEMA_FILE_NAME);
 			
-			if (!schemaFile.exists() || !schemaFile.isFile())
-				throw new IllegalArgumentException("No database found in directory: " + dbDir);
+			if (createDB) {
+				loadSchema(defaultSchemaFile);
+				updateSchemaTypes(schema.getTypes());
+			} else {
+				if (!schemaFile.exists() || !schemaFile.isFile())
+					throw new IllegalArgumentException("No database found in directory: " + dbDir);
+				
+				loadSchema(schemaFile);
+			}
 			
-			loadSchema(schemaFile);
 			graph = openGraph(dbDirectory);
 			searchIndex = getOrCreateSearchIndex();
 		} catch(IOException e) {
 			schemaFile = null;
-			throw new IOException("Cannot open database: " + dbDirectory.getAbsolutePath(), e);
+			deleteDbDirIfCreated(dbDirectory, createDB);
+			throw new IOException("Cannot open database: " + dbDir, e);
+		} catch(Throwable e) {
+			schemaFile = null;
+			deleteDbDirIfCreated(dbDirectory, createDB);
+			throw new RuntimeException("Cannot open database: " + dbDir, e);
 		}
 	}
 	
-	private void loadSchema(File schemaFile) throws IOException {
+	private void loadSchema(final File schemaFile) throws IOException {
 		schema = mapper.readValue(schemaFile, Schema.class);
 		final Map<String, IPropertyType<?>> typeMap = new HashMap<>();
 		
@@ -160,6 +147,14 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 		for (MEntityType type : schema.getTypes())
 			for (MProperty property : type.getProperties())
 				property.loadTypeForName(typeMap);
+	}
+	
+	private void deleteDbDirIfCreated(final File dbDirectory, final boolean createDB) {
+		if (createDB) {
+			try {
+				dbDirectory.delete();
+			} catch(Throwable ex) {}
+		}
 	}
 
 	@Override

@@ -34,7 +34,7 @@
 					<ImageView>
 						<image>
 							<Image backgroundLoading="true"
-								url="/jddb-icons/delete.png" />
+								url="/jddb-icons/delete_16.png" />
 						</image>
 					</ImageView>
 				</graphic>
@@ -44,7 +44,7 @@
 					<ImageView>
 						<image>
 							<Image backgroundLoading="true"
-								url="/jddb-icons/save.png" />
+								url="/jddb-icons/tick_16.png" />
 						</image>
 					</ImageView>
 				</graphic>

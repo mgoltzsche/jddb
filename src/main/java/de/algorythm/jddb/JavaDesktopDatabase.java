@@ -1,6 +1,10 @@
 package de.algorythm.jddb;
 
+import java.lang.Thread.UncaughtExceptionHandler;
+
 import javafx.application.Application;
+import javafx.collections.ObservableList;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import javax.inject.Inject;
@@ -9,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 import de.algorythm.jddb.taskQueue.ITaskQueueExceptionHandler;
 import de.algorythm.jddb.ui.jfx.dialogs.JddbTaskFailureHandler;
@@ -27,11 +32,21 @@ public class JavaDesktopDatabase extends Application {
 
 	@Override
 	public void start(final Stage primaryStage) throws Exception {
+		ObservableList<Image> icons = primaryStage.getIcons();
+		
+		icons.addAll(new Image("/jddb-icons/logo16.png"), new Image("/jddb-icons/logo32.png"), new Image("/jddb-icons/logo.png"));
+		
 		try {
+			final UncaughtExceptionHandler uncaughtExceptionHandler = new JddbUncaughtExceptionHandler(primaryStage);
+			
+			Thread.setDefaultUncaughtExceptionHandler(uncaughtExceptionHandler);
+			//Thread.currentThread().setUncaughtExceptionHandler(uncaughtExceptionHandler);
+			
 			final ITaskQueueExceptionHandler failureHandler = new JddbTaskFailureHandler(primaryStage);
-			Thread.setDefaultUncaughtExceptionHandler(new JddbUncaughtExceptionHandler(primaryStage));
-			Guice.createInjector(new JddbModule(failureHandler)).injectMembers(this);
-
+			final JddbModule jddbModule = new JddbModule(failureHandler);
+			final Injector injector = Guice.createInjector(jddbModule);
+			
+			injector.injectMembers(this);
 			facade.startApplication(primaryStage);
 		} catch(Throwable e) {
 			log.error("Error during application start: " + e.getMessage(), e);

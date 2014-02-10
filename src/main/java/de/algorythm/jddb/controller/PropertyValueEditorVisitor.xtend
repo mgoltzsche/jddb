@@ -55,9 +55,11 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import static extension de.algorythm.jddb.ui.jfx.util.OpenFileUtil.*
 import de.algorythm.jddb.model.meta.propertyTypes.CollectionType
 import de.algorythm.jddb.bundle.ImageBundle
+import javafx.scene.control.Tooltip
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
+	static val EMPTY = ''
 	static val FIELD_ERROR_STYLE_CLASS = 'field-error'
 	static val DECIMAL_PATTERN = Pattern.compile('^\\d*$')
 	static val REAL_PATTERN = Pattern.compile('^\\d+((\\.|,)\\d+)?$')
@@ -92,13 +94,15 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		val entityType = collectionType.getItemType
 		val vBox = new VBox
 		val selectedEntities = new ListView<FXEntityReference>
-		val addButton = new Button(bundle.add)
 		val vBoxChildren = vBox.children
 		var Procedure1<FXEntityReference> onRemove
+		val addButton = new Button => [
+			graphic = new ImageView(ImageBundle.instance.add)
+			tooltip = new Tooltip(bundle.add)
+			disable = !property.containment
+		]
 		
-		addButton.graphic = new ImageView(ImageBundle.instance.plus)
-		
-		if (property.isContainment) {
+		if (property.containment) {
 			vBoxChildren += selectedEntities
 			vBoxChildren += addButton
 			
@@ -132,18 +136,17 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		} else {
 			val hBox = new HBox
 			val hBoxChildren = hBox.children
-			val createButton = new Button(bundle.create)
 			val addEntityField = new EntityField [searchPhrase,it|
 				runTask('''search-«entityRef.id»-«property.name»''', '''«bundle.taskSearch»: «searchPhrase» («entityType.label»)''', ITaskPriority.FIRST) [|
 					all = entityType.list(searchPhrase)
 				]
 			]
-			HBox.setHgrow(addEntityField, Priority.ALWAYS)
+			
 			val selectionChangeListener = [|
 				addButton.disable = addEntityField.value == null ||
 					selectedEntities.items.contains(addEntityField.value)
 			]
-			addButton.disable = true
+			
 			addEntityField.valueProperty.addListener [
 				selectionChangeListener.apply
 			]
@@ -160,15 +163,19 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 				}
 			]
 			
-			createButton.setOnAction [
-				entityType.createNewEntity.showEntityEditor [
-					selectedEntities.items += entityReference
-				]
-			]
+			HBox.setHgrow(addEntityField, Priority.ALWAYS)
 			
 			hBoxChildren += addEntityField
 			hBoxChildren += addButton
-			hBoxChildren += createButton
+			hBoxChildren += new Button => [
+				graphic = new ImageView(ImageBundle.instance.create)
+				tooltip = new Tooltip(bundle.create)
+				setOnAction [
+					entityType.createNewEntity.showEntityEditor [
+						selectedEntities.items += entityReference
+					]
+				]
+			]
 			vBoxChildren += selectedEntities
 			vBoxChildren += hBox
 			
@@ -196,26 +203,30 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	override doWithAssociation(FXAssociation propertyValue) {
 		val property = propertyValue.property
 		val entityType = property.getType as MEntityType
-		val noRef = propertyValue.value == null
+		val isNull = propertyValue.value == null
 		val HBox hBox = new HBox
 		val hBoxChildren = hBox.children
-		val removeButton = new Button(bundle.remove)
-		val editButtonLabel = if (noRef) {
-				removeButton.disable = true
-				bundle.create
-			} else
-				bundle.edit
-		val editButton = new Button(editButtonLabel)
+		val removeButton = new Button => [
+			graphic = new ImageView(ImageBundle.instance.delete)
+			tooltip = new Tooltip(bundle.remove)
+		]
+		val editButton = new Button
+		val buttonUpdater = [boolean isNullValue|
+			removeButton.disable = isNullValue
+			
+			if (isNullValue) {
+				editButton.graphic = new ImageView(ImageBundle.instance.create)
+				editButton.tooltip = new Tooltip(bundle.create)
+			} else {
+				editButton.graphic = new ImageView(ImageBundle.instance.edit)
+				editButton.tooltip = new Tooltip(bundle.edit)
+			}
+		]
 		
-		removeButton.graphic = new ImageView(ImageBundle.instance.delete)
+		buttonUpdater.apply(isNull)
 		
 		propertyValue.valueProperty.addListener [c,o,value|
-			val isNull = value == null
-			removeButton.disable = isNull
-			editButton.text = if (isNull)
-					bundle.create
-				else
-					bundle.edit
+			buttonUpdater.apply(value == null)
 		]
 		
 		if (property.isContainment) {
@@ -425,56 +436,51 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		val hBoxChildren = hBox.children
 		val imageView = new ImageView
 		val fileField = new TextField
-		val chooseBtn = new Button(bundle.choose)
-		val removeBtn = new Button(bundle.remove)
-		val openBtn = new Button(bundle.open)
-		val openButtonUnsupported = !openFileSupported
+		val fileFieldEmptyBinding = fileField.textProperty.notNull.and(fileField.textProperty.isEqualTo(EMPTY))
+		val openButtonSupported = openFileSupported
 		
-		openBtn.disable = true
-		removeBtn.disable = true
 		
 		fileField.editable = false
 		fileField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
 		HBox.setHgrow(fileField, Priority.ALWAYS)
 		
-		chooseBtn.setOnAction [
-			fileField.chooseFile
-		]
-		
-		removeBtn.setOnAction [
-			fileField.text = ''
-		]
-		
-		if (openFileSupported) {
-			openBtn.setOnAction [
-				fileField.text.openFileExternally
+		hBoxChildren += fileField
+		hBoxChildren += new Button => [
+			graphic = new ImageView(ImageBundle.instance.chooseFile)
+			tooltip = new Tooltip(bundle.choose)
+			setOnAction [
+				fileField.chooseFile
 			]
-			
+		]
+		if (openButtonSupported) {
+			hBoxChildren += new Button => [
+				graphic = new ImageView(ImageBundle.instance.details)
+				tooltip = new Tooltip(bundle.open)
+				disable = true
+				disableProperty.bind(fileFieldEmptyBinding)
+				setOnAction [
+					fileField.text.openFileExternally
+				]
+			]
 			imageView.setOnMouseClicked [
 				fileField.text.openFileExternally
 			]
 		}
 		
-		hBoxChildren += fileField
-		hBoxChildren += chooseBtn
-		hBoxChildren += openBtn
-		hBoxChildren += removeBtn
+		hBoxChildren += new Button => [
+			graphic = new ImageView(ImageBundle.instance.delete)
+			tooltip = new Tooltip(bundle.remove)
+			disable = true
+			disableProperty.bind(fileFieldEmptyBinding)
+			setOnAction [
+				fileField.text = ''
+			]
+		]
 		vBoxChildren += hBox
 		vBoxChildren += imageView
 		
-		fileField.textProperty.addListener [c,o,filePath|
-			imageView.image = null;
-			
-			if (filePath != null && !filePath.empty) {
-				removeBtn.disable = false
-				openBtn.disable = openButtonUnsupported
-				ImageLoader.INSTANCE.bindImage(imageView, fileField.textProperty, visibleProperty)
-			} else {
-				removeBtn.disable = true
-				openBtn.disable = true
-			}
-		]
 		propertyValue.bindStringProperty(fileField.textProperty)
+		ImageLoader.INSTANCE.bindImage(imageView, fileField.textProperty, visibleProperty)
 		
 		GridPane.setHgrow(vBox, Priority.ALWAYS)
 		gridPane.add(vBox, 1, row)

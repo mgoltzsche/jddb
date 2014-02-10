@@ -44,7 +44,7 @@ public class JddbFacade {
 	val FXEntityDetailPopup entityDetailsPopup = new FXEntityDetailPopup
 	var MainController mainController
 	var Stage primaryStage
-	var ConfirmDialog closeConfirmDialog
+	var ConfirmDialog confirmDialog
 	
 	def startApplication(Stage primaryStage) throws IOException {
 		this.primaryStage = primaryStage
@@ -52,11 +52,11 @@ public class JddbFacade {
 		
 		mainController = loaderResult.controller
 		
-		closeConfirmDialog = new ConfirmDialog(primaryStage)
+		confirmDialog = new ConfirmDialog(primaryStage)
 		
 		primaryStage.setOnCloseRequest [
 			if (!editorManager.allSaved)
-				if (!closeConfirmDialog.confirm(bundle.confirmCloseUnsaved))
+				if (!confirmDialog.confirm(bundle.confirmCloseUnsaved))
 					consume
 		]
 		
@@ -92,22 +92,15 @@ public class JddbFacade {
 		editorManager.closeAll
 	}
 	
-	def void createDB(File dbFile) {
-		editorManager.closeAll
-		
-		val closeTask = closeDB
-		
-		runTask('open-db', bundle.taskCreateDB, ITaskPriority.LAST) [|
-			closeTask.requireCompleted
-			dao.createAndOpen(dbFile)
-			
-			runLater [|
-				mainController.onDatabaseOpened
-			]
-		]
-	}
-	
 	def void openDB(File dbFile) {
+		if ((!dbFile.exists || dbFile.directory && dbFile.list.length == 0) &&
+				!confirmDialog.confirm(dbFile.absolutePath + ' ' + bundle.confirmDatabaseCreation)) {
+			try {
+				dbFile.delete
+			} catch(IOException e) {}
+			return
+		}
+		
 		editorManager.closeAll
 		
 		val closeTask = closeDB

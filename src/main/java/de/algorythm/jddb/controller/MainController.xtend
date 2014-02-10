@@ -36,6 +36,7 @@ import javafx.stage.DirectoryChooser
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
+import de.algorythm.jddb.ui.jfx.cell.SearchTypeCell
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -78,6 +79,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			search
 		]
 		
+		typeComboBox.buttonCell = new SearchTypeCell()
 		typeComboBox.valueProperty.addListener [
 			setSelectedType(typeComboBox.value)
 		]
@@ -171,15 +173,6 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 				entityTable.items.all = entities
 			]
 		]
-	}
-	
-	def showDatabaseCreateDialog() {
-		val dc = new DirectoryChooser
-		dc.title = bundle.taskOpenDB
-		var dbFile = dc.showDialog(openDbButton.scene.window)
-		
-		if (dbFile != null)
-			dbFile.createDB
 	}
 	
 	def showDatabaseOpenDialog() {

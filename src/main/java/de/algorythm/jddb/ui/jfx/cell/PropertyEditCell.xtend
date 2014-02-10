@@ -6,7 +6,6 @@ import de.algorythm.jddb.ui.jfx.model.meta.FXAttributeType
 import de.algorythm.jddb.ui.jfx.model.meta.FXCollectionType
 import de.algorythm.jddb.ui.jfx.model.meta.FXEntityType
 import de.algorythm.jddb.ui.jfx.model.meta.FXProperty
-import de.algorythm.jddb.ui.jfx.model.meta.IFXPropertyType
 import java.util.ArrayList
 import java.util.LinkedList
 import javafx.beans.value.ChangeListener
@@ -17,6 +16,7 @@ import javafx.scene.control.ComboBox
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
+import de.algorythm.jddb.ui.jfx.model.meta.IFXPropertyType
 
 public class PropertyEditCell extends AbstractLabeledListCell<FXProperty> {
 	

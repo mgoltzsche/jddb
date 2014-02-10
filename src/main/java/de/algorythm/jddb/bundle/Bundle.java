@@ -38,6 +38,7 @@ public class Bundle {
 	public final String yes;
 	public final String no;
 	
+	public final String confirmDatabaseCreation;
 	public final String confirmCloseUnsaved;
 	public final String open;
 	public final String configure;
@@ -55,7 +56,6 @@ public class Bundle {
 	public final String stateCanceled;
 	public final String stateCompleted;
 	public final String stateFailed;
-	public final String taskCreateDB;
 	public final String taskOpenDB;
 	public final String taskCloseDB;
 	public final String taskSearch;
@@ -96,6 +96,7 @@ public class Bundle {
 		create = b.getString("create");
 		edit = b.getString("edit");
 		choose = b.getString("choose");
+		confirmDatabaseCreation = b.getString("confirmDatabaseCreation");
 		confirmCloseUnsaved = b.getString("confirmCloseUnsaved");
 		open = b.getString("open");
 		configure = b.getString("configure");
@@ -114,7 +115,6 @@ public class Bundle {
 		stateCanceled = b.getString("stateCanceled");
 		stateCompleted = b.getString("stateCompleted");
 		stateFailed = b.getString("stateFailed");
-		taskCreateDB = b.getString("taskCreateDB");
 		taskOpenDB = b.getString("taskOpenDB");
 		taskCloseDB = b.getString("taskCloseDB");
 		taskSearch = b.getString("taskSearch");

@@ -68,7 +68,7 @@ public abstract class AbstractLabeledListCell<T extends FXAbstractLabeledElement
 	protected final Button deleteButton = new Button(bundle.delete);
 	
 	public AbstractLabeledListCell() {
-		deleteButton.setGraphic(new ImageView(ImageBundle.getInstance().minus));
+		deleteButton.setGraphic(new ImageView(ImageBundle.getInstance().delete));
 		deleteButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(final ActionEvent evt) {

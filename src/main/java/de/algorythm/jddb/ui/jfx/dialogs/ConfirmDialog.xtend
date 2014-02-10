@@ -12,6 +12,8 @@ import javafx.stage.Stage
 
 import static javafx.application.Platform.*
 import javafx.geometry.Insets
+import javafx.scene.image.ImageView
+import de.algorythm.jddb.bundle.ImageBundle
 
 class ConfirmDialog {
 	
@@ -22,7 +24,8 @@ class ConfirmDialog {
 	
 	new(Stage primaryStage) {		
 		val vBox = new VBox(7)
-		val hBox = new HBox(7)
+		val labelBox = new HBox(7)
+		val btnBox = new HBox(7)
 		val okButton = new Button(bundle.yes) => [
 			setOnAction [
 				result = true
@@ -40,11 +43,13 @@ class ConfirmDialog {
 		]
 		
 		vBox.padding = new Insets(7)
-		hBox.alignment = Pos.CENTER
-		hBox.children += okButton
-		hBox.children += cancelButton
-		vBox.children += label
-		vBox.children += hBox
+		labelBox.children += new ImageView(ImageBundle.instance.warn)
+		labelBox.children += label
+		btnBox.alignment = Pos.CENTER
+		btnBox.children += okButton
+		btnBox.children += cancelButton
+		vBox.children += labelBox
+		vBox.children += btnBox
 		
 		stage.initOwner(primaryStage)
 		stage.initModality(Modality.APPLICATION_MODAL)

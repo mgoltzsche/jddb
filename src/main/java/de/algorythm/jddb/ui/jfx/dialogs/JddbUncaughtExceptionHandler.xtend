@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
 import java.lang.Thread.UncaughtExceptionHandler
+import javafx.scene.image.ImageView
+import de.algorythm.jddb.bundle.ImageBundle
 
 public class JddbUncaughtExceptionHandler implements UncaughtExceptionHandler {
 
@@ -34,8 +36,9 @@ public class JddbUncaughtExceptionHandler implements UncaughtExceptionHandler {
 		
 		runLater [|
 			val stage = new Stage
-			val vBox = new VBox(5)
-			val hBox = new HBox
+			val vBox = new VBox(7)
+			val labelBox = new HBox(7)
+			val btnBox = new HBox
 			val label = new Label('Sorry, Java Desktop Database must be terminated due to a fatal error:')
 			val infoArea = new TextArea
 			val stackTraceWriter = new StringWriter
@@ -48,14 +51,15 @@ public class JddbUncaughtExceptionHandler implements UncaughtExceptionHandler {
 			e.printStackTrace(new PrintWriter(stackTraceWriter))
 			infoArea.editable = false
 			infoArea.text = stackTraceWriter.toString
-			vBox.padding = new Insets(5, 5, 5, 5)
-			hBox.padding = new Insets(5, 5, 5, 5)
-			hBox.alignment = Pos.BASELINE_CENTER
-			
-			hBox.children += closeBtn
-			vBox.children += label
+			labelBox.children += new ImageView(ImageBundle.instance.stop)
+			labelBox.children += label
+			btnBox.padding = new Insets(7)
+			btnBox.alignment = Pos.BASELINE_CENTER
+			btnBox.children += closeBtn
+			vBox.padding = new Insets(7)
+			vBox.children += labelBox
 			vBox.children += infoArea
-			vBox.children += hBox
+			vBox.children += btnBox
 			
 			closeBtn.alignment = Pos.BASELINE_CENTER
 			

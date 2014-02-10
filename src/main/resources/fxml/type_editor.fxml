@@ -32,7 +32,7 @@
 							<graphic>
 								<ImageView>
 									<image>
-										<Image backgroundLoading="true" url="/jddb-icons/plus.png" />
+										<Image backgroundLoading="true" url="/jddb-icons/plus_16.png" />
 									</image>
 								</ImageView>
 							</graphic>
@@ -53,7 +53,7 @@
 							<graphic>
 								<ImageView>
 									<image>
-										<Image backgroundLoading="true" url="/jddb-icons/plus.png" />
+										<Image backgroundLoading="true" url="/jddb-icons/plus_16.png" />
 									</image>
 								</ImageView>
 							</graphic>
@@ -71,7 +71,7 @@
 			<graphic>
 				<ImageView>
 					<image>
-						<Image backgroundLoading="true" url="/jddb-icons/save.png" />
+						<Image backgroundLoading="true" url="/jddb-icons/tick_16.png" />
 					</image>
 				</ImageView>
 			</graphic>
