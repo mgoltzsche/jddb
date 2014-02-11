@@ -6,6 +6,8 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.algorythm.jddb.model.dao.util.IFilePathConverter;
+
 public class OpenFileUtil {
 	
 	static private final Logger LOG = LoggerFactory.getLogger(OpenFileUtil.class);
@@ -14,6 +16,11 @@ public class OpenFileUtil {
 		void openFileExternally(String filePath);
 	}
 	static private final IFileOpenAction impl;
+	static private IFilePathConverter pathConverter;
+	
+	static public void setFilePathConverter(final IFilePathConverter converter) {
+		pathConverter = converter;
+	}
 	
 	static private class UnsupportedFileOpenAction implements IFileOpenAction {
 		@Override
@@ -61,7 +68,9 @@ public class OpenFileUtil {
 		return impl.isOpenFileSupported();
 	}
 	
-	static public void openFileExternally(final String filePath) {
+	static public void openFileExternally(String filePath) {
+		filePath = pathConverter.toAbsolutePath(filePath);
+		
 		impl.openFileExternally(filePath);
 	}
 }

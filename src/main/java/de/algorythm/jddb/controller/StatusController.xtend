@@ -68,8 +68,8 @@ class StatusController implements Initializable {
 	def private showTaskDetails() {
 		if (taskDetails.showing)
 			taskDetails.hide
-		
-		taskDetails.show
+		else
+			taskDetails.show
 	}
 	
 	def private void taskListChanged(Change<? extends FXTask> it) {

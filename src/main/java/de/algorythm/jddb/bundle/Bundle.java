@@ -17,6 +17,7 @@ public class Bundle {
 	}
 	
 	public final ResourceBundle bundle;
+	public final String initializing;
 	public final String ok;
 	public final String close;
 	public final String unknown;
@@ -34,14 +35,16 @@ public class Bundle {
 	public final String remove;
 	public final String create;
 	public final String edit;
-	public final String choose;
+	public final String chooseFile;
+	public final String chooseDirectory;
 	public final String yes;
 	public final String no;
 	
 	public final String confirmDatabaseCreation;
 	public final String confirmCloseUnsaved;
+	public final String confirmDelete;
 	public final String open;
-	public final String configure;
+	public final String settings;
 	public final String search;
 	public final String all;
 	public final String newEntity;
@@ -78,6 +81,7 @@ public class Bundle {
 		}
 		
 		bundle = b;
+		initializing = b.getString("initializing");
 		ok = b.getString("ok");
 		close = b.getString("close");
 		unknown = b.getString("unknown");
@@ -95,11 +99,13 @@ public class Bundle {
 		remove = b.getString("remove");
 		create = b.getString("create");
 		edit = b.getString("edit");
-		choose = b.getString("choose");
+		chooseFile = b.getString("chooseFile");
+		chooseDirectory = b.getString("chooseDirectory");
 		confirmDatabaseCreation = b.getString("confirmDatabaseCreation");
 		confirmCloseUnsaved = b.getString("confirmCloseUnsaved");
+		confirmDelete = b.getString("confirmDelete");
 		open = b.getString("open");
-		configure = b.getString("configure");
+		settings = b.getString("settings");
 		search = b.getString("search");
 		all = b.getString("all");
 		newEntity = b.getString("newEntity");

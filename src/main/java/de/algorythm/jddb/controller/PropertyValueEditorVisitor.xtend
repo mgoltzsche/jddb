@@ -56,6 +56,7 @@ import static extension de.algorythm.jddb.ui.jfx.util.OpenFileUtil.*
 import de.algorythm.jddb.model.meta.propertyTypes.CollectionType
 import de.algorythm.jddb.bundle.ImageBundle
 import javafx.scene.control.Tooltip
+import de.algorythm.jddb.model.dao.util.IFilePathConverter
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -69,6 +70,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension FXTaskQueue
 	@Inject extension JddbFacade facade
+	@Inject extension IFilePathConverter
 	@Inject Bundle bundle
 	var GridPane gridPane
 	var int row
@@ -439,7 +441,6 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		val fileFieldEmptyBinding = fileField.textProperty.notNull.and(fileField.textProperty.isEqualTo(EMPTY))
 		val openButtonSupported = openFileSupported
 		
-		
 		fileField.editable = false
 		fileField.setMinSize(MIN_FIELD_WIDTH, MIN_FIELD_HEIGHT)
 		HBox.setHgrow(fileField, Priority.ALWAYS)
@@ -447,7 +448,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		hBoxChildren += fileField
 		hBoxChildren += new Button => [
 			graphic = new ImageView(ImageBundle.instance.chooseFile)
-			tooltip = new Tooltip(bundle.choose)
+			tooltip = new Tooltip(bundle.chooseFile)
 			setOnAction [
 				fileField.chooseFile
 			]
@@ -492,7 +493,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		var file = fc.showOpenDialog(gridPane.scene.window)
 		
 		if (file != null)
-			fileLabel.text = file.absolutePath
+			fileLabel.text = file.toAbstractRelativePath
 	}
 	
 	def private void bindStringProperty(AbstractFXAttributeValue<String> propertyValue, StringProperty textProperty) {

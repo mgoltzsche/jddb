@@ -40,23 +40,22 @@ public class JddbFacade {
 	@Inject IObjectCache<FXEntity> entityCache
 	@Inject extension GuiceFxmlLoader
 	@Inject IEntityEditorManager editorManager
+	@Inject extension ConfirmDialog
 	@Inject Bundle bundle
-	val FXEntityDetailPopup entityDetailsPopup = new FXEntityDetailPopup
+	var FXEntityDetailPopup entityDetailsPopup
 	var MainController mainController
 	var Stage primaryStage
-	var ConfirmDialog confirmDialog
 	
 	def startApplication(Stage primaryStage) throws IOException {
 		this.primaryStage = primaryStage
+		entityDetailsPopup = new FXEntityDetailPopup
 		val FxmlLoaderResult<Parent, MainController> loaderResult = load('/fxml/jddb.fxml')
 		
 		mainController = loaderResult.controller
 		
-		confirmDialog = new ConfirmDialog(primaryStage)
-		
 		primaryStage.setOnCloseRequest [
 			if (!editorManager.allSaved)
-				if (!confirmDialog.confirm(bundle.confirmCloseUnsaved))
+				if (!confirm(bundle.confirmCloseUnsaved))
 					consume
 		]
 		
@@ -94,7 +93,7 @@ public class JddbFacade {
 	
 	def void openDB(File dbFile) {
 		if ((!dbFile.exists || dbFile.directory && dbFile.list.length == 0) &&
-				!confirmDialog.confirm(dbFile.absolutePath + ' ' + bundle.confirmDatabaseCreation)) {
+				!confirm(dbFile.absolutePath + ' ' + bundle.confirmDatabaseCreation)) {
 			try {
 				dbFile.delete
 			} catch(IOException e) {}
@@ -127,7 +126,7 @@ public class JddbFacade {
 	}
 	
 	def showTypeEditor() throws IOException {
-		showModalWindow(TYPE_EDITOR_FXML, 'jDOE - ' + bundle.typeDefinition, primaryStage, 600, 500)
+		showModalWindow(TYPE_EDITOR_FXML, bundle.settings, primaryStage, 600, 500)
 	}
 	
 	def updateSchema(Collection<MEntityType> types) {

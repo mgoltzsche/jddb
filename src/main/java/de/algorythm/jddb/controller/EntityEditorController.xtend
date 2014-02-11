@@ -32,6 +32,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
+import de.algorythm.jddb.ui.jfx.dialogs.ConfirmDialog
 
 public class EntityEditorController implements IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference>, IEntitySaveResult, IFXEntityChangeListener {
 	
@@ -39,6 +40,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 	@Inject extension Injector
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension JddbFacade facade
+	@Inject extension ConfirmDialog
 	@Inject Bundle bundle
 	@FXML EditorStateModel editorState
 	@FXML SplitPane editorPane
@@ -186,7 +188,10 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 			saveTask.onSuccess
 	}
 	
-	def delete() {
+	def void delete() {
+		if (!confirm(bundle.confirmDelete + "\n" + transientEntity))
+			return;
+		
 		editorState.busy = true
 		editorState.deleting = true
 		val deleteEntity = transientEntity.copy
@@ -222,7 +227,7 @@ public class EntityEditorController implements IObserver<FXEntity, IFXPropertyVa
 		]
 	}
 	
-	def close() {
+	def void close() {
 		removeObserver(this)
 		
 		runTask('close-unsaved-containment-editors-' + entityReference.id, bundle.taskCloseTransientContainmentEditors, ITaskPriority.FIRST) [|

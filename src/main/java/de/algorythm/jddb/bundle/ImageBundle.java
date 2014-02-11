@@ -14,6 +14,7 @@ public class ImageBundle {
 		return instance;
 	}
 	
+	public final Image logo;
 	public final Image warn;
 	public final Image stop;
 	public final Image search;
@@ -26,6 +27,7 @@ public class ImageBundle {
 	public final Image chooseFile;
 	
 	private ImageBundle() {
+		logo = loadImage("logo.png");
 		warn = loadImage("warning_32.png");
 		stop = loadImage("stop_32.png");
 		search = loadImage("search_16.png");

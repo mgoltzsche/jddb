@@ -16,12 +16,14 @@ import org.eclipse.xtext.xbase.lib.Functions.Function1
 
 import static javafx.application.Platform.*
 import de.algorythm.jddb.taskQueue.ITaskQueueExceptionHandler
+import de.algorythm.jddb.model.dao.util.IFilePathConverter
 
 class ImageLoader {
 
 	static public val INSTANCE = new ImageLoader
 	
 	extension FXTaskQueue = new FXTaskQueue('image-loader-queue', ITaskQueueExceptionHandler.DEFAULT)
+	var IFilePathConverter pathConverter
 	val cache = new ObjectCache<ReadOnlyObjectProperty<Image>>('image-cache', new SoftCacheReferenceFactory<ReadOnlyObjectProperty<Image>>)
 	val Function1<String, ReadOnlyObjectProperty<Image>> imageLoader = [
 		val future = new SimpleObjectProperty<Image>
@@ -34,6 +36,10 @@ class ImageLoader {
 	]
 	
 	private new() {
+	}
+	
+	def setFilePathConverter(IFilePathConverter pathConverter) {
+		this.pathConverter = pathConverter
 	}
 	
 	/*def preloadImage(String filePath) {
@@ -88,7 +94,7 @@ class ImageLoader {
 	
 	def private loadImage(String filePath, SimpleObjectProperty<Image> imageProperty) {
 		try {
-			val image = new CachedImage('file:' + filePath, imageProperty)
+			val image = new CachedImage('file:' + pathConverter.toAbsolutePath(filePath), imageProperty)
 			
 			if (!image.error) {
 				runLater [|
