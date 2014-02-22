@@ -66,6 +66,7 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 	private Index<Vertex> searchIndex;
 	private final HashSet<IObserver<V, P, REF>> observers = new HashSet<>();
 	private ModelChange<V, P, REF> change;
+	private File databaseFile;
 	private File schemaFile;
 	private final File defaultSchemaFile;
 
@@ -85,6 +86,11 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 	@Override
 	public boolean isOpened() {
 		return schemaFile != null;
+	}
+	
+	@Override
+	public File getDatabaseFile() {
+		return databaseFile;
 	}
 
 	protected abstract TransactionalGraph openGraph(File dbDirectory);
@@ -119,6 +125,7 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 			
 			graph = openGraph(dbDirectory);
 			searchIndex = getOrCreateSearchIndex();
+			databaseFile = dbDirectory;
 		} catch(IOException e) {
 			schemaFile = null;
 			deleteDbDirIfCreated(dbDirectory, createDB);
@@ -165,6 +172,7 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 		graph = null;
 		searchIndex = null;
 		schema = null;
+		databaseFile = null;
 	}
 
 	@Override

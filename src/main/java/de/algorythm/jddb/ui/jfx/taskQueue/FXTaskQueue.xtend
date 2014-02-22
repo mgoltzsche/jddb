@@ -11,8 +11,11 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 
 import static javafx.application.Platform.*
 import de.algorythm.jddb.taskQueue.ITaskQueueExceptionHandler
+import org.slf4j.LoggerFactory
 
 class FXTaskQueue extends AbstractTaskQueue<FXTask> {
+	
+	static val log = LoggerFactory.getLogger(typeof(FXTaskQueue))
 	
 	static val pendingTasksProperty = new SimpleListProperty<FXTask>(FXCollections.observableList(new ArrayList<FXTask>))
 	
@@ -40,8 +43,12 @@ class FXTaskQueue extends AbstractTaskQueue<FXTask> {
 	}
 	
 	override onTaskRemoved(FXTask task) {
-		runLater [|
-			pendingTasksProperty.remove(task)
-		]
+		try {
+			runLater [|
+				pendingTasksProperty.remove(task)
+			]
+		} catch(IllegalStateException e) {
+			log.debug('Cannot register deletion pendingTasksProperty entry', e)
+		}
 	}
 }

@@ -39,19 +39,21 @@ public class JddbModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		try {
-			final String prefPath = System.getProperty("user.home") + File.separator + ".jddb";
+			final String userHome = System.getProperty("user.home");
+			final String prefPath = userHome + File.separator + ".jddb";
 			final File preferencesDirectory = new File(prefPath);
-			final Config config = new Config(preferencesDirectory);
-			final FilePathManager pathManager = new FilePathManager(new File(preferencesDirectory.getAbsolutePath() + File.separator + "root-directories.cfg"), new File(System.getProperty("user.home")));
+			final File appStateFile = new File(prefPath + File.separator + "last.session");
+			final FilePathManager pathManager = new FilePathManager(new File(preferencesDirectory.getAbsolutePath() + File.separator + "root-directories.cfg"), new File(userHome));
 			final FXModelFactory modelFactory = new FXModelFactory();
 			final IObjectCache<FXEntity> entityCache = new ObjectCache<>("entity-cache", new WeakCacheReferenceFactory<FXEntity>());
 			final IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao = new Neo4jDbDAO<>(modelFactory);
 			final ITaskQueueExceptionHandler taskFailureHandler = new JddbTaskFailureHandler(primaryStage);
+			final ApplicationStateManager appStateManager = new ApplicationStateManager(appStateFile);
 			
 			ImageLoader.INSTANCE.setFilePathConverter(pathManager);
 			OpenFileUtil.setFilePathConverter(pathManager);
 			
-			bind(Config.class).toInstance(config);
+			bind(ApplicationStateManager.class).toInstance(appStateManager);
 			bind(FilePathManager.class).toInstance(pathManager);
 			bind(IFilePathConverter.class).toInstance(pathManager);
 			bind(FXTaskQueue.class).toInstance(new FXTaskQueue("entity-loader-queue", taskFailureHandler));

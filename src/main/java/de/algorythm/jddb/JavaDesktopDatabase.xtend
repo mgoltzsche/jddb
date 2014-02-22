@@ -10,12 +10,15 @@ import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
 import de.algorythm.jddb.ui.jfx.dialogs.SplashScreen
+import de.algorythm.jddb.ui.jfx.taskQueue.FXTaskQueue
+import de.algorythm.jddb.taskQueue.ITaskPriority
 
 class JavaDesktopDatabase extends Application {
 
 	static val log = LoggerFactory.getLogger(typeof(JavaDesktopDatabase))
 	
 	@Inject JddbFacade facade
+	@Inject extension FXTaskQueue
 
 	def static main(String[] args) {
 		launch(args)
@@ -45,8 +48,14 @@ class JavaDesktopDatabase extends Application {
 			runLater [|
 				try {
 					primaryStage.icons += icons
+					
 					facade.startApplication(primaryStage)
-					splash.hide
+					
+					runTask("hide-splash-screen", "Hide splash screen", ITaskPriority.LAST) [|
+						runLater [|
+							splash.hide
+						]
+					]
 				} catch(Throwable e) {
 					log.error('Error during application start: ' + e.message, e)
 					System.exit(1)

@@ -20,6 +20,7 @@ public interface IDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF>,
 	void addObserver(IObserver<V,P,REF> observer);
 	void removeObserver(IObserver<V,P,REF> observer);
 	ISchema getSchema();
+	File getDatabaseFile();
 	void updateSchemaTypes(Collection<MEntityType> types) throws IOException;
 	Set<V> list(MEntityType type);
 	Set<V> list(MEntityType type, String search);

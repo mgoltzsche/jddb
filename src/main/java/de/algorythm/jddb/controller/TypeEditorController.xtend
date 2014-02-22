@@ -6,6 +6,8 @@ import de.algorythm.jddb.model.dao.IDAO
 import de.algorythm.jddb.model.dao.util.FilePathManager
 import de.algorythm.jddb.model.meta.propertyTypes.AbstractAttributeType
 import de.algorythm.jddb.ui.jfx.cell.MetamodelElementCellFactories
+import de.algorythm.jddb.ui.jfx.cell.ResourceRootPathCell
+import de.algorythm.jddb.ui.jfx.loader.image.ImageLoader
 import de.algorythm.jddb.ui.jfx.model.FXEntity
 import de.algorythm.jddb.ui.jfx.model.FXEntityReference
 import de.algorythm.jddb.ui.jfx.model.meta.FXEntityType
@@ -28,9 +30,8 @@ import javafx.collections.FXCollections
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
 import javafx.scene.control.ListView
-import javafx.stage.FileChooser
-import javax.inject.Inject
 import javafx.stage.DirectoryChooser
+import javax.inject.Inject
 
 class TypeEditorController implements Initializable, InvalidationListener {
 	
@@ -50,6 +51,7 @@ class TypeEditorController implements Initializable, InvalidationListener {
 	
 	override initialize(URL url, ResourceBundle bundle) {
 		// setup path list
+		rootDirectoryList.cellFactory = ResourceRootPathCell.FACTORY
 		rootDirectoryList.items.all = rootDirectories
 		
 		// setup type list
@@ -65,7 +67,7 @@ class TypeEditorController implements Initializable, InvalidationListener {
 				n.propertiesProperty
 			}
 		]
-		typeList.items = types 
+		typeList.items = types
 		typeList.items.addListener [
 			validate
 		]
@@ -113,15 +115,17 @@ class TypeEditorController implements Initializable, InvalidationListener {
 	
 	def save() {
 		rootDirectories = rootDirectoryList.items
+		ImageLoader.INSTANCE.clearCache
 		types.transform.updateSchema
 	}
 	
-	def addRootDirectory() {
+	def void addRootDirectory() {
 		val dc = new DirectoryChooser
 		dc.title = bundle.chooseDirectory
+		dc.initialDirectory = primaryRootDirectory
 		val file = dc.showDialog(rootDirectoryList.scene.window)
 		
-		if (file != null && !rootDirectoryList.items.exists[d|file.absolutePath.startsWith(d.absolutePath)])
+		if (file != null)
 			rootDirectoryList.items += file
 	}
 	
@@ -137,7 +141,7 @@ class TypeEditorController implements Initializable, InvalidationListener {
 		validate
 	}
 	
-	def validate() {
+	def private validate() {
 		val errors = new LinkedHashSet<String>
 		val typeLabels = new HashSet<String>
 		

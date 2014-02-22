@@ -31,6 +31,7 @@ class SplashScreen {
 		progressBox.children += progressIndicator
 		progressBox.children += new Label(Bundle.instance.initializing)
 		
+		box.styleProperty.value = "-fx-border-color: #555555; -fx-border-width: 2px; -fx-border-radius: 10px";
 		box.alignment = Pos.BASELINE_CENTER
 		box.padding = new Insets(20)
 		box.children += new ImageView(splashLogo)

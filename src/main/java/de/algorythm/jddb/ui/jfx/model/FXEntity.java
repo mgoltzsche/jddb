@@ -142,7 +142,7 @@ public class FXEntity extends AbstractEntity<IFXPropertyValue<?>, FXEntityRefere
 		
 		for (IFXPropertyValue<?> value : getValues()) {
 			if (!value.getProperty().getType().isUserDefined()) { // attrs only
-				final String valueStr = value.labelProperty().get().replaceAll("[\\s]+", " ");
+				String valueStr = value.labelProperty().get().replaceAll("[\\s]+", " ");
 				
 				if (!valueStr.isEmpty()) {
 					if (sb.length() > 0)

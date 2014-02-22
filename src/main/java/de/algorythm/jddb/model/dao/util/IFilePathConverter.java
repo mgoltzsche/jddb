@@ -6,4 +6,5 @@ public interface IFilePathConverter {
 	
 	String toAbstractRelativePath(File file);
 	String toAbsolutePath(String filePath);
+	File getPrimaryRootDirectory();
 }

@@ -1,7 +1,5 @@
 package de.algorythm.jddb.model.meta.propertyTypes;
 
-import java.io.File;
-
 import de.algorythm.jddb.model.entity.IEntityReference;
 import de.algorythm.jddb.model.entity.IPropertyValue;
 import de.algorythm.jddb.model.entity.IPropertyValueFactory;
@@ -31,6 +29,6 @@ public class TFile extends TString {
 	@Override
 	public void valueToString(final String value, final StringBuilder sb) {
 		if (value != null)
-			sb.append(new File(value).getName());
+			sb.append(value.replaceAll("(.*/)?(.*?)", "$2"));
 	}
 }

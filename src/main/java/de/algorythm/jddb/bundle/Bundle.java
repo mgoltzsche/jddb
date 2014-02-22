@@ -59,6 +59,7 @@ public class Bundle {
 	public final String stateCanceled;
 	public final String stateCompleted;
 	public final String stateFailed;
+	public final String taskRestoreLastAppState;
 	public final String taskOpenDB;
 	public final String taskCloseDB;
 	public final String taskSearch;
@@ -121,6 +122,7 @@ public class Bundle {
 		stateCanceled = b.getString("stateCanceled");
 		stateCompleted = b.getString("stateCompleted");
 		stateFailed = b.getString("stateFailed");
+		taskRestoreLastAppState = b.getString("taskRestoreLastAppState");
 		taskOpenDB = b.getString("taskOpenDB");
 		taskCloseDB = b.getString("taskCloseDB");
 		taskSearch = b.getString("taskSearch");

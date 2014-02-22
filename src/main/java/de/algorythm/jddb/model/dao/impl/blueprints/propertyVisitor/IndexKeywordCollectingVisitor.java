@@ -1,6 +1,5 @@
 package de.algorythm.jddb.model.dao.impl.blueprints.propertyVisitor;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
@@ -68,7 +67,7 @@ public class IndexKeywordCollectingVisitor<REF extends IEntityReference> impleme
 			final String value = propertyValue.getValue();
 			
 			if (value != null && !value.isEmpty()) {
-				final String fileName = new File(value).getName();
+				final String fileName = value.replaceAll("(.*/)?(.*?)", "$2");
 				
 				indexKeywords.add(value);
 				

@@ -57,6 +57,7 @@ import de.algorythm.jddb.model.meta.propertyTypes.CollectionType
 import de.algorythm.jddb.bundle.ImageBundle
 import javafx.scene.control.Tooltip
 import de.algorythm.jddb.model.dao.util.IFilePathConverter
+import java.io.File
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -487,13 +488,26 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 		gridPane.add(vBox, 1, row)
 	}
 	
-	def private chooseFile(TextField fileLabel) {
+	def private chooseFile(TextField fileField) {
+		val currentFile = fileField.text
 		val fc = new FileChooser
 		fc.title = 'Choose file'
+		
+		if (currentFile == null || currentFile.empty)
+			fc.initialDirectory = primaryRootDirectory
+		else {
+			val currentParentFile = new File(currentFile.toAbsolutePath).parentFile
+			
+			fc.initialDirectory = if (currentParentFile == null)
+				primaryRootDirectory
+			else
+				currentParentFile
+		}
+		
 		var file = fc.showOpenDialog(gridPane.scene.window)
 		
 		if (file != null)
-			fileLabel.text = file.toAbstractRelativePath
+			fileField.text = file.toAbstractRelativePath
 	}
 	
 	def private void bindStringProperty(AbstractFXAttributeValue<String> propertyValue, StringProperty textProperty) {

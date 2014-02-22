@@ -7,7 +7,9 @@ import de.algorythm.jddb.controller.MainController
 import de.algorythm.jddb.model.dao.IDAO
 import de.algorythm.jddb.model.meta.MEntityType
 import de.algorythm.jddb.taskQueue.ITaskPriority
+import de.algorythm.jddb.taskQueue.ITaskResult
 import de.algorythm.jddb.ui.jfx.controls.FXEntityDetailPopup
+import de.algorythm.jddb.ui.jfx.dialogs.ConfirmDialog
 import de.algorythm.jddb.ui.jfx.loader.fxml.FxmlLoaderResult
 import de.algorythm.jddb.ui.jfx.loader.fxml.GuiceFxmlLoader
 import de.algorythm.jddb.ui.jfx.model.FXEntity
@@ -19,6 +21,7 @@ import java.io.File
 import java.io.IOException
 import java.util.Collection
 import java.util.Date
+import java.util.LinkedList
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -28,7 +31,6 @@ import javax.inject.Singleton
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static javafx.application.Platform.*
-import de.algorythm.jddb.ui.jfx.dialogs.ConfirmDialog
 
 @Singleton
 public class JddbFacade {
@@ -40,6 +42,7 @@ public class JddbFacade {
 	@Inject IObjectCache<FXEntity> entityCache
 	@Inject extension GuiceFxmlLoader
 	@Inject IEntityEditorManager editorManager
+	@Inject extension ApplicationStateManager
 	@Inject extension ConfirmDialog
 	@Inject Bundle bundle
 	var FXEntityDetailPopup entityDetailsPopup
@@ -65,10 +68,48 @@ public class JddbFacade {
 		primaryStage.minHeight = 400
 		primaryStage.show
 		primaryStage.centerOnScreen
+		
+		// open last opened database and tabs
+		restoreLastApplicationState
+	}
+	
+	/**
+	 * Open last opened database and tabs
+	 */
+	def private void restoreLastApplicationState() {
+		loadApplicationState
+		
+		val dbFile = openDatabaseFile
+		
+		if (dbFile != null) {
+			val openEntityIds = openEntityIds
+			val openTask = openDB(dbFile)
+			
+			runTask('restore-last-app-state', bundle.taskRestoreLastAppState, ITaskPriority.LAST) [|
+				openTask.requireCompleted
+				
+				val entityRefs = new LinkedList<FXEntityReference>
+				
+				for (entityId : openEntityIds) {
+					try {
+						entityRefs += find(entityId)			
+					} catch(IllegalArgumentException e) {}
+				}
+				
+				runLater [|
+					for (entityRef : entityRefs)
+						entityRef.showEntityEditor
+				]
+			]
+		}
 	}
 	
 	def stopApplication() {
-		closeDB
+		try {
+			saveApplicationState(databaseFile, editorManager.openEditorIDs)
+		} finally {
+			closeDB
+		}
 	}
 	
 	def showEntityDetails(FXEntityReference entityRef, Node node) {
@@ -91,13 +132,13 @@ public class JddbFacade {
 		editorManager.closeAll
 	}
 	
-	def void openDB(File dbFile) {
+	def ITaskResult openDB(File dbFile) {
 		if ((!dbFile.exists || dbFile.directory && dbFile.list.length == 0) &&
 				!confirm(dbFile.absolutePath + ' ' + bundle.confirmDatabaseCreation)) {
 			try {
 				dbFile.delete
 			} catch(IOException e) {}
-			return
+			return null
 		}
 		
 		editorManager.closeAll

@@ -37,6 +37,7 @@ import javax.inject.Inject
 
 import static javafx.application.Platform.*
 import de.algorythm.jddb.ui.jfx.cell.SearchTypeCell
+import de.algorythm.jddb.model.dao.util.IFilePathConverter
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
@@ -44,6 +45,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	@Inject extension FXTaskQueue
 	@Inject extension JddbFacade facade
 	@Inject extension EntityEditorViewRegistry
+	@Inject extension IFilePathConverter
 	@Inject var Bundle bundle
 	@FXML var ApplicationStateModel appState
 	@FXML var Button openDbButton
@@ -178,9 +180,10 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	def showDatabaseOpenDialog() {
 		val dc = new DirectoryChooser
 		dc.title = bundle.taskOpenDB
+		dc.initialDirectory = primaryRootDirectory
 		var dbFile = dc.showDialog(openDbButton.scene.window)
 		
-		if (dbFile != null)		
+		if (dbFile != null)
 			dbFile.openDB
 	}
 	

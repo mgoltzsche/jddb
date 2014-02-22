@@ -38,6 +38,10 @@ class ImageLoader {
 	private new() {
 	}
 	
+	def void clearCache() {
+		cache.clear
+	}
+	
 	def setFilePathConverter(IFilePathConverter pathConverter) {
 		this.pathConverter = pathConverter
 	}
