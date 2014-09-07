@@ -41,17 +41,20 @@ public class FilePathManager implements IFilePathConverter {
 		int maxRootPathLength = 0;
 		
 		for (File rootDir : rootDirectories) {
-			final String absoluteRootPath = rootDir.getAbsolutePath() + File.separator;
-			final int rootPathLength = absoluteRootPath.length();
+			final String absoluteRootPath = rootDir.getAbsolutePath();
+			final String absoluteRootPathSlash = absoluteRootPath + File.separator;
+			final int rootPathLength = absoluteRootPathSlash.length();
 			
-			if (absolutePath.startsWith(absoluteRootPath) && rootPathLength > maxRootPathLength)
+			if ((absolutePath.startsWith(absoluteRootPathSlash) ||
+					absolutePath.equals(absoluteRootPath)) &&
+					rootPathLength > maxRootPathLength)
 				maxRootPathLength = rootPathLength;
 		}
 		
 		if (maxRootPathLength == 0)
 			throw new IllegalArgumentException("Cannot refer file that is not contained in a JDDB root directory (see settings): " + absolutePath);
 		
-		return toPlatformIndependentPath(absolutePath.substring(maxRootPathLength));
+		return toPlatformIndependentPath(maxRootPathLength >= absolutePath.length() ? "." : absolutePath.substring(maxRootPathLength));
 	}
 	
 	@Override

@@ -5,9 +5,11 @@ import de.algorythm.jddb.bundle.Bundle
 import de.algorythm.jddb.model.dao.IDAO
 import de.algorythm.jddb.model.dao.IObserver
 import de.algorythm.jddb.model.dao.ModelChange
+import de.algorythm.jddb.model.dao.util.IFilePathConverter
 import de.algorythm.jddb.model.meta.MEntityType
 import de.algorythm.jddb.model.meta.MEntityTypeWildcard
 import de.algorythm.jddb.taskQueue.ITaskPriority
+import de.algorythm.jddb.ui.jfx.cell.SearchTypeCell
 import de.algorythm.jddb.ui.jfx.controls.FXEntityDetailView
 import de.algorythm.jddb.ui.jfx.controls.FXEntityTableView
 import de.algorythm.jddb.ui.jfx.model.ApplicationStateModel
@@ -20,6 +22,7 @@ import java.io.IOException
 import java.net.URL
 import java.util.LinkedList
 import java.util.ResourceBundle
+import javafx.beans.Observable
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -36,16 +39,14 @@ import javafx.stage.DirectoryChooser
 import javax.inject.Inject
 
 import static javafx.application.Platform.*
-import de.algorythm.jddb.ui.jfx.cell.SearchTypeCell
-import de.algorythm.jddb.model.dao.util.IFilePathConverter
 
 public class MainController implements Initializable, IObserver<FXEntity, IFXPropertyValue<?>, FXEntityReference> {
 	
 	@Inject extension IDAO<FXEntity,IFXPropertyValue<?>,FXEntityReference> dao
 	@Inject extension FXTaskQueue
 	@Inject extension JddbFacade facade
-	@Inject extension EntityEditorViewRegistry
 	@Inject extension IFilePathConverter
+	@Inject var EntityEditorViewRegistry editorManager
 	@Inject var Bundle bundle
 	@FXML var ApplicationStateModel appState
 	@FXML var Button openDbButton
@@ -61,17 +62,17 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 	val ObservableList<MEntityType> entityTypes = FXCollections.observableList(newLinkedList)
 	
 	override initialize(URL url, ResourceBundle resourceBundle) {
-		tabPane = tabs
+		editorManager.tabPane = tabs
 		
 		entityDetails.entityProperty.bind(entityTable.selectionModel.selectedItemProperty)
 		
 		entityTable.setOnRowClick [
-			showEntityEditor
+			facade.showEntityEditor(it)
 		]
 		entityTable.setOnRowEnter [it, node|
 			showEntityDetails(node)
 		]
-		entityTable.items.addListener [
+		entityTable.items.addListener [Observable o|
 			listTab.text = '''«bundle.results» («entityTable.items.size»)'''
 		]
 		
@@ -86,7 +87,7 @@ public class MainController implements Initializable, IObserver<FXEntity, IFXPro
 			setSelectedType(typeComboBox.value)
 		]
 		
-		entityTypes.addListener [
+		entityTypes.addListener [Observable o|
 			setupTypeSelection
 			setupNewEntityButton
 		]

@@ -68,7 +68,7 @@ class TypeEditorController implements Initializable, InvalidationListener {
 			}
 		]
 		typeList.items = types
-		typeList.items.addListener [
+		typeList.items.addListener [Observable o|
 			validate
 		]
 		

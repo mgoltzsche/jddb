@@ -2,8 +2,11 @@ package de.algorythm.jddb.controller
 
 import de.algorythm.jddb.JddbFacade
 import de.algorythm.jddb.bundle.Bundle
+import de.algorythm.jddb.bundle.ImageBundle
 import de.algorythm.jddb.model.dao.IDAO
+import de.algorythm.jddb.model.dao.util.IFilePathConverter
 import de.algorythm.jddb.model.meta.MEntityType
+import de.algorythm.jddb.model.meta.propertyTypes.CollectionType
 import de.algorythm.jddb.taskQueue.ITaskPriority
 import de.algorythm.jddb.ui.jfx.cell.AssociationCell
 import de.algorythm.jddb.ui.jfx.controls.EntityField
@@ -25,6 +28,7 @@ import de.algorythm.jddb.ui.jfx.model.propertyValue.StringFXAttributeValue
 import de.algorythm.jddb.ui.jfx.model.propertyValue.TextFXAttributeValue
 import de.algorythm.jddb.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jddb.ui.jfx.taskQueue.FXTransactionTask
+import java.io.File
 import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -32,6 +36,7 @@ import java.util.Collection
 import java.util.Date
 import java.util.Map
 import java.util.regex.Pattern
+import javafx.beans.Observable
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.StringProperty
 import javafx.geometry.Insets
@@ -41,6 +46,7 @@ import javafx.scene.control.Label
 import javafx.scene.control.ListView
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
+import javafx.scene.control.Tooltip
 import javafx.scene.image.ImageView
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
@@ -53,11 +59,6 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure0
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 
 import static extension de.algorythm.jddb.ui.jfx.util.OpenFileUtil.*
-import de.algorythm.jddb.model.meta.propertyTypes.CollectionType
-import de.algorythm.jddb.bundle.ImageBundle
-import javafx.scene.control.Tooltip
-import de.algorythm.jddb.model.dao.util.IFilePathConverter
-import java.io.File
 
 class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 
@@ -153,7 +154,7 @@ class PropertyValueEditorVisitor implements IFXPropertyValueVisitor {
 			addEntityField.valueProperty.addListener [
 				selectionChangeListener.apply
 			]
-			selectedEntities.items.addListener [
+			selectedEntities.items.addListener [Observable o|
 				selectionChangeListener.apply
 			]
 			

@@ -2,6 +2,8 @@ package de.algorythm.jddb.ui.jfx.controls
 
 import de.algorythm.jddb.ui.jfx.model.FXEntityReference
 import java.util.LinkedList
+import javafx.beans.Observable
+import javafx.beans.property.ObjectProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ChangeListener
@@ -18,7 +20,6 @@ import javafx.scene.input.KeyCode
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2
 
 import static javafx.application.Platform.*
-import javafx.beans.property.ObjectProperty
 
 public class EntityField extends TextField implements ChangeListener<String> {
 	
@@ -55,7 +56,7 @@ public class EntityField extends TextField implements ChangeListener<String> {
 			else
 				selectedValueLabelProperty.bind(entityLabelProperty)
 		]
-		availableValues.addListener [
+		availableValues.addListener [Observable o|
 			runLater [|
 				if (availableValues.empty) {
 					error = true

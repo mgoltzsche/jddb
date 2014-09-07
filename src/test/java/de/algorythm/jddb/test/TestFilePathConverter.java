@@ -56,7 +56,7 @@ public class TestFilePathConverter {
 		final File expectedFile = new File(rootPath);
 		final String relativePath = converter.toAbstractRelativePath(expectedFile);
 		
-		Assert.assertEquals(expectedFile.getAbsolutePath(), relativePath);
+		Assert.assertEquals(".", relativePath);
 	}
 	
 	@Test

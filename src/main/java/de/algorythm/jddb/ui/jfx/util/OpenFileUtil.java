@@ -1,6 +1,7 @@
 package de.algorythm.jddb.ui.jfx.util;
 
 import java.awt.Desktop;
+import java.awt.Desktop.Action;
 import java.io.File;
 
 import org.slf4j.Logger;
@@ -50,18 +51,18 @@ public class OpenFileUtil {
 			try {
 				Desktop.getDesktop().open(file);
 			} catch(Throwable e) {
-				LOG.error("Cannot open file externally: " + file.getAbsolutePath());
+				LOG.error("Cannot open file externally: " + file.getAbsolutePath(), e);
 			}
 		}
 	}
 	
 	static {
-		if (Desktop.isDesktopSupported()) {
-			impl = new FileOpenAction();
-		} else {
+		//if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Action.OPEN)) {
+		//	impl = new FileOpenAction();
+		//} else {
 			impl = new UnsupportedFileOpenAction();
 			LOG.warn("AWT Desktop is not supported");
-		}
+		//}
 	}
 	
 	static public boolean isOpenFileSupported() {

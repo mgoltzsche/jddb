@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.tinkerpop.blueprints.Index;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.neo4j.Neo4jGraph;
+import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
 import de.algorythm.jddb.model.dao.IModelFactory;
 import de.algorythm.jddb.model.dao.impl.blueprints.BlueprintsDAO;
@@ -21,7 +21,7 @@ public class Neo4jDbDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF
 
 	static private final Logger LOG = LoggerFactory.getLogger(Neo4jDbDAO.class);
 	
-	private Neo4jGraph graph;
+	private Neo4j2Graph graph;
 	
 	public Neo4jDbDAO(final IModelFactory<V, P, REF> modelFactory) {
 		super(modelFactory);
@@ -29,7 +29,7 @@ public class Neo4jDbDAO<V extends IEntity<P,REF>, P extends IPropertyValue<?,REF
 	
 	@Override
 	protected TransactionalGraph openGraph(final File dbDirectory) {
-		graph = new Neo4jGraph(dbDirectory.getAbsolutePath());
+		graph = new Neo4j2Graph(dbDirectory.getAbsolutePath());
 		
 		removeInitialDemoNode();
 		

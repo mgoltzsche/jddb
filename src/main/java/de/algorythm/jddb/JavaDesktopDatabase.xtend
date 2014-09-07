@@ -6,16 +6,16 @@ import javafx.application.Application
 import javafx.scene.image.Image
 import javafx.stage.Stage
 import javax.inject.Inject
-import org.slf4j.LoggerFactory
 
 import static javafx.application.Platform.*
 import de.algorythm.jddb.ui.jfx.dialogs.SplashScreen
 import de.algorythm.jddb.ui.jfx.taskQueue.FXTaskQueue
 import de.algorythm.jddb.taskQueue.ITaskPriority
+import org.apache.log4j.Logger
 
 class JavaDesktopDatabase extends Application {
 
-	static val log = LoggerFactory.getLogger(typeof(JavaDesktopDatabase))
+	static val log = Logger.getLogger(typeof(JavaDesktopDatabase))
 	
 	@Inject JddbFacade facade
 	@Inject extension FXTaskQueue
