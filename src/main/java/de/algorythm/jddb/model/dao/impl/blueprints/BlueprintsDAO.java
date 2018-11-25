@@ -1,8 +1,9 @@
 package de.algorythm.jddb.model.dao.impl.blueprints;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,19 +69,12 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 	private ModelChange<V, P, REF> change;
 	private File databaseFile;
 	private File schemaFile;
-	private final File defaultSchemaFile;
 
 	public BlueprintsDAO(final IModelFactory<V, P, REF> modelFactory) {
 		this.modelFactory = modelFactory;
 		
 		mapper.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		
-		try {
-			defaultSchemaFile = new File(getClass().getResource('/' + SCHEMA_FILE_NAME).toURI());
-		} catch (URISyntaxException e) {
-			throw new RuntimeException("Cannot get default schema file URI", e);
-		}
 	}
 
 	@Override
@@ -114,13 +108,17 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 			schemaFile = new File(dbDir + File.separator + SCHEMA_FILE_NAME);
 			
 			if (createDB) {
-				loadSchema(defaultSchemaFile);
+				try (InputStream defaultSchemaStream = getClass().getResourceAsStream('/' + SCHEMA_FILE_NAME)) {
+					loadSchema(defaultSchemaStream);
+				}
 				updateSchemaTypes(schema.getTypes());
 			} else {
 				if (!schemaFile.exists() || !schemaFile.isFile())
 					throw new IllegalArgumentException("No database found in directory: " + dbDir);
 				
-				loadSchema(schemaFile);
+				try (InputStream schemaStream = new FileInputStream(schemaFile)) {
+					loadSchema(schemaStream);
+				}
 			}
 			
 			graph = openGraph(dbDirectory);
@@ -137,8 +135,8 @@ public abstract class BlueprintsDAO<V extends IEntity<P, REF>, P extends IProper
 		}
 	}
 	
-	private void loadSchema(final File schemaFile) throws IOException {
-		schema = mapper.readValue(schemaFile, Schema.class);
+	private void loadSchema(final InputStream stream) throws IOException {
+		schema = mapper.readValue(stream, Schema.class);
 		final Map<String, IPropertyType<?>> typeMap = new HashMap<>();
 		
 		for (MEntityType type : schema.getTypes()) {
